@@ -1,0 +1,1738 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affines Matrixlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:      #FAF9F6;
+    --surface:    #FFFFFF;
+    --ink:        #16203A;
+    --ink-2:      #55607A;
+    --ink-3:      #8590A8;
+    --blue:       #1E3FAE;
+    --blue-soft:  #E8ECFA;
+    --red:        #C7362B;
+    --grid:       #DCE2EE;
+    --grid-axis:  #A9B3C7;
+    --rule:       #E4E6EC;
+    --e1:         #158A4A;
+    --e2:         #0E8FB0;
+    --origin:     #C51E86;
+    --ghost:      #B4BDD0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0F131B; --surface: #161B26; --ink: #E7EBF3; --ink-2: #A2ADC4;
+      --ink-3: #737E95; --blue: #8AA4FF; --blue-soft: #1A2340; --red: #FF8E7E;
+      --grid: #222A3A; --grid-axis: #47526A; --rule: #262C3A;
+      --e1: #4FD08A; --e2: #4FC7E8; --origin: #FF77C4; --ghost: #4A5468;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0F131B; --surface: #161B26; --ink: #E7EBF3; --ink-2: #A2ADC4;
+    --ink-3: #737E95; --blue: #8AA4FF; --blue-soft: #1A2340; --red: #FF8E7E;
+    --grid: #222A3A; --grid-axis: #47526A; --rule: #262C3A;
+    --e1: #4FD08A; --e2: #4FC7E8; --origin: #FF77C4; --ghost: #4A5468;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* Muss !important sein: die ID-Regeln der beiden Tab-Ansichten
+     hätten sonst höhere Spezifität als das hidden-Attribut. */
+  [hidden] { display: none !important; }
+  img { max-width: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+  h1, h2, h3, .label, .badge, th, button { font-family: "Libre Franklin", Arial, sans-serif; }
+  .mono, .val, input, td.n { font-family: "IBM Plex Mono", monospace; }
+
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue);
+  }
+  h1 {
+    font-size: clamp(1.9rem, 5vw, 2.6rem); font-weight: 800;
+    letter-spacing: -0.022em; line-height: 1.1; margin: 0; text-wrap: balance;
+  }
+  header p { margin: 0; color: var(--ink-2); max-width: 40rem; font-size: 1.05rem; }
+
+  h2 {
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ink-3); margin: 0;
+    padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule);
+  }
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  p { margin: 0; }
+  .note { color: var(--ink-2); font-size: 0.97rem; }
+
+  /* ---- Labor ---- */
+  .lab {
+    display: grid;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 46rem) { .lab { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1.1rem 1.2rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Matrix */
+  .matrix {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem 0.35rem;
+    position: relative;
+    padding: 0.5rem 0.9rem;
+  }
+  .matrix::before, .matrix::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 9px;
+    border: 2px solid var(--ink-3); border-radius: 1px;
+  }
+  .matrix::before { left: 0; border-right: none; }
+  .matrix::after  { right: 0; border-left: none; }
+
+  .cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .cell input {
+    width: 100%;
+    text-align: center;
+    font-size: 1.28rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    padding: 0.28rem 0.1rem;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: 1px dotted var(--ink-3);
+    border-radius: 2px;
+    -moz-appearance: textfield;
+  }
+  .cell input::-webkit-outer-spin-button,
+  .cell input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .cell input:hover { background: var(--blue-soft); }
+  .cell input:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+  .cell.fixed span {
+    display: block; width: 100%; text-align: center;
+    font-family: "IBM Plex Mono", monospace; font-size: 1.28rem;
+    padding: 0.28rem 0.1rem; color: var(--ink-3);
+    border-bottom: 1px solid transparent;
+  }
+  .cell .tag {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    margin-top: 0.15rem;
+    color: var(--ink-3);
+  }
+  .cell[data-col="0"] .tag { color: var(--e1); }
+  .cell[data-col="1"] .tag { color: var(--e2); }
+  .cell[data-col="2"] .tag { color: var(--origin); }
+  .cell.fixed .tag { color: var(--ink-3); }
+
+  /* Slider */
+  .sliders { display: flex; flex-direction: column; gap: 0.55rem; }
+  .slider-row {
+    display: grid;
+    grid-template-columns: 2.1rem 1fr 2.6rem;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.78rem;
+  }
+  .slider-row .k { font-family: "IBM Plex Mono", monospace; color: var(--ink-2); }
+  .slider-row .v {
+    font-family: "IBM Plex Mono", monospace; text-align: right;
+    font-variant-numeric: tabular-nums; color: var(--ink);
+  }
+  input[type="range"] {
+    width: 100%; height: 2px; -webkit-appearance: none; appearance: none;
+    background: var(--grid); border-radius: 2px; outline: none; margin: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--blue); cursor: grab; border: none;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--blue); cursor: grab; border: none;
+  }
+  input[type="range"]:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+
+  /* Presets */
+  .presets { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .presets button {
+    font-size: 0.74rem; font-weight: 500;
+    padding: 0.3rem 0.55rem;
+    background: transparent;
+    color: var(--ink-2);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .presets button:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+  .presets button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  /* Ablesen */
+  .readout { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; }
+  .readout .r { display: flex; justify-content: space-between; gap: 0.7rem; align-items: baseline; }
+  .readout .rk { font-family: "Libre Franklin", sans-serif; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .readout .rv { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+  .readout .rv.e1 { color: var(--e1); }
+  .readout .rv.e2 { color: var(--e2); }
+  .readout .rv.t  { color: var(--origin); }
+
+  .badges { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .badge {
+    font-size: 0.63rem; letter-spacing: 0.09em; text-transform: uppercase;
+    font-weight: 600; padding: 0.24rem 0.5rem; border-radius: 2px;
+    border: 1px solid var(--rule); color: var(--ink-3); background: transparent;
+  }
+  .badge.on { background: var(--blue-soft); color: var(--blue); border-color: transparent; }
+  .badge.off { text-decoration: line-through; opacity: 0.55; }
+
+  /* Formenleiste */
+  .shapebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.15rem 0.15rem 0.6rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .shapebar button {
+    font-size: 0.74rem;
+    font-weight: 500;
+    padding: 0.32rem 0.6rem;
+    background: transparent;
+    color: var(--ink-2);
+    border: 1px solid transparent;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .shapebar button:hover { color: var(--blue); background: var(--blue-soft); }
+  .shapebar button[aria-pressed="true"] {
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-weight: 600;
+    border-color: var(--blue);
+  }
+  .shapebar button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  /* Bühne */
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .stage svg { width: 100%; height: auto; display: block; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 0.15rem 1rem;
+    padding: 0 0.4rem 0.2rem;
+    font-size: 0.76rem; color: var(--ink-2);
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .swatch { width: 11px; height: 3px; border-radius: 2px; display: inline-block; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+  /* Effekttabelle */
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 33rem; }
+  th {
+    text-align: left; font-size: 0.66rem; letter-spacing: 0.09em;
+    text-transform: uppercase; font-weight: 600; color: var(--ink-3);
+    padding: 0 0.6rem 0.5rem 0; border-bottom: 1px solid var(--ink-3); white-space: nowrap;
+  }
+  td { padding: 0.6rem 0.6rem 0.6rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.n { font-weight: 600; font-size: 0.95rem; white-space: nowrap; }
+  td.n.c0 { color: var(--e1); }
+  td.n.c1 { color: var(--e2); }
+  td.n.c2 { color: var(--origin); }
+  tr.hi td { background: var(--blue-soft); }
+  .tiny { color: var(--ink-3); font-size: 0.82rem; }
+
+  .traps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .traps li { font-size: 0.94rem; padding-left: 1.15rem; position: relative; }
+  .traps li::before {
+    content: "✗"; position: absolute; left: 0; top: 0.05em; color: var(--red);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.85rem;
+  }
+
+  /* ---- Klassen ---- */
+  .classgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .classcard {
+    padding: 1rem 1.1rem 1.15rem;
+    border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 0.55rem;
+  }
+  .classcard:last-child { border-right: none; }
+  .classcard h3 {
+    margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--blue);
+    font-family: "IBM Plex Mono", monospace; letter-spacing: 0.02em;
+  }
+  .classcard .cdef { font-size: 0.95rem; }
+  .classcard .ctest {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.84rem; line-height: 1.75;
+    background: var(--blue-soft); border-left: 2px solid var(--blue);
+    padding: 0.5rem 0.7rem; border-radius: 0 2px 2px 0;
+  }
+  .classcard .cex { font-size: 0.88rem; color: var(--ink-2); }
+  .classcard .cex strong { color: var(--ink); font-family: "Libre Franklin", sans-serif; font-size: 0.8rem; }
+  .classcard .cnote { font-size: 0.84rem; color: var(--ink-3); margin-top: auto; padding-top: 0.2rem; }
+
+  .setfig { margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .setfig svg { width: 100%; max-width: 38rem; height: auto; align-self: center; }
+  .setfig .sfc {
+    font-family: "Libre Franklin", sans-serif; font-size: 16px; font-weight: 700;
+    fill: var(--ink);
+  }
+  .setfig .sfi {
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; fill: var(--ink-2);
+  }
+  .setfig figcaption { font-size: 0.85rem; color: var(--ink-3); text-align: center; }
+
+  /* ---- Konfetti ---- */
+  #confetti {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 40;
+  }
+
+  /* ---- Tabs ---- */
+  .tabs {
+    display: flex;
+    gap: 0.15rem;
+    border-bottom: 1px solid var(--rule);
+    /* bleibt beim Scrollen oben stehen; die negativen Seitenränder
+       ziehen den Hintergrund über das Innenabstand der Seite */
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--paper);
+    margin: 0 -1.5rem -1.2rem;
+    padding: 0.6rem 1.5rem 0;
+  }
+  .tabs button {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    padding: 0.5rem 0.95rem;
+    background: transparent;
+    color: var(--ink-3);
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+  }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+  .tabs button:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+
+  #view-erklaerung, #view-training { display: flex; flex-direction: column; gap: 2.5rem; }
+
+  /* ---- Zähler ---- */
+  .score {
+    display: flex;
+    align-items: center;
+    gap: 1.6rem;
+    padding: 0.75rem 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    flex-wrap: wrap;
+  }
+  .score .s { display: flex; align-items: baseline; gap: 0.4rem; }
+  .score .sv {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.35rem; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .score .sv.ok  { color: var(--e1); }
+  .score .sv.bad { color: var(--red); }
+  .score .sk {
+    font-family: "Libre Franklin", sans-serif; font-size: 0.66rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600;
+  }
+  .linkish {
+    margin-left: auto; background: none; border: none; cursor: pointer;
+    font-family: "Libre Franklin", sans-serif; font-size: 0.76rem;
+    color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; padding: 0.2rem;
+  }
+  .linkish:hover { color: var(--blue); }
+
+  /* ---- Aufgabenkarte ---- */
+  .taskcard {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+  }
+  .task-top {
+    display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+    padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--rule);
+  }
+  .ttype {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.7rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue);
+  }
+  .tno {
+    margin-left: auto; font-family: "IBM Plex Mono", monospace;
+    font-size: 0.74rem; color: var(--ink-3); font-variant-numeric: tabular-nums;
+  }
+  .tbody { padding: 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .tprompt { font-size: 1rem; }
+  .thint { font-size: 0.88rem; color: var(--ink-3); }
+
+  .tgrid {
+    display: flex; align-items: center; justify-content: center;
+    gap: 1rem; flex-wrap: wrap;
+  }
+  .tcol {
+    display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+    flex: 1 1 16rem; min-width: 0; max-width: 20rem;
+  }
+  .tcap {
+    font-family: "Libre Franklin", sans-serif; font-size: 0.64rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600;
+  }
+  .tcap.live { color: var(--blue); }
+  .plot-sm {
+    width: 100%; max-width: 20rem; height: auto; display: block;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 2px;
+    touch-action: none;
+  }
+  .plot-sm.interactive { border-color: var(--blue); }
+  .arrowto { font-family: "IBM Plex Mono", monospace; color: var(--ink-3); font-size: 1.1rem; }
+
+  .handle { cursor: grab; }
+  .handle:active { cursor: grabbing; }
+  .handle:focus-visible { outline: none; }
+
+  /* Matrix in Aufgaben */
+  .mbox {
+    display: grid; grid-template-columns: repeat(3, minmax(2.6rem, 3.4rem));
+    gap: 0.2rem 0.3rem; position: relative; padding: 0.4rem 0.75rem;
+  }
+  .mbox::before, .mbox::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 7px;
+    border: 2px solid var(--ink-3); border-radius: 1px;
+  }
+  .mbox::before { left: 0; border-right: none; }
+  .mbox::after  { right: 0; border-left: none; }
+  .mbox span, .mbox input {
+    font-family: "IBM Plex Mono", monospace; font-size: 1.05rem;
+    text-align: center; font-variant-numeric: tabular-nums; padding: 0.2rem 0.1rem;
+  }
+  .mbox span { color: var(--ink); }
+  .mbox span.fix { color: var(--ink-3); }
+  .mbox input {
+    width: 100%; color: var(--ink); background: transparent;
+    border: 1px solid transparent; border-bottom: 1px dotted var(--ink-3); border-radius: 2px;
+  }
+  .mbox input:hover { background: var(--blue-soft); }
+  .mbox input:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+  .mbox input:disabled { color: var(--ink-3); border-bottom-color: transparent; }
+
+  .checks { display: flex; flex-direction: column; gap: 0.5rem; }
+  .checks label {
+    display: flex; align-items: center; gap: 0.55rem;
+    font-size: 0.96rem; cursor: pointer; width: fit-content;
+  }
+  .checks input { width: 1rem; height: 1rem; accent-color: var(--blue); cursor: pointer; }
+
+  .tactions {
+    display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+    padding: 0.9rem 1.2rem; border-top: 1px solid var(--rule);
+  }
+  .btn {
+    font-family: "Libre Franklin", sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 0.48rem 0.95rem; border-radius: 2px; cursor: pointer; border: 1px solid transparent;
+  }
+  .btn.primary { background: var(--blue); color: #fff; }
+  :root[data-theme="dark"] .btn.primary,
+  :root:not([data-theme="light"]) .btn.primary { color: #0F131B; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: #fff; } }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--rule); }
+  .btn.ghost:hover { color: var(--blue); border-color: var(--blue); background: var(--blue-soft); }
+  .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .verdict {
+    display: flex; flex-direction: column; gap: 0.4rem;
+    padding: 0.9rem 1.2rem; border-top: 1px solid var(--rule);
+  }
+  .verdict .vhead {
+    font-family: "Libre Franklin", sans-serif; font-weight: 700;
+    font-size: 0.95rem; letter-spacing: 0.01em;
+  }
+  .verdict.right .vhead { color: var(--e1); }
+  .verdict.wrong .vhead { color: var(--red); }
+  .verdict .vsol { font-size: 0.93rem; color: var(--ink-2); }
+  .verdict .vsolrow {
+    display: flex; align-items: center; gap: 0.75rem;
+    flex-wrap: wrap; font-size: 0.93rem; color: var(--ink-2);
+  }
+  .verdict .mbox { padding: 0.25rem 0.7rem; }
+  .verdict .mbox span { font-size: 0.95rem; }
+
+  /* Zellenbewertung */
+  .mbox input.ok, .mbox input.ok:disabled { color: var(--e1); border-bottom-color: var(--e1); }
+  .mbox input.bad, .mbox input.bad:disabled { color: var(--red); border-bottom-color: var(--red); }
+
+  .donecard { text-align: center; padding: 2rem 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; align-items: center; }
+  .donecard h3 { margin: 0; font-family: "Libre Franklin", sans-serif; font-size: 1.2rem; }
+  .repeat-note { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
+  .repeat-note.warn { color: var(--red); }
+
+  footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
+  a { color: var(--blue); }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Aufgabe 1 · Affine Abbildungen in 2D · 12 Punkte</div>
+    <h1>Affines Matrixlabor</h1>
+    <p>Ändere einen Eintrag und sieh zu, was mit der Figur passiert. Die Farben sind dieselben wie in der Klausur: grün ist das Bild von e₁, cyan das Bild von e₂, magenta der Ursprung.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Ansicht">
+    <button role="tab" data-view="erklaerung" aria-selected="true">Erklärung</button>
+    <button role="tab" data-view="training" aria-selected="false">Training</button>
+  </nav>
+
+  <div id="view-erklaerung">
+  <section>
+    <div class="lab">
+
+      <div class="panel">
+        <div class="matrix" id="matrix">
+          <div class="cell" data-col="0"><input id="i_a" type="number" step="0.25" value="1" aria-label="Eintrag a, erste Zeile erste Spalte"><span class="tag">a</span></div>
+          <div class="cell" data-col="1"><input id="i_b" type="number" step="0.25" value="0" aria-label="Eintrag b, erste Zeile zweite Spalte"><span class="tag">b</span></div>
+          <div class="cell" data-col="2"><input id="i_tx" type="number" step="0.25" value="0" aria-label="Translation in x"><span class="tag">tx</span></div>
+
+          <div class="cell" data-col="0"><input id="i_c" type="number" step="0.25" value="0" aria-label="Eintrag c, zweite Zeile erste Spalte"><span class="tag">c</span></div>
+          <div class="cell" data-col="1"><input id="i_d" type="number" step="0.25" value="1" aria-label="Eintrag d, zweite Zeile zweite Spalte"><span class="tag">d</span></div>
+          <div class="cell" data-col="2"><input id="i_ty" type="number" step="0.25" value="0" aria-label="Translation in y"><span class="tag">ty</span></div>
+
+          <div class="cell fixed"><span>0</span><span class="tag">fix</span></div>
+          <div class="cell fixed"><span>0</span><span class="tag">fix</span></div>
+          <div class="cell fixed"><span>1</span><span class="tag">fix</span></div>
+        </div>
+
+        <div class="sliders" id="sliders">
+          <div class="slider-row"><span class="k">a</span><input type="range" id="s_a" min="-3" max="3" step="0.25" value="1" aria-label="Schieber a"><span class="v" id="v_a">1</span></div>
+          <div class="slider-row"><span class="k">b</span><input type="range" id="s_b" min="-3" max="3" step="0.25" value="0" aria-label="Schieber b"><span class="v" id="v_b">0</span></div>
+          <div class="slider-row"><span class="k">c</span><input type="range" id="s_c" min="-3" max="3" step="0.25" value="0" aria-label="Schieber c"><span class="v" id="v_c">0</span></div>
+          <div class="slider-row"><span class="k">d</span><input type="range" id="s_d" min="-3" max="3" step="0.25" value="1" aria-label="Schieber d"><span class="v" id="v_d">1</span></div>
+          <div class="slider-row"><span class="k">tx</span><input type="range" id="s_tx" min="-3" max="3" step="0.25" value="0" aria-label="Schieber tx"><span class="v" id="v_tx">0</span></div>
+          <div class="slider-row"><span class="k">ty</span><input type="range" id="s_ty" min="-3" max="3" step="0.25" value="0" aria-label="Schieber ty"><span class="v" id="v_ty">0</span></div>
+        </div>
+
+        <div class="presets" id="presets">
+          <button data-m="1,0,0,1,0,0">Identität</button>
+          <button data-m="1,0,0,1,1.5,0.5">Translation</button>
+          <button data-m="2,0,0,0.5,0,0">Skalierung</button>
+          <button data-m="0,-1,1,0,0,0">Rotation 90°</button>
+          <button data-m="1,1,0,1,0,0">Scherung x</button>
+          <button data-m="-1,0,0,1,0,0">Spiegelung y-Achse</button>
+          <button data-m="0,1,1,0,0,0">Spiegelung Diagonale</button>
+          <button data-m="0,-1,1,0,-1,1">Klausur 21 SS e)</button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="shapebar" id="shapebar" role="group" aria-label="Figur wählen">
+          <button data-shape="quadrat" aria-pressed="true" title="Standardfigur aller Jahrgänge">Quadrat</button>
+          <button data-shape="kreis" aria-pressed="false" title="wie 2019 SS a) und 2020 SS a)">Kreis</button>
+          <button data-shape="sechseck" aria-pressed="false" title="wie 2021 SS c)">Sechseck</button>
+          <button data-shape="lform" aria-pressed="false" title="Stufenfigur, wie 2020 SS e)">L-Form</button>
+          <button data-shape="trapez" aria-pressed="false" title="wie 2019 SS b) und 2019 WS e)">Trapez</button>
+          <button data-shape="zacke" aria-pressed="false" title="Kerbe nach innen, wie 2019 SS e)">Zacke</button>
+          <button data-shape="smiley" aria-pressed="false" title="wie 2021 SS e)">Smiley</button>
+        </div>
+        <svg id="plot" viewBox="0 0 520 470" role="img" aria-labelledby="plotTitle">
+          <title id="plotTitle">Koordinatensystem mit Urbild und Bild der Figur</title>
+          <g id="gGrid"></g>
+          <g id="gGhost"></g>
+          <g id="gShape"></g>
+          <g id="gVecs"></g>
+          <g id="gLabels"></g>
+        </svg>
+        <div class="legend">
+          <span><i class="swatch" style="background:var(--ghost)"></i> Urbild</span>
+          <span><i class="swatch" style="background:var(--blue)"></i> Bild</span>
+          <span><i class="swatch" style="background:var(--e1)"></i> e₁ = (a, c)</span>
+          <span><i class="swatch" style="background:var(--e2)"></i> e₂ = (b, d)</span>
+          <span><i class="dot" style="background:var(--origin)"></i> Ursprung = (tx, ty)</span>
+        </div>
+        <div class="panel" style="border:none;padding:0.4rem 0.4rem 0.2rem;gap:0.7rem">
+          <div class="readout">
+            <div class="r"><span class="rk">Bild von e₁</span><span class="rv e1" id="r_e1">(1, 0)</span></div>
+            <div class="r"><span class="rk">Bild von e₂</span><span class="rv e2" id="r_e2">(0, 1)</span></div>
+            <div class="r"><span class="rk">Ursprung nach</span><span class="rv t" id="r_t">(0, 0)</span></div>
+            <div class="r"><span class="rk">Determinante</span><span class="rv" id="r_det">1</span></div>
+            <div class="r"><span class="rk">Fläche · Orientierung</span><span class="rv" id="r_area">×1 · erhalten</span></div>
+          </div>
+          <div class="badges">
+            <span class="badge" id="b_rigid">rigid</span>
+            <span class="badge" id="b_linear">linear</span>
+            <span class="badge on" id="b_affin">affin</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Was macht welcher Eintrag</h2>
+    <p class="note">Die Zeile leuchtet auf, während du im Feld darüber tippst oder den zugehörigen Schieber ziehst.</p>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Eintrag</th><th>Geometrisch</th><th>Woran du es siehst</th></tr>
+        </thead>
+        <tbody>
+          <tr id="row_a"><td class="n c0">a</td><td>Streckt e₁ in x-Richtung. Negativ = Spiegelung an der y-Achse.</td><td class="tiny">Der grüne Pfeil wird länger oder kippt nach links.</td></tr>
+          <tr id="row_c"><td class="n c0">c</td><td>Kippt e₁ nach oben. Zusammen mit b entsteht Rotation oder Scherung in y.</td><td class="tiny">Der grüne Pfeil verlässt die x-Achse.</td></tr>
+          <tr id="row_b"><td class="n c1">b</td><td>Kippt e₂ nach rechts — die klassische Scherung in x-Richtung.</td><td class="tiny">Das Rechteck wird zum Parallelogramm, Grundlinie bleibt.</td></tr>
+          <tr id="row_d"><td class="n c1">d</td><td>Streckt e₂ in y-Richtung. Negativ = Spiegelung an der x-Achse.</td><td class="tiny">Der cyane Pfeil wird länger oder kippt nach unten.</td></tr>
+          <tr id="row_tx"><td class="n c2">tx</td><td>Verschiebt alles nach rechts. Ändert die Form nicht.</td><td class="tiny">Magenta Punkt wandert, Pfeile bleiben gleich lang.</td></tr>
+          <tr id="row_ty"><td class="n c2">ty</td><td>Verschiebt alles nach oben. Ändert die Form nicht.</td><td class="tiny">Beide Pfeile hängen am verschobenen Ursprung.</td></tr>
+          <tr><td class="n">0 0 1</td><td>Fest. Genau diese Zeile macht die Abbildung affin statt projektiv.</td><td class="tiny">Deshalb ist „projektiv, aber nicht affin“ mit diesem Template unmöglich.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Die drei Klassen</h2>
+    <p class="note">Rigid und linear überschneiden sich, aber keine der beiden enthält die andere. Beide liegen vollständig in affin. Genau dieses Diagramm musstest du in mehreren Jahrgängen beschriften.</p>
+
+    <div class="classgrid">
+      <article class="classcard">
+        <h3>rigid</h3>
+        <p class="cdef">Längen und Winkel bleiben erhalten. Die Figur wird nur bewegt, nie verzerrt — deckungsgleich zum Original.</p>
+        <div class="ctest">a² + c² = 1<br>b² + d² = 1<br>a·b + c·d = 0</div>
+        <p class="cex"><strong>Ja:</strong> Drehung, Spiegelung, Verschiebung<br><strong>Nein:</strong> Skalierung, Scherung</p>
+        <p class="cnote">Die beiden Spalten sind Einheitsvektoren und stehen senkrecht aufeinander. Daraus folgt det = ±1.</p>
+      </article>
+
+      <article class="classcard">
+        <h3>linear</h3>
+        <p class="cdef">Der Ursprung bleibt fest. Die Abbildung besteht nur aus dem linearen Teil, ohne Verschiebung.</p>
+        <div class="ctest">tx = 0<br>ty = 0</div>
+        <p class="cex"><strong>Ja:</strong> Skalierung, Scherung, Drehung um 0, Spiegelung an einer Ursprungsgeraden<br><strong>Nein:</strong> jede Verschiebung</p>
+        <p class="cnote">Im Labor oben: der magenta Punkt liegt genau im Ursprung.</p>
+      </article>
+
+      <article class="classcard">
+        <h3>affin</h3>
+        <p class="cdef">Linearer Teil plus Verschiebung. Geraden bleiben Geraden, Parallelen bleiben parallel, Teilverhältnisse bleiben erhalten.</p>
+        <div class="ctest">letzte Zeile = (0 &nbsp;0 &nbsp;1)</div>
+        <p class="cex"><strong>Ja:</strong> alles auf dieser Seite<br><strong>Nein:</strong> perspektivische Projektion</p>
+        <p class="cnote">Ist die letzte Zeile anders, wird beim Abbilden durch w geteilt — das ist projektiv und Thema von Aufgabe 2.</p>
+      </article>
+    </div>
+
+    <figure class="setfig">
+      <svg viewBox="0 0 620 300" role="img" aria-labelledby="setTitle setDesc">
+        <title id="setTitle">Mengendiagramm der Abbildungsklassen</title>
+        <desc id="setDesc">Rigid und linear überlappen sich und liegen beide innerhalb von affin.</desc>
+        <ellipse cx="310" cy="150" rx="300" ry="140" fill="none" stroke="var(--ink-3)" stroke-width="1.6"/>
+        <ellipse cx="225" cy="155" rx="145" ry="85" fill="var(--blue)" fill-opacity="0.07" stroke="var(--ink-3)" stroke-width="1.4"/>
+        <ellipse cx="395" cy="155" rx="145" ry="85" fill="var(--blue)" fill-opacity="0.07" stroke="var(--ink-3)" stroke-width="1.4"/>
+
+        <text x="310" y="40" class="sfc" text-anchor="middle">affin</text>
+        <text x="132" y="97" class="sfc" text-anchor="middle">rigid</text>
+        <text x="489" y="97" class="sfc" text-anchor="middle">linear</text>
+
+        <text x="163" y="152" class="sfi" text-anchor="middle">Verschiebung</text>
+        <text x="163" y="170" class="sfi" text-anchor="middle">allein</text>
+
+        <text x="310" y="143" class="sfi" text-anchor="middle">Drehung</text>
+        <text x="310" y="161" class="sfi" text-anchor="middle">Spiegelung</text>
+        <text x="310" y="179" class="sfi" text-anchor="middle">Identität</text>
+
+        <text x="457" y="152" class="sfi" text-anchor="middle">Skalierung</text>
+        <text x="457" y="170" class="sfi" text-anchor="middle">Scherung</text>
+
+        <text x="310" y="268" class="sfi" text-anchor="middle">Skalierung oder Scherung mit Verschiebung</text>
+      </svg>
+      <figcaption>Außerhalb der großen Ellipse läge projektiv — mit der festen Zeile (0 0 1) unerreichbar.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Klausurgriff</h2>
+    <p class="note">In der Klausur fehlt eines von drei Dingen: die Matrix, das Bild oder das Urbild. Alle drei Fälle löst du über dieselben drei Größen.</p>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Gesucht</th><th>Vorgehen</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="n">Matrix</td>
+            <td>Grünen Pfeil im <em>Bild</em> ablesen → Spalte 1. Cyanen Pfeil ablesen → Spalte 2. Magenta Punkt ablesen → Spalte 3. Fertig, ohne eine einzige Rechnung.</td>
+          </tr>
+          <tr>
+            <td class="n">Bild</td>
+            <td>Spalte 3 als neuen Ursprung eintragen, dort Spalte 1 und Spalte 2 als Pfeile anlegen, Figur an diesem schiefen Achsenkreuz aufziehen.</td>
+          </tr>
+          <tr>
+            <td class="n">Urbild</td>
+            <td>Dasselbe rückwärts: die Figur im Bild in Vielfachen der beiden Pfeile ausdrücken, diese Koeffizienten am normalen Achsenkreuz auftragen.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="traps">
+      <li>Spalten sind die Bilder der Basisvektoren, nicht die Zeilen.</li>
+      <li>Translation ist rigid, aber nicht linear — probier den Preset „Translation“ und sieh dir die Badges an.</li>
+      <li>Skalierung und Scherung sind linear, aber nicht rigid.</li>
+      <li>Bei negativer Determinante ist die Figur gespiegelt, auch wenn sie auf den ersten Blick nur gedreht aussieht.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div id="view-training" hidden>
+    <section>
+      <h2>Training</h2>
+      <p class="note">Zufällige Aufgaben in den fünf Formaten, in denen Aufgabe 1 über die Jahrgänge gestellt wurde. Die Aufgaben gehen nicht aus.</p>
+
+      <div class="score">
+        <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
+        <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
+        <div class="s"><span class="sv" id="sc_rate">—</span><span class="sk">Quote</span></div>
+        <button class="linkish" id="sc_reset">Zähler zurücksetzen</button>
+      </div>
+
+      <div class="taskcard" id="taskcard"></div>
+    </section>
+  </div>
+
+  <footer>
+    Figur, Farben und Rasterweite folgen den Altklausuren des Lehrstuhls Graphische Datenverarbeitung. Schieber laufen von −3 bis 3 in Schritten von 0,25; in die Felder kannst du beliebige Werte tippen.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var W = 520, H = 470;
+  var CX = W / 2, CY = H / 2;
+  var UNIT = 47;            // Pixel pro Einheit
+  var RANGE_X = 5, RANGE_Y = 4.5;
+
+  /* ---------- Figuren ----------
+     Alle aus den Altklausuren übernommen. Kanten liegen bewusst nicht
+     auf den Achsen, sonst verdecken die Basisvektor-Pfeile sie.
+     Ein Teil ist { p: Punkte, closed: geschlossen?, detail: Innenlinie? } */
+
+  function ring(cx, cy, r, n) {
+    var pts = [], i;
+    for (i = 0; i < n; i++) {
+      var t = (2 * Math.PI * i) / n;
+      pts.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]);
+    }
+    return pts;
+  }
+  function arc(cx, cy, r, degFrom, degTo, n) {
+    var pts = [], i;
+    for (i = 0; i <= n; i++) {
+      var t = (degFrom + ((degTo - degFrom) * i) / n) * Math.PI / 180;
+      pts.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]);
+    }
+    return pts;
+  }
+  function solid(pts) { return [{ p: pts, closed: true, detail: false }]; }
+
+  var SHAPES = {
+    quadrat:  solid([[-1,-1],[1,-1],[1,1],[-1,1]]),
+    kreis:    solid(ring(0, 0, 1, 60)),
+    sechseck: solid(ring(0, 0, 1, 6)),
+    lform:    solid([[-1,-1],[1,-1],[1,1],[0.35,1],[0.35,0.35],[-1,0.35]]),
+    trapez:   solid([[-1,-1],[1,-1],[0.3,1],[-1,1]]),
+    zacke:    solid([[-1,-1],[1,-1],[0.15,0],[1,1],[-1,1]]),
+    smiley:   [
+      { p: ring(0, 0, 1, 60), closed: true, detail: false },
+      { p: ring(-0.35, 0.32, 0.14, 20), closed: true, detail: true },
+      { p: ring(0.35, 0.32, 0.14, 20), closed: true, detail: true },
+      { p: arc(0, 0.05, 0.62, 205, 335, 24), closed: false, detail: true }
+    ]
+  };
+  var shapeKey = "quadrat";
+
+  var M = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
+  var KEYS = ["a","b","c","d","tx","ty"];
+
+  var el = {};
+  KEYS.forEach(function (k) {
+    el["i_" + k] = document.getElementById("i_" + k);
+    el["s_" + k] = document.getElementById("s_" + k);
+    el["v_" + k] = document.getElementById("v_" + k);
+    el["row_" + k] = document.getElementById("row_" + k);
+  });
+
+  var gGrid   = document.getElementById("gGrid");
+  var gGhost  = document.getElementById("gGhost");
+  var gShape  = document.getElementById("gShape");
+  var gVecs   = document.getElementById("gVecs");
+  var gLabels = document.getElementById("gLabels");
+
+  function sx(x) { return CX + x * UNIT; }
+  function sy(y) { return CY - y * UNIT; }
+
+  function make(tag, attrs) {
+    var n = document.createElementNS(SVG_NS, tag);
+    for (var k in attrs) { n.setAttribute(k, attrs[k]); }
+    return n;
+  }
+  function clear(g) { while (g.firstChild) { g.removeChild(g.firstChild); } }
+
+  function fmt(v) {
+    var r = Math.round(v * 1000) / 1000;
+    if (Object.is(r, -0)) { r = 0; }
+    return String(r).replace(".", ",");
+  }
+
+  /* ---------- Raster einmal zeichnen ---------- */
+  function drawGrid() {
+    var i;
+    for (i = -RANGE_X; i <= RANGE_X; i++) {
+      if (i === 0) { continue; }
+      gGrid.appendChild(make("line", {
+        x1: sx(i), y1: sy(-RANGE_Y), x2: sx(i), y2: sy(RANGE_Y),
+        stroke: "var(--grid)", "stroke-width": 1
+      }));
+    }
+    for (i = -RANGE_Y; i <= RANGE_Y; i++) {
+      if (i === 0) { continue; }
+      gGrid.appendChild(make("line", {
+        x1: sx(-RANGE_X), y1: sy(i), x2: sx(RANGE_X), y2: sy(i),
+        stroke: "var(--grid)", "stroke-width": 1
+      }));
+    }
+    gGrid.appendChild(make("line", {
+      x1: sx(-RANGE_X), y1: sy(0), x2: sx(RANGE_X), y2: sy(0),
+      stroke: "var(--grid-axis)", "stroke-width": 1.4
+    }));
+    gGrid.appendChild(make("line", {
+      x1: sx(0), y1: sy(-RANGE_Y), x2: sx(0), y2: sy(RANGE_Y),
+      stroke: "var(--grid-axis)", "stroke-width": 1.4
+    }));
+
+    [[1, 0, "1", 0, 15], [-1, 0, "−1", 0, 15], [0, 1, "1", -13, 4], [0, -1, "−1", -16, 4]]
+      .forEach(function (t) {
+        var tx = make("text", {
+          x: sx(t[0]) + t[3], y: sy(t[1]) + t[4],
+          fill: "var(--ink-3)", "font-size": 11,
+          "font-family": "IBM Plex Mono, monospace", "text-anchor": "middle"
+        });
+        tx.textContent = t[2];
+        gLabels.appendChild(tx);
+      });
+
+    var xl = make("text", {
+      x: sx(RANGE_X) - 4, y: sy(0) - 8, fill: "var(--ink-3)", "font-size": 12,
+      "font-family": "IBM Plex Mono, monospace", "text-anchor": "end", "font-style": "italic"
+    });
+    xl.textContent = "x";
+    gLabels.appendChild(xl);
+    var yl = make("text", {
+      x: sx(0) + 9, y: sy(RANGE_Y) + 12, fill: "var(--ink-3)", "font-size": 12,
+      "font-family": "IBM Plex Mono, monospace", "font-style": "italic"
+    });
+    yl.textContent = "y";
+    gLabels.appendChild(yl);
+  }
+
+  /* ---------- Pfeil ---------- */
+  function arrow(g, fromX, fromY, toX, toY, color, width) {
+    var x1 = sx(fromX), y1 = sy(fromY), x2 = sx(toX), y2 = sy(toY);
+    var dx = x2 - x1, dy = y2 - y1;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1) {
+      g.appendChild(make("circle", { cx: x1, cy: y1, r: 3, fill: color }));
+      return;
+    }
+    var ux = dx / len, uy = dy / len;
+    var head = Math.min(9, len * 0.42);
+    var bx = x2 - ux * head, by = y2 - uy * head;
+    var px = -uy, py = ux;
+    g.appendChild(make("line", {
+      x1: x1, y1: y1, x2: bx, y2: by,
+      stroke: color, "stroke-width": width, "stroke-linecap": "round"
+    }));
+    g.appendChild(make("polygon", {
+      points: [
+        x2 + "," + y2,
+        (bx + px * head * 0.45) + "," + (by + py * head * 0.45),
+        (bx - px * head * 0.45) + "," + (by - py * head * 0.45)
+      ].join(" "),
+      fill: color
+    }));
+  }
+
+  function poly(pts) {
+    return pts.map(function (p) { return sx(p[0]) + "," + sy(p[1]); }).join(" ");
+  }
+
+  /* ---------- Zeichnen ---------- */
+  function render() {
+    clear(gGhost); clear(gShape); clear(gVecs);
+
+    SHAPES[shapeKey].forEach(function (part) {
+      var tag = part.closed ? "polygon" : "polyline";
+
+      // Urbild
+      gGhost.appendChild(make(tag, {
+        points: poly(part.p),
+        fill: "none", stroke: "var(--ghost)", "stroke-width": 1.4,
+        "stroke-dasharray": "4 3", "stroke-linejoin": "round"
+      }));
+
+      // Bild
+      var mapped = part.p.map(function (p) {
+        return [
+          M.a * p[0] + M.b * p[1] + M.tx,
+          M.c * p[0] + M.d * p[1] + M.ty
+        ];
+      });
+      gShape.appendChild(make(tag, {
+        points: poly(mapped),
+        fill: part.closed ? "var(--blue)" : "none",
+        "fill-opacity": part.closed ? (part.detail ? 0.4 : 0.13) : 0,
+        stroke: "var(--blue)",
+        "stroke-width": part.detail ? 1.7 : 2,
+        "stroke-linejoin": "round", "stroke-linecap": "round"
+      }));
+    });
+
+    // Basisvektoren am verschobenen Ursprung
+    arrow(gVecs, M.tx, M.ty, M.tx + M.a, M.ty + M.c, "var(--e1)", 2.4);
+    arrow(gVecs, M.tx, M.ty, M.tx + M.b, M.ty + M.d, "var(--e2)", 2.4);
+    gVecs.appendChild(make("circle", {
+      cx: sx(M.tx), cy: sy(M.ty), r: 4.5,
+      fill: "var(--origin)", stroke: "var(--surface)", "stroke-width": 1.5
+    }));
+  }
+
+  /* ---------- Auswertung ---------- */
+  function classify() {
+    var det = M.a * M.d - M.b * M.c;
+    var eps = 1e-9;
+
+    document.getElementById("r_e1").textContent = "(" + fmt(M.a) + ", " + fmt(M.c) + ")";
+    document.getElementById("r_e2").textContent = "(" + fmt(M.b) + ", " + fmt(M.d) + ")";
+    document.getElementById("r_t").textContent  = "(" + fmt(M.tx) + ", " + fmt(M.ty) + ")";
+    document.getElementById("r_det").textContent = fmt(det);
+
+    var area = document.getElementById("r_area");
+    if (Math.abs(det) < eps) {
+      area.textContent = "entartet · Fläche 0";
+    } else {
+      area.textContent = "×" + fmt(Math.abs(det)) + " · " + (det < 0 ? "gespiegelt" : "erhalten");
+    }
+
+    var isLinear = Math.abs(M.tx) < eps && Math.abs(M.ty) < eps;
+    var col1sq = M.a * M.a + M.c * M.c;
+    var col2sq = M.b * M.b + M.d * M.d;
+    var dotCols = M.a * M.b + M.c * M.d;
+    var isRigid = Math.abs(col1sq - 1) < 1e-6 && Math.abs(col2sq - 1) < 1e-6 && Math.abs(dotCols) < 1e-6;
+
+    setBadge("b_rigid", isRigid);
+    setBadge("b_linear", isLinear);
+    setBadge("b_affin", true);
+  }
+
+  function setBadge(id, on) {
+    var b = document.getElementById(id);
+    b.classList.toggle("on", on);
+    b.classList.toggle("off", !on);
+  }
+
+  /* ---------- Zustand ---------- */
+  function sync(source) {
+    KEYS.forEach(function (k) {
+      if (source !== "i_" + k) { el["i_" + k].value = M[k]; }
+      if (source !== "s_" + k) { el["s_" + k].value = M[k]; }
+      el["v_" + k].textContent = fmt(M[k]);
+    });
+    render();
+    classify();
+  }
+
+  function highlight(k) {
+    KEYS.forEach(function (o) { el["row_" + o].classList.toggle("hi", o === k); });
+  }
+
+  KEYS.forEach(function (k) {
+    el["i_" + k].addEventListener("input", function () {
+      var v = parseFloat(this.value);
+      if (!isFinite(v)) { return; }
+      M[k] = v;
+      sync("i_" + k);
+      highlight(k);
+    });
+    el["i_" + k].addEventListener("focus", function () { highlight(k); });
+    el["s_" + k].addEventListener("input", function () {
+      M[k] = parseFloat(this.value);
+      sync("s_" + k);
+      highlight(k);
+    });
+  });
+
+  var bar = document.getElementById("shapebar");
+  bar.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-shape]");
+    if (!btn) { return; }
+    shapeKey = btn.getAttribute("data-shape");
+    Array.prototype.forEach.call(bar.querySelectorAll("button"), function (b) {
+      b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+    });
+    render();
+  });
+
+  document.getElementById("presets").addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-m]");
+    if (!btn) { return; }
+    var p = btn.getAttribute("data-m").split(",").map(parseFloat);
+    M.a = p[0]; M.b = p[1]; M.c = p[2]; M.d = p[3]; M.tx = p[4]; M.ty = p[5];
+    sync(null);
+    highlight(null);
+  });
+
+  drawGrid();
+  sync(null);
+
+  /* =========================================================
+     TABS
+     ========================================================= */
+  var viewErk = document.getElementById("view-erklaerung");
+  var viewTra = document.getElementById("view-training");
+  var tabs = document.getElementById("tabs");
+  tabs.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-view]");
+    if (!b) { return; }
+    var v = b.getAttribute("data-view");
+    Array.prototype.forEach.call(tabs.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-selected", x === b ? "true" : "false");
+    });
+    viewErk.hidden = (v !== "erklaerung");
+    viewTra.hidden = (v !== "training");
+  });
+
+  /* =========================================================
+     KLEINE PLOTS FÜR DIE AUFGABEN
+     ========================================================= */
+  function Plot(interactive) {
+    // Ausschnitt so eng wie möglich: ±4 deckt jede Matrix aus POOL
+    // samt Inversen ab, macht die Figur aber deutlich größer als ±5.
+    var unit = 32, range = 4, pad = 10;
+    var size = 2 * range * unit + 2 * pad;
+    var pcx = size / 2, pcy = size / 2;
+    var svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + size + " " + size);
+    svg.setAttribute("class", "plot-sm" + (interactive ? " interactive" : ""));
+    var L = {};
+    ["grid", "ghost", "shape", "vecs", "handles"].forEach(function (n) {
+      L[n] = make("g", {});
+      svg.appendChild(L[n]);
+    });
+    var P = {
+      el: svg, unit: unit, range: range, size: size, cx: pcx, cy: pcy, L: L,
+      px: function (x) { return pcx + x * unit; },
+      py: function (y) { return pcy - y * unit; }
+    };
+    var i;
+    for (i = -range; i <= range; i++) {
+      L.grid.appendChild(make("line", {
+        x1: P.px(i), y1: P.py(-range), x2: P.px(i), y2: P.py(range),
+        stroke: i === 0 ? "var(--grid-axis)" : "var(--grid)",
+        "stroke-width": i === 0 ? 1.3 : 1
+      }));
+      L.grid.appendChild(make("line", {
+        x1: P.px(-range), y1: P.py(i), x2: P.px(range), y2: P.py(i),
+        stroke: i === 0 ? "var(--grid-axis)" : "var(--grid)",
+        "stroke-width": i === 0 ? 1.3 : 1
+      }));
+    }
+    [[1, 0, 0, 11], [0, 1, -8, 3]].forEach(function (t) {
+      var tx = make("text", {
+        x: P.px(t[0]) + t[2], y: P.py(t[1]) + t[3], fill: "var(--ink-3)",
+        "font-size": 9, "font-family": "IBM Plex Mono, monospace", "text-anchor": "middle"
+      });
+      tx.textContent = "1";
+      L.grid.appendChild(tx);
+    });
+    return P;
+  }
+
+  function smallArrow(g, P, x0, y0, x1, y1, color) {
+    var ax = P.px(x0), ay = P.py(y0), bx2 = P.px(x1), by2 = P.py(y1);
+    var dx = bx2 - ax, dy = by2 - ay;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1) {
+      g.appendChild(make("circle", { cx: ax, cy: ay, r: 2.5, fill: color }));
+      return;
+    }
+    var ux = dx / len, uy = dy / len;
+    var head = Math.min(7, len * 0.42);
+    var bx = bx2 - ux * head, by = by2 - uy * head;
+    g.appendChild(make("line", {
+      x1: ax, y1: ay, x2: bx, y2: by, stroke: color,
+      "stroke-width": 1.9, "stroke-linecap": "round"
+    }));
+    g.appendChild(make("polygon", {
+      points: bx2 + "," + by2 + " " +
+        (bx - uy * head * 0.42) + "," + (by + ux * head * 0.42) + " " +
+        (bx + uy * head * 0.42) + "," + (by - ux * head * 0.42),
+      fill: color
+    }));
+  }
+
+  function drawInto(P, key, m, opts) {
+    opts = opts || {};
+    clear(P.L.ghost); clear(P.L.shape); clear(P.L.vecs);
+    SHAPES[key].forEach(function (part) {
+      var tag = part.closed ? "polygon" : "polyline";
+      if (opts.ghost) {
+        P.L.ghost.appendChild(make(tag, {
+          points: part.p.map(function (q) { return P.px(q[0]) + "," + P.py(q[1]); }).join(" "),
+          fill: "none", stroke: "var(--ghost)", "stroke-width": 1.1,
+          "stroke-dasharray": "3 3", "stroke-linejoin": "round"
+        }));
+      }
+      var mp = part.p.map(function (q) {
+        return [
+          m.a * q[0] + m.b * q[1] + m.tx,
+          m.c * q[0] + m.d * q[1] + m.ty
+        ];
+      });
+      P.L.shape.appendChild(make(tag, {
+        points: mp.map(function (q) { return P.px(q[0]) + "," + P.py(q[1]); }).join(" "),
+        fill: part.closed ? "var(--blue)" : "none",
+        "fill-opacity": part.closed ? (part.detail ? 0.4 : 0.13) : 0,
+        stroke: "var(--blue)", "stroke-width": part.detail ? 1.3 : 1.6,
+        "stroke-linejoin": "round", "stroke-linecap": "round"
+      }));
+    });
+    if (opts.arrows) {
+      smallArrow(P.L.vecs, P, m.tx, m.ty, m.tx + m.a, m.ty + m.c, "var(--e1)");
+      smallArrow(P.L.vecs, P, m.tx, m.ty, m.tx + m.b, m.ty + m.d, "var(--e2)");
+      P.L.vecs.appendChild(make("circle", {
+        cx: P.px(m.tx), cy: P.py(m.ty), r: 3.4, fill: "var(--origin)",
+        stroke: "var(--surface)", "stroke-width": 1.2
+      }));
+    }
+  }
+
+  /* ---- Ziehbare Griffe ---- */
+  var drag = null;
+  function snap(v) { return Math.round(v * 4) / 4; }
+  function clampC(v) { return Math.max(-4, Math.min(4, v)); }
+  function applyHandle(m, key, x, y) {
+    if (key === "t") { m.tx = x; m.ty = y; }
+    else if (key === "e1") { m.a = x - m.tx; m.c = y - m.ty; }
+    else { m.b = x - m.tx; m.d = y - m.ty; }
+  }
+  var HANDLE_LABEL = {
+    t: "Ursprung verschieben", e1: "Spitze von e₁ verschieben", e2: "Spitze von e₂ verschieben"
+  };
+
+  function addHandles(P, m, onChange) {
+    clear(P.L.handles);
+    [
+      { k: "t",  x: m.tx,       y: m.ty,       c: "var(--origin)" },
+      { k: "e1", x: m.tx + m.a, y: m.ty + m.c, c: "var(--e1)" },
+      { k: "e2", x: m.tx + m.b, y: m.ty + m.d, c: "var(--e2)" }
+    ].forEach(function (h) {
+      var node = make("circle", {
+        cx: P.px(h.x), cy: P.py(h.y), r: 8, fill: h.c, "fill-opacity": 0.25,
+        stroke: h.c, "stroke-width": 1.8, class: "handle", tabindex: "0"
+      });
+      node.setAttribute("aria-label", HANDLE_LABEL[h.k]);
+      node.addEventListener("pointerdown", function (ev) {
+        ev.preventDefault();
+        try { node.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
+        drag = { P: P, k: h.k, m: m, cb: onChange };
+      });
+      node.addEventListener("keydown", function (ev) {
+        var dx = 0, dy = 0;
+        if (ev.key === "ArrowLeft") { dx = -0.25; }
+        else if (ev.key === "ArrowRight") { dx = 0.25; }
+        else if (ev.key === "ArrowUp") { dy = 0.25; }
+        else if (ev.key === "ArrowDown") { dy = -0.25; }
+        else { return; }
+        ev.preventDefault();
+        applyHandle(m, h.k, clampC(h.x + dx), clampC(h.y + dy));
+        onChange();
+      });
+      P.L.handles.appendChild(node);
+    });
+  }
+
+  window.addEventListener("pointermove", function (ev) {
+    if (!drag) { return; }
+    var P = drag.P;
+    var r = P.el.getBoundingClientRect();
+    if (!r.width) { return; }
+    var s = P.size / r.width;
+    var mx = ((ev.clientX - r.left) * s - P.cx) / P.unit;
+    var my = (P.cy - (ev.clientY - r.top) * s) / P.unit;
+    applyHandle(drag.m, drag.k, snap(clampC(mx)), snap(clampC(my)));
+    drag.cb();
+  });
+  window.addEventListener("pointerup", function () { drag = null; });
+  window.addEventListener("pointercancel", function () { drag = null; });
+
+  /* =========================================================
+     AUFGABEN
+     ========================================================= */
+  var POOL = [
+    { m: [1, 0, 0, 1, 1.5, 0.5], inv: true },
+    { m: [1, 0, 0, 1, -1, 1], inv: true },
+    { m: [1, 0, 0, 1, 0, -1.5], inv: true },
+    { m: [2, 0, 0, 0.5, 0, 0], inv: true },
+    { m: [0.5, 0, 0, 2, 0, 0], inv: true },
+    { m: [2, 0, 0, 2, 0, 0], inv: true },
+    { m: [0.5, 0, 0, 0.5, 0, 0], inv: true },
+    { m: [0.25, 0, 0, 3, 0, 0], inv: false },
+    { m: [3, 0, 0, 1, 0, 0], inv: false },
+    { m: [0, -1, 1, 0, 0, 0], inv: true },
+    { m: [0, 1, -1, 0, 0, 0], inv: true },
+    { m: [-1, 0, 0, -1, 0, 0], inv: true },
+    { m: [-1, 0, 0, 1, 0, 0], inv: true },
+    { m: [1, 0, 0, -1, 0, 0], inv: true },
+    { m: [0, 1, 1, 0, 0, 0], inv: true },
+    { m: [0, -1, -1, 0, 0, 0], inv: true },
+    { m: [1, 1, 0, 1, 0, 0], inv: true },
+    { m: [1, -1, 0, 1, 0, 0], inv: true },
+    { m: [1, 0, 1, 1, 0, 0], inv: true },
+    { m: [1, 0, -1, 1, 0, 0], inv: true },
+    { m: [1, 0, 0, 1.5, 0, 0], inv: false },
+    { m: [2, 0, 0, 1, 0, 0], inv: true },
+    { m: [1, 0, 0, 2, 0, 0], inv: true },
+    { m: [0, -1, 1, 0, -1, 1], inv: true },
+    { m: [0, 1, -1, 0, 1, 1], inv: true },
+    { m: [1, 0, 0, 1.5, -1, 0], inv: false },
+    { m: [-1, 0, 0, -1, 1, 0], inv: true },
+    { m: [1, 1, 0, 1, 1, 0], inv: true },
+    { m: [2, 0, 0, 0.5, 1, -1], inv: true },
+    { m: [-1, 0, 0, 1, 0, 1], inv: true }
+  ];
+
+  var TEMPLATES = [
+    { label: "linear, aber nicht rigid", fixed: { b: 0, c: 0, tx: 0, ty: 0 },
+      need: { linear: true, rigid: false }, example: [2, 0, 0, 2, 0, 0] },
+    { label: "rigid, aber nicht linear", fixed: { b: 0, c: 0 },
+      need: { rigid: true, linear: false }, example: [1, 0, 0, 1, 1, 0] },
+    { label: "rigid und linear", fixed: { b: 0, c: 0, tx: 0, ty: 0 },
+      need: { rigid: true, linear: true }, example: [1, 0, 0, 1, 0, 0] },
+    { label: "projektiv, aber nicht affin", fixed: {}, impossible: true },
+    { label: "affin, aber weder linear noch rigid", fixed: {},
+      need: { linear: false, rigid: false }, example: [2, 0, 0, 1, 1, 0] },
+    { label: "rigid mit negativer Determinante", fixed: {},
+      need: { rigid: true, detNeg: true }, example: [-1, 0, 0, 1, 0, 0] },
+    { label: "linear, aber nicht rigid", fixed: { a: 1, d: 1, tx: 0, ty: 0 },
+      need: { linear: true, rigid: false }, example: [1, 1, 0, 1, 0, 0] },
+    { label: "rigid und linear", fixed: { a: 0, d: 0, tx: 0, ty: 0 },
+      need: { rigid: true, linear: true }, example: [0, 1, 1, 0, 0, 0] },
+    { label: "rigid, aber nicht linear", fixed: { a: 0, d: 0 },
+      need: { rigid: true, linear: false }, example: [0, 1, 1, 0, 1, 0] },
+    { label: "linear, aber nicht affin", fixed: {}, impossible: true },
+    { label: "rigid, aber nicht affin", fixed: {}, impossible: true },
+    { label: "linear, aber nicht rigid", fixed: { a: 1, b: 0, tx: 0, ty: 0 },
+      need: { linear: true, rigid: false }, example: [1, 0, 0, 2, 0, 0] }
+  ];
+
+  var SHAPE_KEYS = Object.keys(SHAPES);
+
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function toM(arr) { return { a: arr[0], b: arr[1], c: arr[2], d: arr[3], tx: arr[4], ty: arr[5] }; }
+  function copyM(m) { return { a: m.a, b: m.b, c: m.c, d: m.d, tx: m.tx, ty: m.ty }; }
+  function ident() { return { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 }; }
+
+  function invert(m) {
+    var det = m.a * m.d - m.b * m.c;
+    var ia = m.d / det, ib = -m.b / det, ic = -m.c / det, id = m.a / det;
+    return {
+      a: ia, b: ib, c: ic, d: id,
+      tx: -(ia * m.tx + ib * m.ty),
+      ty: -(ic * m.tx + id * m.ty)
+    };
+  }
+  function isLinear(m) { return Math.abs(m.tx) < 1e-9 && Math.abs(m.ty) < 1e-9; }
+  function isRigid(m) {
+    return Math.abs(m.a * m.a + m.c * m.c - 1) < 1e-6 &&
+           Math.abs(m.b * m.b + m.d * m.d - 1) < 1e-6 &&
+           Math.abs(m.a * m.b + m.c * m.d) < 1e-6;
+  }
+  function sameM(x, y) {
+    return KEYS.every(function (k) { return Math.abs(x[k] - y[k]) < 1e-6; });
+  }
+
+  /* Ein Durchlauf enthält jede Matrix in jedem Format genau einmal,
+     die Figur wird beim Mischen neu ausgelost. */
+  function buildDeck() {
+    var d = [];
+    POOL.forEach(function (e) {
+      d.push({ type: "matrix", shape: pick(SHAPE_KEYS), m: toM(e.m) });
+      d.push({ type: "bild", shape: pick(SHAPE_KEYS), m: toM(e.m) });
+      d.push({ type: "klass", shape: "quadrat", m: toM(e.m) });
+      if (e.inv) { d.push({ type: "urbild", shape: pick(SHAPE_KEYS), m: toM(e.m) }); }
+    });
+    TEMPLATES.forEach(function (t) { d.push({ type: "template", tpl: t }); });
+    if (new URLSearchParams(window.location.search).get("exam") === "1") {
+      return [
+        pick(d.filter(function(t){return t.type==="matrix";})),
+        pick(d.filter(function(t){return t.type==="bild"||t.type==="urbild";})),
+        pick(d.filter(function(t){return t.type==="klass";})),
+        pick(d.filter(function(t){return t.type==="template";}))
+      ];
+    }
+    var i, j, tmp;
+    for (i = d.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      tmp = d[i]; d[i] = d[j]; d[j] = tmp;
+    }
+    return d;
+  }
+
+  /* ---- Zähler ---- */
+  var score = { ok: 0, bad: 0 };
+  try {
+    var raw = window.localStorage.getItem("cg-affin-score");
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.ok === "number" && typeof parsed.bad === "number") {
+        score = parsed;
+      }
+    }
+  } catch (err) { /* kein Speicher, egal */ }
+
+  function saveScore() {
+    try { window.localStorage.setItem("cg-affin-score", JSON.stringify(score)); }
+    catch (err) { /* egal */ }
+  }
+  function paintScore() {
+    document.getElementById("sc_ok").textContent = score.ok;
+    document.getElementById("sc_bad").textContent = score.bad;
+    var tot = score.ok + score.bad;
+    document.getElementById("sc_rate").textContent =
+      tot ? Math.round((score.ok / tot) * 100) + " %" : "—";
+  }
+  document.getElementById("sc_reset").addEventListener("click", function () {
+    score = { ok: 0, bad: 0 };
+    saveScore();
+    paintScore();
+  });
+
+  /* ---- Aufgabenkarte ---- */
+  var card = document.getElementById("taskcard");
+  var deck = buildDeck(), deckIndex = -1;
+  var task = null, isRepeat = false, userM = null, checker = null;
+
+  function inpCell(k, val, disabled) {
+    return '<input type="text" inputmode="decimal" id="q_' + k + '" aria-label="' + k + '"' +
+      (disabled ? ' disabled value="' + fmt(val) + '"' : ' value=""') + '>';
+  }
+  function inputMatrixHTML(fixed) {
+    fixed = fixed || {};
+    function cell(k) {
+      return Object.prototype.hasOwnProperty.call(fixed, k)
+        ? inpCell(k, fixed[k], true) : inpCell(k, 0, false);
+    }
+    return '<div class="mbox">' + cell("a") + cell("b") + cell("tx") +
+      cell("c") + cell("d") + cell("ty") +
+      '<span class="fix">0</span><span class="fix">0</span><span class="fix">1</span></div>';
+  }
+  function staticMatrixHTML(m) {
+    function s(v) { return "<span>" + fmt(v) + "</span>"; }
+    return '<div class="mbox">' + s(m.a) + s(m.b) + s(m.tx) + s(m.c) + s(m.d) + s(m.ty) +
+      '<span class="fix">0</span><span class="fix">0</span><span class="fix">1</span></div>';
+  }
+  function readNum(k) {
+    var node = document.getElementById("q_" + k);
+    if (!node) { return NaN; }
+    var s = String(node.value).trim().replace(",", ".");
+    if (s === "") { return NaN; }
+    var n = parseFloat(s);
+    return isFinite(n) ? n : NaN;
+  }
+  function readMatrix() {
+    var m = {}, bad = false;
+    KEYS.forEach(function (k) {
+      var v = readNum(k);
+      if (isNaN(v)) { bad = true; v = 0; }
+      m[k] = v;
+    });
+    return bad ? null : m;
+  }
+
+  function renderTask() {
+    var t = task;
+    var head = '<div class="task-top"><span class="ttype">' + TYPE_LABEL[t.type] +
+      '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
+      (isRepeat ? " · Wiederholung" : "") + '</span></div>';
+    var body = "";
+
+    if (t.type === "matrix") {
+      body = '<p class="tprompt">Links das Urbild, rechts das Bild. Trage die Matrix ein, die diese Abbildung leistet.</p>' +
+        '<div class="tgrid"><div class="tcol"><span class="tcap">Urbild</span><div id="p1"></div></div>' +
+        '<span class="arrowto">→</span>' +
+        '<div class="tcol"><span class="tcap">Bild</span><div id="p2"></div></div></div>' +
+        '<div class="tgrid">' + inputMatrixHTML(null) + '</div>' +
+        '<p class="thint">Spalte 1 ist der grüne Pfeil, Spalte 2 der cyane, Spalte 3 der magenta Punkt.</p>';
+    } else if (t.type === "bild") {
+      body = '<p class="tprompt">Bilde die Figur mit der Matrix ab. Zieh die drei Griffe rechts an die richtige Stelle.</p>' +
+        '<div class="tgrid"><div class="tcol"><span class="tcap">Urbild</span><div id="p1"></div></div>' +
+        staticMatrixHTML(t.m) +
+        '<div class="tcol"><span class="tcap live">Dein Bild</span><div id="p2"></div></div></div>' +
+        '<p class="thint">Magenta ist der Ursprung, grün die Spitze von e₁, cyan die Spitze von e₂. Raster 0,25 — Pfeiltasten gehen auch.</p>';
+    } else if (t.type === "urbild") {
+      body = '<p class="tprompt">Rechts steht das Ergebnis. Welche Figur ergibt, mit dieser Matrix abgebildet, genau dieses Bild? Zieh die Griffe links.</p>' +
+        '<div class="tgrid"><div class="tcol"><span class="tcap live">Dein Urbild</span><div id="p2"></div></div>' +
+        staticMatrixHTML(t.m) +
+        '<div class="tcol"><span class="tcap">Bild</span><div id="p1"></div></div></div>' +
+        '<p class="thint">Gesucht ist die Umkehrung: welche Lage der Figur landet unter M auf der rechten?</p>';
+    } else if (t.type === "klass") {
+      body = '<p class="tprompt">Welche Eigenschaften hat diese Abbildung? Kreuze alles Zutreffende an.</p>' +
+        '<div class="tgrid">' + staticMatrixHTML(t.m) +
+        '<div class="tcol"><span class="tcap">Wirkung</span><div id="p2"></div></div></div>' +
+        '<div class="checks">' +
+        '<label><input type="checkbox" id="c_rigid"> rigid</label>' +
+        '<label><input type="checkbox" id="c_linear"> linear</label>' +
+        '<label><input type="checkbox" id="c_affin"> affin</label></div>';
+    } else {
+      var tpl = t.tpl;
+      body = '<p class="tprompt">Ergänze das Template zu einer Matrix, die <strong>' + tpl.label +
+        '</strong> ist — oder kreuze „unmöglich“ an, falls es keine gibt.</p>' +
+        '<div class="tgrid">' + inputMatrixHTML(tpl.fixed) + '</div>' +
+        '<div class="checks"><label><input type="checkbox" id="c_imp"> unmöglich</label></div>' +
+        '<p class="thint">Graue Felder sind fest vorgegeben. Die Abbildung darf nicht entarten, also det ≠ 0.</p>';
+    }
+
+    card.innerHTML = head + '<div class="tbody">' + body + '</div>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') +
+      '</div>';
+
+    // Plots einhängen
+    if (t.type === "matrix") {
+      var pa = Plot(false), pb = Plot(false);
+      drawInto(pa, t.shape, ident(), { arrows: true });
+      drawInto(pb, t.shape, t.m, { arrows: true, ghost: true });
+      document.getElementById("p1").appendChild(pa.el);
+      document.getElementById("p2").appendChild(pb.el);
+      checker = function () {
+        var got = readMatrix();
+        if (!got) { return { incomplete: true }; }
+        var marks = {};
+        KEYS.forEach(function (k) { marks[k] = Math.abs(got[k] - t.m[k]) < 1e-6; });
+        return { ok: sameM(got, t.m), solM: t.m, marks: marks,
+          why: "Die Spalten sind die Bilder der Basisvektoren, die dritte Spalte ist der Ursprung." };
+      };
+    } else if (t.type === "bild" || t.type === "urbild") {
+      var given = Plot(false), work = Plot(true);
+      var target = (t.type === "bild") ? t.m : invert(t.m);
+      // Die vorgegebene Seite zeigt die Figur in Normallage — beim Typ
+      // "bild" ist das das Urbild, beim Typ "urbild" das fertige Bild.
+      drawInto(given, t.shape, ident(), { arrows: true });
+      document.getElementById("p1").appendChild(given.el);
+      document.getElementById("p2").appendChild(work.el);
+      userM = ident();
+      var repaint = function () {
+        drawInto(work, t.shape, userM, { arrows: true, ghost: true });
+        addHandles(work, userM, repaint);
+      };
+      repaint();
+      checker = function () {
+        return {
+          ok: sameM(userM, target),
+          solM: target,
+          why: t.type === "bild"
+            ? "Ursprung auf Spalte 3, dann Spalte 1 und Spalte 2 als Pfeile anlegen."
+            : "Gesucht ist M⁻¹, denn M muss dein Urbild auf die gezeigte Figur abbilden."
+        };
+      };
+    } else if (t.type === "klass") {
+      var pk = Plot(false);
+      drawInto(pk, "quadrat", t.m, { arrows: true, ghost: true });
+      document.getElementById("p2").appendChild(pk.el);
+      checker = function () {
+        var wantR = isRigid(t.m), wantL = isLinear(t.m);
+        var gotR = document.getElementById("c_rigid").checked;
+        var gotL = document.getElementById("c_linear").checked;
+        var gotA = document.getElementById("c_affin").checked;
+        var names = [];
+        if (wantR) { names.push("rigid"); }
+        if (wantL) { names.push("linear"); }
+        names.push("affin");
+        return {
+          ok: gotR === wantR && gotL === wantL && gotA === true,
+          solText: "Richtig wäre: " + names.join(", "),
+          why: "rigid heißt längen- und winkeltreu, linear heißt Ursprung bleibt fest, affin ist hier immer erfüllt."
+        };
+      };
+    } else {
+      var tpl2 = t.tpl;
+      checker = function () {
+        var imp = document.getElementById("c_imp").checked;
+        if (tpl2.impossible) {
+          return { ok: imp, solText: "Richtig wäre: „unmöglich“ ankreuzen.",
+            why: "Die feste Zeile (0 0 1) macht jede Matrix aus diesem Template affin — projektiv oder nicht-affin geht damit nie." };
+        }
+        var exM = toM(tpl2.example);
+        if (imp) {
+          return { ok: false, solM: exM, solLead: "Es gibt eine Lösung, zum Beispiel",
+            why: "„unmöglich“ trifft hier nicht zu." };
+        }
+        var got = readMatrix();
+        if (!got) { return { incomplete: true }; }
+        var det = got.a * got.d - got.b * got.c;
+        var lin = isLinear(got), rig = isRigid(got);
+        var good = Math.abs(det) > 1e-9;
+        if (tpl2.need.linear !== undefined && lin !== tpl2.need.linear) { good = false; }
+        if (tpl2.need.rigid !== undefined && rig !== tpl2.need.rigid) { good = false; }
+        if (tpl2.need.detNeg && det >= 0) { good = false; }
+        return { ok: good, solM: good ? null : exM,
+          solLead: "Möglich wäre zum Beispiel",
+          why: "Deine Matrix ist " + (Math.abs(det) < 1e-9 ? "entartet, det = 0"
+            : (lin ? "linear" : "nicht linear") + " und " + (rig ? "rigid" : "nicht rigid")) + "." };
+      };
+    }
+
+    document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+  }
+
+  var TYPE_LABEL = {
+    matrix: "Matrix ablesen · wie 1a–e",
+    bild: "Bild zeichnen · wie 1a–e",
+    urbild: "Urbild zeichnen · wie 1a–e",
+    klass: "Klassifizieren · wie 1f",
+    template: "Template füllen · wie 1f"
+  };
+
+  function confirmAnswer() {
+    var res = checker();
+    if (res.incomplete) {
+      var act = card.querySelector(".tactions");
+      var warn = act.querySelector(".repeat-note.warn");
+      if (!warn) {
+        warn = document.createElement("span");
+        warn.className = "repeat-note warn";
+        act.appendChild(warn);
+      }
+      warn.textContent = "Bitte alle Felder ausfüllen.";
+      return;
+    }
+    if (!isRepeat) {
+      if (res.ok) { score.ok++; } else { score.bad++; }
+      saveScore();
+      paintScore();
+    }
+
+    // Einzelne Zellen bewerten, solange sie noch beschreibbar sind
+    if (res.marks) {
+      KEYS.forEach(function (k) {
+        var node = document.getElementById("q_" + k);
+        if (node) { node.classList.add(res.marks[k] ? "ok" : "bad"); }
+      });
+    }
+    Array.prototype.forEach.call(card.querySelectorAll("input"), function (n) { n.disabled = true; });
+    clearHandlesIn(card);
+    card.querySelector(".tactions").remove();
+
+    var v = document.createElement("div");
+    v.className = "verdict " + (res.ok ? "right" : "wrong");
+    var parts = '<span class="vhead">' + (res.ok ? "Richtig." : "Nicht richtig.") + '</span>';
+    if (!res.ok && res.solM) {
+      parts += '<div class="vsolrow"><span>' + (res.solLead || "Richtig wäre") + '</span>' +
+        staticMatrixHTML(res.solM) + '</div>';
+    }
+    if (!res.ok && res.solText) { parts += '<span class="vsol">' + res.solText + '</span>'; }
+    parts += '<span class="vsol">' + res.why + '</span>';
+    v.innerHTML = parts;
+    card.appendChild(v);
+
+    if (res.ok) {
+      var vr = v.getBoundingClientRect();
+      confetti(vr.left + vr.width / 2, vr.top + 12);
+    }
+
+    var act2 = document.createElement("div");
+    act2.className = "tactions";
+    act2.innerHTML = (res.ok ? "" : '<button class="btn ghost" id="btn_again">Wiederholen</button>') +
+      '<button class="btn primary" id="btn_next">Nächste Aufgabe</button>';
+    card.appendChild(act2);
+
+    document.getElementById("btn_next").addEventListener("click", function () {
+      isRepeat = false;
+      nextTask();
+    });
+    if (!res.ok) {
+      document.getElementById("btn_again").addEventListener("click", function () {
+        isRepeat = true;
+        renderTask();
+      });
+    }
+  }
+
+  /* ---- Konfetti bei richtiger Antwort ---- */
+  function cssVar(name, fallback) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  }
+
+  function confetti(originX, originY) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+    var colors = [
+      cssVar("--e1", "#158A4A"), cssVar("--e2", "#0E8FB0"),
+      cssVar("--blue", "#1E3FAE"), cssVar("--origin", "#C51E86"), "#E0A93B"
+    ];
+    var W = window.innerWidth || document.documentElement.clientWidth;
+    var H = window.innerHeight || document.documentElement.clientHeight;
+    if (!W || !H) { return; }   // Seite wird gerade nicht dargestellt
+
+    var stale = document.getElementById("confetti");
+    if (stale) { stale.remove(); }
+
+    var cv = document.createElement("canvas");
+    cv.id = "confetti";
+    document.body.appendChild(cv);
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = W * dpr; cv.height = H * dpr;
+    var ctx = cv.getContext("2d");
+    ctx.scale(dpr, dpr);
+
+    var bits = [], i;
+    for (i = 0; i < 70; i++) {
+      var ang = (-Math.PI / 2) + (Math.random() - 0.5) * 2.0;
+      var spd = 5 + Math.random() * 8;
+      bits.push({
+        x: originX + (Math.random() - 0.5) * 90,
+        y: originY,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        w: 4 + Math.random() * 5,
+        h: 6 + Math.random() * 6,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35,
+        col: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+
+    var start = performance.now();
+    var LIFE = 1500;
+    // Notbremse: läuft der Frame-Takt nicht (ausgeblendeter Tab),
+    // würde das Canvas sonst dauerhaft liegen bleiben.
+    var killer = window.setTimeout(function () { cv.remove(); }, LIFE + 3000);
+
+    function frame(now) {
+      var t = now - start;
+      if (t > LIFE) { window.clearTimeout(killer); cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      var fade = t > LIFE * 0.6 ? 1 - (t - LIFE * 0.6) / (LIFE * 0.4) : 1;
+      bits.forEach(function (b) {
+        b.vy += 0.32;          // Schwerkraft
+        b.vx *= 0.995;
+        b.x += b.vx;
+        b.y += b.vy;
+        b.rot += b.vr;
+        ctx.save();
+        ctx.globalAlpha = fade;
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rot);
+        ctx.fillStyle = b.col;
+        ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+        ctx.restore();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function clearHandlesIn(root) {
+    Array.prototype.forEach.call(root.querySelectorAll(".handle"), function (n) {
+      n.setAttribute("pointer-events", "none");
+      n.removeAttribute("tabindex");
+      n.setAttribute("fill-opacity", "0.12");
+    });
+    drag = null;
+  }
+
+  function nextTask() {
+    deckIndex++;
+    if (deckIndex >= deck.length) { renderDone(); return; }
+    task = deck[deckIndex];
+    renderTask();
+  }
+
+  function renderDone() {
+    card.innerHTML = '<div class="donecard"><h3>Durchlauf geschafft</h3>' +
+      '<p class="note">Alle ' + deck.length + ' Aufgaben einmal gesehen. ' +
+      'Ein neuer Durchlauf mischt neu und lost andere Figuren aus.</p>' +
+      '<button class="btn primary" id="btn_restart">Neuen Durchlauf starten</button></div>';
+    document.getElementById("btn_restart").addEventListener("click", function () {
+      deck = buildDeck();
+      deckIndex = -1;
+      isRepeat = false;
+      nextTask();
+    });
+  }
+
+  paintScore();
+  nextTask();
+}());
+</script>
+<script src="../scripts/portal-bridge.js?v=4"></script>

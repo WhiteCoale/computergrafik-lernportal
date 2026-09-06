@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Computergrafik Lernportal</title>
+<meta name="description" content="Erklärungen, Training und Klausurmodus für die Computergrafik-Klausur.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#f7f8fb; --surface:#fff; --ink:#16203a; --ink-2:#56617a; --ink-3:#8490a8;
+    --blue:#1e3fae; --blue-2:#3157d5; --blue-soft:#e8ecfa; --rule:#e1e5ed;
+    --good:#16894c; --good-soft:#e7f5ed; --red:#c7362b; --red-soft:#fbeceb;
+    --amber:#b8791c; --shadow:0 14px 40px rgba(22,32,58,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#0f131b; --surface:#171c27; --ink:#e8ecf4; --ink-2:#a7b1c5;
+      --ink-3:#737e95; --blue:#8aa4ff; --blue-2:#a7b8ff; --blue-soft:#1b2440;
+      --rule:#293141; --good:#54d28e; --good-soft:#142d23; --red:#ff8e7e;
+      --red-soft:#3a1c1c; --amber:#e0a93b; --shadow:0 18px 50px rgba(0,0,0,.28); }
+  }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:"Source Serif 4",Georgia,serif;
+    font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+  button { font:inherit; }
+  .mono { font-family:"IBM Plex Mono",ui-monospace,monospace; }
+
+  .topbar { position:sticky; top:0; z-index:50; background:color-mix(in srgb,var(--paper) 94%,transparent);
+    backdrop-filter:blur(14px); border-bottom:1px solid var(--rule); }
+  .toprow { max-width:78rem; margin:0 auto; padding:.7rem 1.25rem .55rem; display:flex; align-items:center; gap:1rem; }
+  .brand { display:flex; align-items:center; gap:.7rem; min-width:max-content; }
+  .brandtext { display:block; line-height:1; }
+  .brandtext span { color:var(--ink-3); font:700 1.05rem "Libre Franklin",Arial,sans-serif; letter-spacing:-.015em; white-space:nowrap; }
+  .navscroll { overflow-x:auto; scrollbar-width:none; margin-left:auto; }
+  .navscroll::-webkit-scrollbar { display:none; }
+  .nav { display:flex; gap:.25rem; min-width:max-content; }
+  .nav button { border:1px solid transparent; background:transparent; color:var(--ink-2); border-radius:6px;
+    padding:.48rem .68rem; cursor:pointer; font:600 .76rem "Libre Franklin",Arial,sans-serif; white-space:nowrap; }
+  .nav button:hover { background:var(--blue-soft); color:var(--blue); }
+  .nav button[aria-current="page"] { color:var(--blue); border-color:color-mix(in srgb,var(--blue) 35%,var(--rule)); background:var(--blue-soft); }
+  .nav .examnav { color:var(--amber); }
+  .floating-controls { position:fixed; top:3.75rem; left:1rem; z-index:45; display:flex; align-items:center; gap:.3rem; }
+  .floating-control { width:3.3rem; height:3.3rem; display:grid; place-items:center; padding:0; border:0;
+    color:#fff; background:transparent; cursor:pointer; font:700 1.86rem/1 "Libre Franklin",Arial,sans-serif;
+    text-shadow:0 2px 10px rgba(7,37,57,.55); transition:transform .15s,color .15s; }
+  .floating-control:hover { color:#e2f5ff; transform:scale(1.12); }
+  .floating-control:focus-visible { border-radius:999px; }
+
+  main { max-width:78rem; margin:0 auto; padding:2rem 1.25rem 4rem; }
+  .eyebrow { color:var(--blue); font:600 .7rem "IBM Plex Mono",monospace; letter-spacing:.13em; text-transform:uppercase; }
+  h1,h2,h3 { font-family:"Libre Franklin",Arial,sans-serif; }
+  h1 { margin:.25rem 0 .65rem; font-size:clamp(2rem,5vw,3.25rem); line-height:1.04; letter-spacing:-.035em; }
+  h2 { margin:0; font-size:1.2rem; letter-spacing:-.01em; }
+  h3 { margin:0; font-size:1rem; }
+  p { margin:0; }
+  .muted { color:var(--ink-2); }
+  .small { font-size:.86rem; }
+  .btn { border:1px solid transparent; border-radius:5px; padding:.62rem 1rem; cursor:pointer;
+    font:650 .84rem "Libre Franklin",Arial,sans-serif; }
+  .btn.primary { background:var(--blue); color:#fff; }
+  .btn.primary:hover { background:var(--blue-2); }
+  .btn.secondary { background:var(--surface); color:var(--ink); border-color:var(--rule); }
+  .btn.secondary:hover { border-color:var(--blue); color:var(--blue); }
+  .btn.danger { background:transparent; color:var(--red); border-color:var(--rule); }
+  :focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+
+  .intro { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(17rem,.55fr); gap:1.25rem; align-items:stretch; }
+  .introcopy { background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:1.65rem 1.75rem;
+    box-shadow:var(--shadow); display:flex; flex-direction:column; justify-content:center; }
+  .introcopy p { max-width:45rem; color:var(--ink-2); font-size:1.04rem; }
+  .introactions { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1.25rem; }
+  .overall { border:1px solid color-mix(in srgb,var(--blue) 28%,var(--rule)); border-radius:10px; padding:1.25rem;
+    background:linear-gradient(145deg,var(--blue-soft),var(--surface)); display:flex; flex-direction:column; gap:.9rem; }
+  .overallnum { font:800 clamp(2.4rem,7vw,4rem) "Libre Franklin",Arial,sans-serif; line-height:1; color:var(--blue); }
+  .overallrow { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+  .metric { display:flex; flex-direction:column; gap:.1rem; }
+  .metric strong { font:650 1rem "IBM Plex Mono",monospace; }
+  .metric span { color:var(--ink-3); font:600 .62rem "Libre Franklin",Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; }
+
+  .sectionhead { margin:2rem 0 .9rem; display:flex; align-items:end; justify-content:space-between; gap:1rem; }
+  .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.85rem; }
+  .topiccard { background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:1rem;
+    display:flex; flex-direction:column; gap:.8rem; min-height:13rem; transition:transform .15s,border-color .15s,box-shadow .15s; }
+  .topiccard:hover { transform:translateY(-2px); border-color:color-mix(in srgb,var(--blue) 40%,var(--rule)); box-shadow:var(--shadow); }
+  .cardtop { display:flex; align-items:flex-start; gap:.7rem; }
+  .tasknum { width:2rem; height:2rem; flex:0 0 auto; display:grid; place-items:center; border-radius:6px;
+    color:var(--blue); background:var(--blue-soft); font:700 .8rem "IBM Plex Mono",monospace; }
+  .cardtitle p { color:var(--ink-3); font-size:.76rem; margin-top:.12rem; }
+  .bar { height:6px; background:var(--rule); border-radius:99px; overflow:hidden; }
+  .bar > i { display:block; height:100%; width:0; border-radius:inherit; background:var(--blue); transition:width .35s ease; }
+  .cardstats { display:grid; grid-template-columns:repeat(3,1fr); gap:.35rem; }
+  .cardstats div { display:flex; flex-direction:column; }
+  .cardstats strong { font:600 .88rem "IBM Plex Mono",monospace; }
+  .cardstats span { color:var(--ink-3); font:500 .58rem "Libre Franklin",Arial,sans-serif; text-transform:uppercase; letter-spacing:.06em; }
+  .cardactions { display:flex; gap:.4rem; margin-top:auto; }
+  .cardactions .btn { padding:.45rem .65rem; font-size:.74rem; flex:1; }
+  .cardreset { display:flex; justify-content:flex-end; margin-top:-.35rem; }
+  .reset-topic { border:0; background:transparent; color:var(--ink-3); padding:.2rem 0; cursor:pointer;
+    font:500 .68rem "Libre Franklin",Arial,sans-serif; text-decoration:underline; text-underline-offset:3px; }
+  .reset-topic:hover { color:var(--red); }
+
+  .statshero { padding:1.7rem; border-radius:20px; color:#fff; background:rgba(20,112,166,.42);
+    border:0; backdrop-filter:blur(14px); box-shadow:var(--shadow); }
+  .statshero h1 { margin:.3rem 0 .45rem; font-size:clamp(2rem,5vw,3.5rem); }
+  .statshero p { max-width:48rem; color:rgba(255,255,255,.84); }
+  .statsfacts { display:grid; grid-template-columns:repeat(5,1fr); margin-top:1.25rem; overflow:hidden;
+    border:1px solid rgba(255,255,255,.25); border-radius:13px; background:rgba(13,76,113,.22); }
+  .statsfact { padding:.8rem 1rem; border-right:1px solid rgba(255,255,255,.2); }
+  .statsfact:last-child { border-right:0; }
+  .statsfact span { display:block; color:rgba(255,255,255,.7); font:600 .58rem "Libre Franklin",Arial,sans-serif;
+    letter-spacing:.09em; text-transform:uppercase; }
+  .statsfact strong { display:block; margin-top:.2rem; font:700 1rem "IBM Plex Mono",monospace; }
+  .statsgrid { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(18rem,.8fr); gap:.8rem; margin-top:.8rem; }
+  .statpanel { padding:1.05rem 1.15rem; border:1px solid rgba(255,255,255,.72); border-radius:18px;
+    background:rgba(255,255,255,.94); backdrop-filter:blur(14px); box-shadow:var(--shadow); }
+  .statpanel h2 { margin-bottom:.25rem; }
+  .statpanel > p { margin-bottom:.85rem; }
+  .freqlist { display:flex; flex-direction:column; gap:.57rem; }
+  .freqrow { display:grid; grid-template-columns:minmax(9rem,1.2fr) minmax(8rem,1fr) 4.2rem; gap:.7rem; align-items:center; }
+  .freqlabel strong { display:block; font-size:.79rem; }
+  .freqlabel span { display:block; margin-top:.08rem; color:var(--ink-3); font-size:.62rem; }
+  .freqbar { height:9px; overflow:hidden; border-radius:99px; background:rgba(21,88,124,.12); }
+  .freqbar i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--blue),#55b7dc); }
+  .freqvalue { text-align:right; color:var(--blue-2); font:700 .72rem "IBM Plex Mono",monospace; }
+  .personalstats { display:grid; grid-template-columns:repeat(2,1fr); gap:.55rem; margin-top:.75rem; }
+  .personalmetric { padding:.75rem; border-radius:12px; background:var(--blue-soft); }
+  .personalmetric strong { display:block; color:var(--blue); font:750 1.35rem "Libre Franklin",Arial,sans-serif; }
+  .personalmetric span { color:var(--ink-3); font-size:.62rem; text-transform:uppercase; letter-spacing:.06em; }
+  .insightlist { display:flex; flex-direction:column; gap:.55rem; margin-top:.8rem; }
+  .insight { padding:.62rem .7rem; border-left:3px solid var(--blue); border-radius:0 9px 9px 0; background:var(--blue-soft); font-size:.76rem; }
+  .historypanel { margin-top:.8rem; }
+  .statstablewrap { overflow-x:auto; }
+  .statstable { width:100%; border-collapse:collapse; margin-top:.65rem; font-size:.78rem; }
+  .statstable th,.statstable td { padding:.58rem .65rem; border-bottom:1px solid var(--rule); text-align:center; }
+  .statstable th { color:var(--ink-3); font-size:.62rem; letter-spacing:.07em; text-transform:uppercase; }
+  .statstable th:first-child,.statstable td:first-child { text-align:left; }
+  .statstable td:first-child { font-weight:650; }
+  .statstable .always td:first-child::after { content:"5/5"; display:inline-block; margin-left:.45rem; padding:.12rem .35rem;
+    border-radius:99px; color:var(--good); background:var(--good-soft); font:650 .55rem "IBM Plex Mono",monospace; }
+  .statstable .miss { color:var(--ink-3); }
+
+  .viewhead { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+  .viewtitle { display:flex; align-items:center; gap:.75rem; }
+  .viewtitle .tasknum { width:2.35rem; height:2.35rem; }
+  .viewactions { display:flex; gap:.45rem; }
+  .lessonframe { width:100%; height:calc(100vh - 10.5rem); min-height:38rem; border:1px solid var(--rule);
+    border-radius:8px; background:var(--surface); box-shadow:var(--shadow); }
+
+  .examstart { max-width:58rem; margin:1rem auto 0; display:grid; grid-template-columns:1fr 16rem; gap:1rem; }
+  .exampanel { background:var(--surface); border:1px solid var(--rule); border-radius:9px; padding:1.4rem; }
+  .examstart h1 { font-size:2.3rem; }
+  .examfacts { display:flex; flex-direction:column; gap:.65rem; }
+  .examfact { display:flex; justify-content:space-between; gap:1rem; padding-bottom:.6rem; border-bottom:1px solid var(--rule); }
+  .examfact:last-child { border-bottom:0; padding-bottom:0; }
+  .examfact span { color:var(--ink-2); }
+  .examfact strong { font:600 .85rem "IBM Plex Mono",monospace; }
+  .examtopics { display:grid; grid-template-columns:repeat(2,1fr); gap:.45rem; margin:1rem 0 1.2rem; }
+  .examtopics span { padding:.45rem .55rem; border-radius:4px; background:var(--paper); font-size:.83rem; }
+
+  .examtop { display:grid; grid-template-columns:auto 1fr auto; gap:1rem; align-items:center; margin-bottom:.8rem; }
+  .timer { font:700 1.15rem "IBM Plex Mono",monospace; color:var(--blue); }
+  .timer.low { color:var(--red); }
+  .examsteps { display:grid; grid-template-columns:repeat(6,1fr); gap:.3rem; }
+  .examstep { height:5px; background:var(--rule); border-radius:99px; }
+  .examstep.current { background:var(--blue); }
+  .examstep.right { background:var(--good); }
+  .examstep.wrong { background:var(--red); }
+  .examlabel { font:600 .72rem "IBM Plex Mono",monospace; color:var(--ink-2); white-space:nowrap; }
+  .examframe { width:100%; height:calc(100vh - 15.5rem); min-height:31rem; border:1px solid var(--rule);
+    border-radius:8px; background:var(--surface); }
+  .examfooter { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-top:.75rem;
+    padding:.75rem 1rem; background:var(--surface); border:1px solid var(--rule); border-radius:7px; }
+  .examfeedback { font:600 .86rem "Libre Franklin",Arial,sans-serif; }
+  .examfeedback.right { color:var(--good); }
+  .examfeedback.wrong { color:var(--red); }
+  .resultgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:.55rem; margin:1.2rem 0; }
+  .resultitem { border:1px solid var(--rule); border-radius:6px; padding:.7rem .5rem; text-align:center; }
+  .resultitem strong { display:block; font:700 .88rem "IBM Plex Mono",monospace; }
+  .resultitem span { font-size:.71rem; color:var(--ink-3); }
+  .resultitem.right { border-color:var(--good); background:var(--good-soft); }
+  .resultitem.wrong { border-color:var(--red); background:var(--red-soft); }
+  .empty { color:var(--ink-3); font-size:.85rem; }
+  .probes { position:absolute; width:0; height:0; overflow:hidden; pointer-events:none; }
+  .probes iframe { width:1px; height:1px; border:0; }
+
+  @media (max-width:58rem) {
+    .toprow { align-items:flex-start; flex-direction:column; gap:.5rem; }
+    .navscroll { width:100%; margin-left:0; }
+    .intro { grid-template-columns:1fr; }
+    .cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .lessonframe { height:calc(100vh - 13rem); }
+    .examstart { grid-template-columns:1fr; }
+    .statsgrid { grid-template-columns:1fr; }
+    .statsfacts { grid-template-columns:repeat(3,1fr); }
+    .statsfact { border-bottom:1px solid rgba(255,255,255,.2); }
+    .floating-controls { top:6.35rem; left:.55rem; }
+  }
+  @media (max-width:38rem) {
+    main { padding:1.25rem .75rem 3rem; }
+    .toprow { padding:.6rem .75rem .45rem; }
+    .cards { grid-template-columns:1fr; }
+    .introcopy { padding:1.2rem; }
+    .viewhead { align-items:flex-start; flex-direction:column; }
+    .viewactions { width:100%; }
+    .viewactions .btn { flex:1; }
+    .lessonframe { min-height:34rem; height:calc(100vh - 14rem); }
+    .examtop { grid-template-columns:1fr auto; }
+    .examsteps { grid-column:1/-1; grid-row:2; }
+    .examframe { height:calc(100vh - 17rem); }
+    .resultgrid { grid-template-columns:repeat(2,1fr); }
+    .statshero { padding:1.1rem; }
+    .statsfacts { grid-template-columns:repeat(2,1fr); }
+    .freqrow { grid-template-columns:minmax(8rem,1fr) 5rem 3.6rem; gap:.45rem; }
+  }
+
+  /* Himmel-Design, inspiriert von der bereitgestellten Referenz */
+  :root {
+    color-scheme:light;
+    --paper:#eaf7fd; --surface:rgba(255,255,255,.94); --ink:#172331; --ink-2:#536372;
+    --ink-3:#788996; --blue:#167eb8; --blue-2:#0d6fa9; --blue-soft:#e4f4fc;
+    --rule:rgba(26,92,126,.14); --good:#238f57; --good-soft:#e9f7ef;
+    --red:#c94a3c; --red-soft:#fdecea; --amber:#a96a17;
+    --shadow:0 22px 60px rgba(18,72,101,.16);
+  }
+  body {
+    min-height:100vh;
+    background-color:#54afe0;
+    background-image:linear-gradient(rgba(17,116,174,.08),rgba(29,133,188,.02)),url("assets/background.jpg");
+    background-position:center bottom;
+    background-size:cover;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+    font-family:"Libre Franklin",Arial,sans-serif;
+  }
+  .topbar {
+    background:rgba(22,118,174,.46);
+    border-bottom-color:rgba(255,255,255,.2);
+    backdrop-filter:blur(18px) saturate(120%);
+  }
+  .brandtext span { color:#fff; }
+  .nav button { color:rgba(255,255,255,.84); border-radius:999px; padding:.52rem .82rem; }
+  .nav button:hover { color:#fff; background:rgba(255,255,255,.14); }
+  .nav button[aria-current="page"] { color:#111; background:#fff; border-color:#fff; }
+  .nav .examnav { color:#fff; border-color:rgba(255,255,255,.28); }
+  main { padding-top:0; }
+  .intro { grid-template-columns:1fr; gap:1rem; }
+  .introcopy {
+    min-height:29rem;
+    align-items:center;
+    text-align:center;
+    padding:5.5rem 1.5rem 3.4rem;
+    color:#fff;
+    background:transparent;
+    border:0;
+    box-shadow:none;
+  }
+  .introcopy .eyebrow { color:rgba(255,255,255,.86); }
+  .introcopy h1 { max-width:55rem; color:#fff; font-size:clamp(3rem,7vw,5.6rem); font-weight:650; letter-spacing:-.055em; }
+  .introcopy p { color:rgba(255,255,255,.82); max-width:42rem; font-size:1.08rem; }
+  .introcopy .btn.primary { background:#fff; color:#111; border-radius:999px; padding:.75rem 1.25rem; }
+  .introcopy .btn.primary:hover { background:#eef8fd; }
+  .introcopy .btn.secondary { color:#fff; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.38); border-radius:999px; padding:.75rem 1.25rem; }
+  .introcopy .btn.secondary:hover { background:rgba(255,255,255,.16); border-color:#fff; }
+  .overall {
+    width:min(100%,46rem);
+    justify-self:center;
+    margin-top:-3.2rem;
+    padding:1.3rem 1.45rem;
+    border:1px solid rgba(255,255,255,.72);
+    border-radius:22px;
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(14px);
+    box-shadow:0 26px 70px rgba(15,72,104,.22);
+  }
+  .overallnum { font-weight:650; }
+  .topiccard,.exampanel,.lessonframe,.examframe,.examfooter {
+    border-color:rgba(255,255,255,.7);
+    background:rgba(255,255,255,.94);
+    backdrop-filter:blur(14px);
+    box-shadow:var(--shadow);
+  }
+  .topiccard { border-radius:18px; padding:1.15rem; }
+  .topiccard:hover { border-color:rgba(255,255,255,.95); box-shadow:0 28px 70px rgba(18,72,101,.22); }
+  .tasknum { border-radius:999px; }
+  .bar { background:rgba(21,88,124,.12); }
+  .btn { border-radius:999px; }
+  .lessonframe,.examframe { border-radius:20px; }
+  .examstart { padding-top:2rem; }
+  .exampanel { border-radius:22px; }
+  .examfooter { border-radius:16px; }
+  .sectionhead > div { padding:.65rem .9rem; border-radius:14px; background:rgba(255,255,255,.78); backdrop-filter:blur(10px); }
+  #lesson,#exam { padding-top:1.25rem; }
+  .viewhead,.examtop { padding:.8rem 1rem; border-radius:16px; background:rgba(255,255,255,.9); backdrop-filter:blur(12px); box-shadow:var(--shadow); }
+  @media (max-width:58rem) {
+    .introcopy { min-height:24rem; padding-top:4rem; }
+  }
+  @media (max-width:38rem) {
+    body { background-attachment:scroll; background-size:auto 100vh; }
+    .introcopy { min-height:23rem; padding:3.4rem .5rem 2.8rem; }
+    .introcopy h1 { font-size:clamp(2.5rem,14vw,4rem); }
+    .overall { margin-top:-2.3rem; border-radius:18px; }
+  }
+
+  /* Kompakte Übersicht: alle Lernbereiche passen auf einen Desktop-Bildschirm. */
+  main { max-width:88rem; padding-bottom:1.25rem; }
+  .intro {
+    grid-template-columns:minmax(0,1.3fr) minmax(19rem,.7fr);
+    gap:1.25rem;
+    align-items:center;
+    min-height:15rem;
+  }
+  .introcopy {
+    min-height:0;
+    align-items:flex-start;
+    text-align:left;
+    padding:2.3rem 1rem 2rem;
+  }
+  .introcopy h1 { font-size:clamp(3.2rem,6vw,5rem); line-height:.95; margin:.2rem 0 .5rem; }
+  .introcopy p { max-width:38rem; font-size:1rem; }
+  .introactions { margin-top:1rem; }
+  .overall {
+    width:100%;
+    margin-top:0;
+    padding:1.05rem 1.2rem;
+    gap:.55rem;
+    justify-self:stretch;
+  }
+  .overallnum { font-size:3rem; }
+  .sectionhead { margin:.75rem 0 .55rem; }
+  .sectionhead > div { padding:.45rem .7rem; }
+  .sectionhead h2 { font-size:1rem; }
+  .sectionhead p { font-size:.7rem; }
+  .cards { gap:.6rem; }
+  .topiccard { min-height:9.6rem; padding:.75rem; gap:.48rem; border-radius:15px; }
+  .cardtop { gap:.5rem; }
+  .tasknum { width:1.65rem; height:1.65rem; font-size:.7rem; }
+  .cardtitle h3 { font-size:.86rem; }
+  .cardtitle p { font-size:.66rem; }
+  .cardstats strong { font-size:.76rem; }
+  .cardstats span { font-size:.52rem; }
+  .cardactions .btn { padding:.35rem .5rem; font-size:.68rem; }
+  .cardreset { margin-top:-.2rem; }
+  .reset-topic { font-size:.61rem; }
+
+  @media (max-width:58rem) {
+    .intro { grid-template-columns:1fr; min-height:0; }
+    .introcopy { min-height:15rem; align-items:center; text-align:center; padding:2.5rem .75rem 2rem; }
+    .overall { max-width:46rem; justify-self:center; }
+  }
+  @media (max-width:38rem) {
+    main { padding-bottom:2rem; }
+    .introcopy { min-height:16rem; padding:2.5rem .5rem 1.75rem; }
+    .introcopy h1 { font-size:clamp(2.5rem,14vw,4rem); }
+    .overall { margin-top:0; }
+  }
+
+  html[data-theme="dark"] {
+    color-scheme:dark;
+    --paper:#07111f; --surface:#101c2c; --ink:#edf5fc; --ink-2:#b2c2d2; --ink-3:#8295a9;
+    --blue:#68bce8; --blue-2:#8ed2f3; --blue-soft:#162c42; --rule:rgba(167,202,226,.15);
+    --good:#65d49a; --good-soft:#153629; --red:#ff958b; --red-soft:#40201f; --amber:#f3bd63;
+    --shadow:0 24px 64px rgba(0,0,0,.36);
+  }
+  html[data-theme="dark"] body {
+    background-color:#071426;
+    background-image:linear-gradient(rgba(3,12,27,.12),rgba(5,16,31,.2)),url("assets/background-night.png");
+  }
+  html[data-theme="dark"] .topbar { background:rgba(6,20,39,.68); border-bottom-color:rgba(151,192,222,.18); }
+  html[data-theme="dark"] .nav button { color:rgba(224,239,249,.78); }
+  html[data-theme="dark"] .nav button:hover { color:#fff; background:rgba(118,187,228,.14); }
+  html[data-theme="dark"] .nav button[aria-current="page"] { color:#071522; background:#dceff9; border-color:#dceff9; }
+  html[data-theme="dark"] .theme-toggle { color:#f4d98b; }
+  html[data-theme="dark"] .introcopy .btn.primary { color:#edf7fd; background:#176f9e; }
+  html[data-theme="dark"] .introcopy .btn.primary:hover { background:#2188bb; }
+  html[data-theme="dark"] .introcopy .btn.secondary { color:#edf7fd; background:rgba(7,18,34,.34); border-color:rgba(210,234,247,.28); }
+  html[data-theme="dark"] .overall,
+  html[data-theme="dark"] .topiccard,
+  html[data-theme="dark"] .statpanel,
+  html[data-theme="dark"] .exampanel,
+  html[data-theme="dark"] .lessonframe,
+  html[data-theme="dark"] .examframe,
+  html[data-theme="dark"] .examfooter {
+    color:var(--ink); background:rgba(10,22,37,.93); border-color:rgba(157,196,222,.16); box-shadow:var(--shadow);
+  }
+  html[data-theme="dark"] .overall { background:linear-gradient(145deg,rgba(19,47,70,.96),rgba(10,22,37,.94)); }
+  html[data-theme="dark"] .sectionhead > div,
+  html[data-theme="dark"] .viewhead,
+  html[data-theme="dark"] .examtop { color:var(--ink); background:rgba(9,21,36,.9); border-color:rgba(157,196,222,.15); }
+  html[data-theme="dark"] .statshero { background:rgba(8,25,45,.68); border:0; }
+  html[data-theme="dark"] .statsfacts { background:rgba(2,10,22,.3); border-color:rgba(165,205,232,.16); }
+  html[data-theme="dark"] .personalmetric,
+  html[data-theme="dark"] .insight { background:#142b40; }
+  html[data-theme="dark"] .bar,
+  html[data-theme="dark"] .freqbar { background:rgba(169,207,231,.13); }
+  html[data-theme="dark"] .btn.secondary { color:var(--ink); background:#142337; border-color:rgba(161,199,224,.18); }
+  html[data-theme="dark"] .btn.secondary:hover { color:var(--blue-2); border-color:var(--blue); }
+  html[data-theme="dark"] .statstable th,
+  html[data-theme="dark"] .statstable td { border-bottom-color:rgba(161,199,224,.13); }
+
+  .viewhead {
+    padding:1.1rem 1.35rem;
+    border:1px solid rgba(255,255,255,.3);
+    border-radius:20px;
+    color:#fff;
+    background:rgba(20,112,166,.42);
+    backdrop-filter:blur(14px);
+    box-shadow:var(--shadow);
+  }
+  .viewhead .muted { color:rgba(255,255,255,.76); }
+  .viewhead .tasknum {
+    width:auto;
+    height:auto;
+    min-width:2.8rem;
+    color:#fff;
+    background:transparent;
+    font-size:2.65rem;
+    font-weight:800;
+    line-height:1;
+    letter-spacing:-.08em;
+  }
+  .viewhead .btn.secondary { color:#fff; background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.3); }
+  .viewhead .btn.secondary:hover { color:#fff; background:rgba(255,255,255,.17); border-color:rgba(255,255,255,.55); }
+  .viewhead .btn.primary { color:#0b6698; background:#fff; }
+  .viewhead .btn.primary:hover { color:#084f79; background:#eaf7fd; }
+  html[data-theme="dark"] .viewhead { border:1px solid rgba(165,205,232,.2); background:rgba(8,25,45,.68); }
+  html[data-theme="dark"] .viewhead .btn.primary { color:#081624; background:#dceff9; }
+  .lessonframe,.examframe { display:block; height:20rem; min-height:0; transition:height .18s ease; }
+
+  .topiccard {
+    min-height:11rem;
+    padding:.9rem 1rem .8rem;
+    gap:.62rem;
+    border:1px solid rgba(255,255,255,.76);
+    border-top:3px solid var(--blue);
+    border-radius:12px;
+    box-shadow:0 8px 24px rgba(18,72,101,.12);
+  }
+  .topiccard:hover { transform:none; border-color:rgba(255,255,255,.94); border-top-color:var(--blue); box-shadow:0 12px 30px rgba(18,72,101,.18); }
+  .topiccard .cardtop { display:grid; grid-template-columns:3.7rem minmax(0,1fr); align-items:center; gap:.75rem; }
+  .topiccard .cardindex {
+    width:auto;
+    height:auto;
+    display:block;
+    color:var(--blue);
+    background:transparent;
+    font:700 2.25rem/1 "IBM Plex Mono",monospace;
+    letter-spacing:-.08em;
+  }
+  .topiccard .cardtitle { padding-left:.75rem; border-left:1px solid var(--rule); }
+  .topiccard .cardtitle h3 { font-size:.96rem; letter-spacing:-.015em; }
+  .topiccard .cardtitle p { margin-top:.18rem; font-size:.68rem; }
+  .topiccard .small { font-size:.78rem; }
+  .topiccard .bar { height:4px; border-radius:0; }
+  .topiccard .bar > i { border-radius:0; }
+  .topiccard .cardstats { padding:.15rem 0 .25rem; border-bottom:1px solid var(--rule); }
+  .topiccard .cardstats strong { font-size:1.2rem; line-height:1.05; }
+  .topiccard .cardstats span { margin-top:.12rem; font-size:.56rem; }
+  .topiccard .cardactions { gap:.5rem; }
+  .topiccard .cardactions .btn { padding:.46rem .65rem; border-radius:8px; font-size:.72rem; }
+  .topiccard .cardreset { margin-top:-.12rem; }
+  .topiccard .reset-topic { font-size:.66rem; }
+  html[data-theme="dark"] .topiccard { border-color:rgba(157,196,222,.16); border-top-color:var(--blue); box-shadow:0 10px 28px rgba(0,0,0,.25); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="toprow">
+    <div class="brand">
+      <span class="brandtext"><span id="examCountdown">Tage bis zur Klausur</span></span>
+    </div>
+    <div class="navscroll">
+      <nav class="nav" id="mainnav" aria-label="Aufgabentyp wählen"></nav>
+    </div>
+  </div>
+</header>
+
+<div class="floating-controls" aria-label="Seitennavigation und Darstellung">
+  <button class="floating-control theme-toggle" id="themeToggle" type="button" aria-label="Darkmode einschalten" title="Darstellung wechseln">☾</button>
+  <button class="floating-control back-control" id="backHome" type="button" aria-label="Zur Übersicht" title="Zur Übersicht" hidden>←</button>
+</div>
+
+<main>
+  <section id="dashboard"></section>
+  <section id="stats" hidden></section>
+  <section id="lesson" hidden>
+    <div class="viewhead">
+      <div class="viewtitle"><span class="tasknum" id="lessonnum"></span><div><h2 id="lessontitle"></h2><p class="muted small" id="lessonsub"></p></div></div>
+      <div class="viewactions">
+        <button class="btn secondary" id="showexplain">Erklärung</button>
+        <button class="btn primary" id="showtraining">Training</button>
+      </div>
+    </div>
+    <iframe class="lessonframe" id="lessonframe" title="Lernseite"></iframe>
+  </section>
+  <section id="exam" hidden></section>
+</main>
+
+<div class="probes" id="probes" aria-hidden="true"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TOPICS = [
+    { id:"affin", n:1, title:"Affine Abbildungen", short:"2D-Matrizen", file:"seiten/Affines-Matrixlabor.html", total:128 },
+    { id:"projektion", n:2, title:"Perspektivische Projektion", short:"Projektion und Texturen", file:"seiten/Projektionslabor.html", total:98 },
+    { id:"raster", n:3, title:"Rasterisierung", short:"Scanline und Bresenham", file:"seiten/Rasterlabor.html", total:97 },
+    { id:"phong", n:4, title:"Beleuchtung", short:"Phong und Shading", file:"seiten/Phonglabor.html", total:63 },
+    { id:"farbe", n:5, title:"Farbmodelle", short:"RGB, CMY, CMYK und HSV", file:"seiten/Farblabor.html", total:68 },
+    { id:"strahlen", n:6, title:"Raytracing und VR", short:"Zusatzaufgaben", file:"seiten/Strahlenlabor.html", total:21 }
+  ];
+  var EXAM_PARTS = { affin:4, projektion:4, raster:4, phong:4, farbe:4, strahlen:2 };
+  var EXAM_TOTAL = TOPICS.reduce(function(sum,topic){return sum+EXAM_PARTS[topic.id];},0);
+  var scores = {};
+  var activeTopic = null;
+  var examState = null;
+  var timerId = null;
+  var DAY = 24 * 60 * 60 * 1000;
+  var EXAM_DATE = new Date(2026,9,8);
+  var examStats = { runs:0, best:0, last:null, totalCorrect:0 };
+  var activeTheme = "light";
+  try {
+    activeTheme = window.localStorage.getItem("cg-portal-theme") ||
+      (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  } catch (themeError) {
+    activeTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  try {
+    var savedExamStats = JSON.parse(window.localStorage.getItem("cg-portal-exams-v2") || "null");
+    if (savedExamStats && Number.isFinite(savedExamStats.runs)) { examStats = savedExamStats; }
+  } catch (error) { /* Das Portal funktioniert auch ohne verfügbaren Storage. */ }
+
+  function esc(text) {
+    return String(text).replace(/[&<>"']/g, function (c) {
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function topicById(id) { return TOPICS.find(function (t) { return t.id === id; }); }
+  function scoreFor(id) { return scores[id] || { ok:0, bad:0 }; }
+  function percent(a, b) { return b ? Math.round(a / b * 100) : 0; }
+
+  function renderNav(section) {
+    var nav = document.getElementById("mainnav");
+    var back = document.getElementById("backHome");
+    if(back){back.hidden=!topicById(section);}
+    var items = [{ id:"dashboard", label:"Übersicht" },{ id:"stats", label:"Statistiken" }].concat(TOPICS.map(function (t) {
+      return { id:t.id, label:"A" + t.n };
+    })).concat([{ id:"klausur", label:"Klausur", exam:true }]);
+    nav.innerHTML = items.map(function (item) {
+      return '<button data-target="' + item.id + '"' + (item.exam ? ' class="examnav"' : '') +
+        (section === item.id ? ' aria-current="page"' : '') + '>' + item.label + '</button>';
+    }).join("");
+    Array.prototype.forEach.call(nav.querySelectorAll("button"), function (button) {
+      button.addEventListener("click", function () { navigate(button.dataset.target); });
+    });
+  }
+
+  function totals() {
+    return TOPICS.reduce(function (acc, topic) {
+      var s = scoreFor(topic.id);
+      acc.ok += s.ok; acc.bad += s.bad; acc.tasks += topic.total;
+      return acc;
+    }, { ok:0, bad:0, tasks:0 });
+  }
+
+  function dayStart(date) { return new Date(date.getFullYear(),date.getMonth(),date.getDate()); }
+  function daysBetween(a,b) { return Math.max(0,Math.ceil((dayStart(b)-dayStart(a))/DAY)); }
+  function updateExamCountdown() {
+    var daysLeft=daysBetween(new Date(),EXAM_DATE), label=document.getElementById("examCountdown");
+    if(!label){return;}
+    label.textContent=daysLeft===0?'Klausur heute':daysLeft+' '+(daysLeft===1?'Tag':'Tage')+' bis zur Klausur';
+  }
+  function themeParam() { return "&theme="+activeTheme; }
+  function applyTheme(theme,persist) {
+    activeTheme=theme==="dark"?"dark":"light";
+    document.documentElement.setAttribute("data-theme",activeTheme);
+    var toggle=document.getElementById("themeToggle"), dark=activeTheme==="dark";
+    if(toggle){
+      toggle.textContent=dark?"☀":"☾";
+      toggle.setAttribute("aria-label",dark?"Lightmode einschalten":"Darkmode einschalten");
+      toggle.setAttribute("aria-pressed",dark?"true":"false");
+    }
+    Array.prototype.forEach.call(document.querySelectorAll("iframe"),function(frame){
+      if(frame.contentWindow){frame.contentWindow.postMessage({source:"cg-lernportal-parent",kind:"set-theme",theme:activeTheme},"*");}
+    });
+    if(persist){try{window.localStorage.setItem("cg-portal-theme",activeTheme);}catch(error){/* Darstellung bleibt trotzdem aktiv. */}}
+  }
+
+  function renderDashboard() {
+    var all = totals(), attempts = all.ok + all.bad;
+    var covered = Math.min(attempts,all.tasks);
+    var learned = percent(covered, all.tasks);
+    var accuracy = attempts ? percent(all.ok, attempts) : 0;
+    var cards = TOPICS.map(function (topic) {
+      var s = scoreFor(topic.id), tried = s.ok + s.bad;
+      var topicCovered = Math.min(tried,topic.total);
+      var coverage = percent(topicCovered, topic.total);
+      return '<article class="topiccard">' +
+        '<div class="cardtop"><span class="tasknum cardindex">' + topic.n + '</span><div class="cardtitle"><h3>' + esc(topic.title) + '</h3><p>' + esc(topic.short) + ' · ' + topic.total + ' Übungen</p></div></div>' +
+        '<div><div class="bar" aria-label="' + coverage + ' Prozent bearbeitet"><i style="width:' + coverage + '%"></i></div>' +
+        '<p class="small muted" style="margin-top:.3rem">' + topicCovered + ' von ' + topic.total + ' bearbeitet</p></div>' +
+        '<div class="cardstats"><div><strong>' + s.ok + '</strong><span>richtig</span></div>' +
+        '<div><strong>' + s.bad + '</strong><span>falsch</span></div>' +
+        '<div><strong>' + (tried ? percent(s.ok,tried) + '%' : '—') + '</strong><span>Quote</span></div></div>' +
+        '<div class="cardactions"><button class="btn secondary" data-open="' + topic.id + '" data-view="erklaerung">Erklärung</button>' +
+        '<button class="btn primary" data-open="' + topic.id + '" data-view="training">Training</button></div>' +
+        '<div class="cardreset"><button class="reset-topic" data-reset="' + topic.id + '">Score zurücksetzen</button></div></article>';
+    }).join("");
+
+    document.getElementById("dashboard").innerHTML =
+      '<div class="intro"><div class="introcopy"><span class="eyebrow">Alle Aufgabentypen an einem Ort</span>' +
+      '<h1>Computergrafik</h1><p>Wähle ein Thema, übe gezielt oder starte einen vollständigen Klausurdurchlauf.</p>' +
+      '<div class="introactions"><button class="btn primary" id="startExamTop">Klausur starten</button>' +
+      '<button class="btn secondary" id="continueTraining">Training fortsetzen</button></div></div>' +
+      '<aside class="overall"><span class="eyebrow">Gesamtfortschritt</span><strong class="overallnum">' + learned + '%</strong>' +
+      '<div class="bar"><i style="width:' + learned + '%"></i></div><div class="overallrow">' +
+      '<div class="metric"><strong>' + covered + ' / ' + all.tasks + '</strong><span>Lernumfang</span></div>' +
+      '<div class="metric"><strong>' + (attempts ? accuracy + '%' : '—') + '</strong><span>Trefferquote</span></div>' +
+      '<div class="metric"><strong>' + attempts + '</strong><span>Antworten</span></div>' +
+      '<div class="metric"><strong>' + (examStats.runs ? examStats.best + ' / ' + EXAM_TOTAL : '—') + '</strong><span>Beste Klausur</span></div></div></aside></div>' +
+      '<div class="sectionhead"><div><h2>Aufgabentyp wählen</h2><p class="muted small">Dein Stand wird aus den sechs Trainingsseiten übernommen.</p></div></div>' +
+      '<div class="cards">' + cards + '</div>';
+
+    document.getElementById("startExamTop").addEventListener("click", function () { navigate("klausur"); });
+    updateExamCountdown();
+    document.getElementById("continueTraining").addEventListener("click", function () {
+      var weakest = TOPICS.slice().sort(function (a,b) {
+        var as=scoreFor(a.id), bs=scoreFor(b.id), aa=as.ok+as.bad, ba=bs.ok+bs.bad;
+        var ar=aa?as.ok/aa:-1, br=ba?bs.ok/ba:-1;
+        return ar-br || aa-ba;
+      })[0];
+      openLesson(weakest.id,"training");
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-open]"), function (button) {
+      button.addEventListener("click", function () { openLesson(button.dataset.open,button.dataset.view); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-reset]"),function(button){
+      button.addEventListener("click",function(){resetTopicScore(button.dataset.reset);});
+    });
+  }
+
+  function renderStatistics() {
+    var all=totals(), attempts=all.ok+all.bad, accuracy=attempts?percent(all.ok,attempts):0;
+    var frequencies=[
+      {name:"Affine Abbildungen 2D",detail:"Ø 12 Punkte",count:5},
+      {name:"Perspektivische Projektion",detail:"Ø 12,8 Punkte",count:5},
+      {name:"Rasterisierung",detail:"Ø 11,2 Punkte",count:5},
+      {name:"Phong Lighting & Shading",detail:"Ø 11,6 Punkte",count:5},
+      {name:"Farbmodelle",detail:"Ø 9 Punkte",count:5},
+      {name:"Texture Mapping",detail:"seit 19 WS",count:4},
+      {name:"Raytracing",detail:"Ø 5,5 Punkte, wenn enthalten",count:2},
+      {name:"VR / HMD",detail:"6 Punkte",count:1}
+    ];
+    var frequencyRows=frequencies.map(function(item){
+      return '<div class="freqrow"><div class="freqlabel"><strong>'+esc(item.name)+'</strong><span>'+esc(item.detail)+'</span></div>'+
+        '<div class="freqbar"><i style="width:'+(item.count/5*100)+'%"></i></div><div class="freqvalue">'+item.count+' / 5</div></div>';
+    }).join('');
+    document.getElementById("stats").innerHTML=
+      '<header class="statshero"><span class="eyebrow" style="color:rgba(255,255,255,.76)">Auswertung von fünf Altklausuren</span>'+
+      '<h1>Klausurstatistiken</h1><p>Die Klausuren von 2019 SS bis 2021 SS folgen einem sehr stabilen Muster. Hier siehst du Häufigkeit, Punktegewicht und deinen eigenen Lernstand.</p>'+
+      '<div class="statsfacts"><div class="statsfact"><span>Dauer</span><strong>60 min</strong></div><div class="statsfact"><span>Punkte</span><strong>60 P</strong></div>'+
+      '<div class="statsfact"><span>Zeitbudget</span><strong>1 min/P</strong></div><div class="statsfact"><span>Aufgaben</span><strong>5–6</strong></div><div class="statsfact"><span>Hilfsmittel</span><strong>keine</strong></div></div></header>'+
+      '<div class="statsgrid"><section class="statpanel"><h2>Wie oft kam was dran?</h2><p class="muted small">Anzahl der Klausuren mit diesem Thema.</p><div class="freqlist">'+frequencyRows+'</div></section>'+
+      '<aside class="statpanel"><h2>Dein Stand</h2><p class="muted small">Live aus deinen Trainings und Klausurdurchläufen.</p><div class="personalstats">'+
+      '<div class="personalmetric"><strong>'+attempts+'</strong><span>Antworten</span></div><div class="personalmetric"><strong>'+(attempts?accuracy+'%':'—')+'</strong><span>Trefferquote</span></div>'+
+      '<div class="personalmetric"><strong>'+examStats.runs+'</strong><span>Klausuren</span></div><div class="personalmetric"><strong>'+(examStats.runs?examStats.best+' / '+EXAM_TOTAL:'—')+'</strong><span>Bestwert</span></div></div>'+
+      '<div class="insightlist"><div class="insight"><strong>Sehr sicher:</strong> A1 bis A5 kamen in allen fünf Klausuren vor.</div>'+
+      '<div class="insight"><strong>54–60 Punkte</strong> entfielen allein auf diese fünf Pflichtbereiche.</div><div class="insight"><strong>Rasterisierung:</strong> dreimal Scanline, zweimal Bresenham.</div>'+
+      '<div class="insight"><strong>Wechselthema:</strong> zweimal Raytracing, einmal VR/HMD, zweimal keines von beiden.</div></div></aside></div>'+
+      '<section class="statpanel historypanel"><h2>Punkte nach Jahrgang</h2><p class="muted small">Punktzahl je Aufgabe; ein Strich bedeutet, dass das Thema nicht vorkam.</p><div class="statstablewrap"><table class="statstable">'+
+      '<thead><tr><th>Aufgabentyp</th><th>19 SS</th><th>19 WS</th><th>20 SS</th><th>20 WS</th><th>21 SS</th><th>Ø bei Auftreten</th></tr></thead><tbody>'+
+      '<tr class="always"><td>Affine Abbildungen 2D</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12,0</td></tr>'+
+      '<tr class="always"><td>Perspektivische Projektion</td><td>12</td><td>12</td><td>12</td><td>14</td><td>14</td><td>12,8</td></tr>'+
+      '<tr class="always"><td>Rasterisierung</td><td>12 · Scan</td><td>10 · Bres</td><td>14 · Scan</td><td>10 · Scan</td><td>10 · Bres</td><td>11,2</td></tr>'+
+      '<tr class="always"><td>Phong Lighting & Shading</td><td>10</td><td>16</td><td>10</td><td>12</td><td>10</td><td>11,6</td></tr>'+
+      '<tr class="always"><td>Farbmodelle</td><td>8</td><td>10</td><td>12</td><td>6</td><td>9</td><td>9,0</td></tr>'+
+      '<tr><td>Raytracing</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>6</td><td>5</td><td>5,5</td></tr>'+
+      '<tr><td>VR / HMD</td><td>6</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>6,0</td></tr></tbody></table></div></section>';
+    updateExamCountdown();
+  }
+
+  function showOnly(id) {
+    ["dashboard","stats","lesson","exam"].forEach(function (name) { document.getElementById(name).hidden = name !== id; });
+  }
+
+  function openLesson(id, view) {
+    var topic = topicById(id); if (!topic) { return; }
+    clearTimer();
+    examState = null;
+    activeTopic = topic;
+    showOnly("lesson"); renderNav(id);
+    document.getElementById("lessonnum").textContent = topic.n;
+    document.getElementById("lessontitle").textContent = topic.title;
+    document.getElementById("lessonsub").textContent = topic.short;
+    document.getElementById("lessonframe").src = topic.file + "?embed=1&view=" + (view || "erklaerung") + "&v=3" + themeParam();
+    location.hash = id;
+  }
+
+  function sendView(view) {
+    var frame = document.getElementById("lessonframe");
+    if (frame.contentWindow) { frame.contentWindow.postMessage({source:"cg-lernportal-parent",kind:"select-view",view:view},"*"); }
+  }
+  document.getElementById("showexplain").addEventListener("click", function () { sendView("erklaerung"); });
+  document.getElementById("showtraining").addEventListener("click", function () { sendView("training"); });
+
+  function resetTopicScore(id) {
+    scores[id]={ok:0,bad:0};
+    var message={source:"cg-lernportal-parent",kind:"reset-score"};
+    var probe=document.querySelector('#probes iframe[data-topic="'+id+'"]');
+    if(probe&&probe.contentWindow){probe.contentWindow.postMessage(message,"*");}
+    var lesson=document.getElementById("lessonframe");
+    if(activeTopic&&activeTopic.id===id&&lesson.contentWindow){lesson.contentWindow.postMessage(message,"*");}
+    renderDashboard();
+  }
+
+  function renderExamStart() {
+    clearTimer(); examState = null;
+    document.getElementById("exam").innerHTML = '<div class="examstart">' +
+      '<div class="exampanel"><span class="eyebrow">Prüfungssimulation</span><h1>Klausurmodus</h1>' +
+      '<p class="muted">Die sechs Aufgabenblöcke kommen in Klausurreihenfolge. Aufgabe 1 bis 5 enthalten jeweils vier zufällige Teilaufgaben, Aufgabe 6 enthält zwei. Wiederholen ist während der Klausur ausgeschaltet.</p>' +
+      '<div class="examtopics">' + TOPICS.map(function(t){return '<span><strong>' + t.n + '.</strong> ' + esc(t.title) + ' · ' + EXAM_PARTS[t.id] + ' Teile</span>';}).join('') + '</div>' +
+      '<button class="btn primary" id="beginExam">60-Minuten-Klausur starten</button></div>' +
+      '<aside class="exampanel examfacts"><div class="examfact"><span>Aufgabenblöcke</span><strong>6</strong></div>' +
+      '<div class="examfact"><span>Teilaufgaben</span><strong>' + EXAM_TOTAL + '</strong></div>' +
+      '<div class="examfact"><span>Zeit</span><strong>60:00 min</strong></div>' +
+      '<div class="examfact"><span>Reihenfolge</span><strong>Aufgabe 1–6</strong></div>' +
+      '<div class="examfact"><span>Wertung</span><strong>1 Punkt je Teilaufgabe</strong></div>' +
+      '<div class="examfact"><span>Bisher</span><strong>' + examStats.runs + ' Durchläufe</strong></div>' +
+      '<div class="examfact"><span>Bestwert</span><strong>' + (examStats.runs ? examStats.best + ' / ' + EXAM_TOTAL : '—') + '</strong></div></aside></div>';
+    document.getElementById("beginExam").addEventListener("click", startExam);
+  }
+
+  function clearTimer() { if (timerId) { window.clearInterval(timerId); timerId = null; } }
+  function timeText(seconds) {
+    var mins=Math.floor(seconds/60), secs=seconds%60;
+    return String(mins).padStart(2,"0") + ":" + String(secs).padStart(2,"0");
+  }
+  function renderSteps() {
+    return TOPICS.map(function (topic, i) {
+      var cls="examstep";
+      var results=examState.results.filter(function(result){return result.topic===topic.id;});
+      if (results.length===EXAM_PARTS[topic.id]) {
+        cls += results.every(function(result){return result.correct;}) ? " right" : " wrong";
+      } else if (i === examState.topicIndex) { cls += " current"; }
+      return '<i class="' + cls + '"></i>';
+    }).join("");
+  }
+  function examPartLabel() {
+    var topic=TOPICS[examState.topicIndex];
+    return 'Aufgabe '+topic.n+String.fromCharCode(97+examState.partIndex)+' · Teil '+(examState.results.length+1)+' / '+EXAM_TOTAL+' · '+topic.title;
+  }
+  function nextExamLabel() {
+    var topic=TOPICS[examState.topicIndex];
+    if(examState.topicIndex===TOPICS.length-1&&examState.partIndex===EXAM_PARTS[topic.id]-1){return 'Auswerten';}
+    if(examState.partIndex===EXAM_PARTS[topic.id]-1){return 'Weiter zu Aufgabe '+(topic.n+1);}
+    return 'Nächste Teilaufgabe';
+  }
+  function startExam() {
+    clearTimer();
+    examState = { topicIndex:0, partIndex:0, remaining:3600, results:[], answered:false, started:Date.now(), recorded:false };
+    renderExamTask();
+    timerId = window.setInterval(function () {
+      if (!examState) { return; }
+      examState.remaining--;
+      var timer=document.getElementById("timer");
+      if (timer) { timer.textContent=timeText(Math.max(0,examState.remaining)); timer.classList.toggle("low",examState.remaining<=300); }
+      if (examState.remaining <= 0) { finishExam(true); }
+    },1000);
+  }
+  function renderExamTask() {
+    var topic=TOPICS[examState.topicIndex];
+    document.getElementById("exam").innerHTML = '<div class="examtop"><span class="examlabel">' + esc(examPartLabel()) + '</span>' +
+      '<div class="examsteps">' + renderSteps() + '</div><span class="timer" id="timer">' + timeText(examState.remaining) + '</span></div>' +
+      '<iframe class="examframe" id="examframe" title="Klausuraufgabe ' + topic.n + '" src="' + topic.file + '?embed=1&view=training&exam=1&run=' + Date.now() + themeParam() + '"></iframe>' +
+      '<div class="examfooter"><span class="examfeedback" id="examfeedback">Beantworte die Aufgabe und drücke in der Aufgabe auf Bestätigen.</span>' +
+      '<div><button class="btn danger" id="stopExam">Beenden</button> <button class="btn primary" id="nextExam" disabled>' + nextExamLabel() + '</button></div></div>';
+    document.getElementById("stopExam").addEventListener("click", function(){ finishExam(false); });
+    document.getElementById("nextExam").addEventListener("click", function(){
+      if (!examState.answered) { return; }
+      var current=TOPICS[examState.topicIndex];
+      if(examState.partIndex+1<EXAM_PARTS[current.id]){
+        examState.partIndex++;
+        examState.answered=false;
+        var frame=document.getElementById("examframe");
+        if(frame&&frame.contentWindow){frame.contentWindow.postMessage({source:"cg-lernportal-parent",kind:"next-task"},"*");}
+        document.querySelector(".examlabel").textContent=examPartLabel();
+        document.querySelector(".examsteps").innerHTML=renderSteps();
+        document.getElementById("examfeedback").textContent="Beantworte die nächste Teilaufgabe und drücke auf Bestätigen.";
+        document.getElementById("examfeedback").className="examfeedback";
+        document.getElementById("nextExam").textContent=nextExamLabel();
+        document.getElementById("nextExam").disabled=true;
+      } else if(examState.topicIndex<TOPICS.length-1){
+        examState.topicIndex++;
+        examState.partIndex=0;
+        examState.answered=false;
+        renderExamTask();
+      } else {
+        finishExam(false);
+      }
+    });
+  }
+  function finishExam(timedOut) {
+    if (!examState) { return; }
+    clearTimer();
+    var answered=examState.results.length;
+    var correct=examState.results.filter(function(result){return result.correct;}).length;
+    var elapsed=Math.min(3600,Math.round((Date.now()-examState.started)/1000));
+    if (!examState.recorded) {
+      examState.recorded=true;
+      examStats.runs++;
+      examStats.last=correct;
+      examStats.best=Math.max(examStats.best,correct);
+      examStats.totalCorrect+=correct;
+      try { window.localStorage.setItem("cg-portal-exams-v2",JSON.stringify(examStats)); } catch (error) { /* egal */ }
+    }
+    var resultCards=TOPICS.map(function(topic){
+      var topicResults=examState.results.filter(function(result){return result.topic===topic.id;});
+      var topicCorrect=topicResults.filter(function(result){return result.correct;}).length;
+      var complete=topicResults.length===EXAM_PARTS[topic.id];
+      var cls=complete?(topicCorrect===EXAM_PARTS[topic.id]?"right":"wrong"):"";
+      return '<div class="resultitem '+cls+'"><strong>A'+topic.n+'</strong><span>'+topicCorrect+' / '+EXAM_PARTS[topic.id]+' richtig</span></div>';
+    }).join('');
+    document.getElementById("exam").innerHTML = '<div class="examstart"><div class="exampanel">' +
+      '<span class="eyebrow">' + (timedOut?'Zeit abgelaufen':'Klausur beendet') + '</span><h1>' + correct + ' / ' + EXAM_TOTAL + ' richtig</h1>' +
+      '<p class="muted">' + answered + ' Teilaufgaben beantwortet · Bearbeitungszeit ' + timeText(elapsed) + '</p>' +
+      '<div class="resultgrid">' + resultCards + '</div>' +
+      '<button class="btn primary" id="againExam">Neue Klausur</button> <button class="btn secondary" id="backDash">Zur Übersicht</button></div>' +
+      '<aside class="exampanel examfacts"><div class="examfact"><span>Ergebnis</span><strong>' + percent(correct,EXAM_TOTAL) + '%</strong></div>' +
+      '<div class="examfact"><span>Richtig</span><strong>' + correct + '</strong></div><div class="examfact"><span>Falsch oder offen</span><strong>' + (EXAM_TOTAL-correct) + '</strong></div></aside></div>';
+    document.getElementById("againExam").addEventListener("click",startExam);
+    document.getElementById("backDash").addEventListener("click",function(){navigate("dashboard");});
+  }
+
+  function navigate(target) {
+    if (target === "dashboard") {
+      clearTimer(); showOnly("dashboard"); renderNav("dashboard"); renderDashboard(); location.hash="dashboard";
+    } else if (target === "stats") {
+      clearTimer(); showOnly("stats"); renderNav("stats"); renderStatistics(); location.hash="stats";
+    } else if (target === "klausur") {
+      showOnly("exam"); renderNav("klausur"); renderExamStart(); location.hash="klausur";
+    } else { openLesson(target,"erklaerung"); }
+  }
+
+  window.addEventListener("message", function (event) {
+    var data=event.data;
+    if (!data || data.source !== "cg-lernportal" || !topicById(data.topic)) { return; }
+    if (data.kind === "ready" && event.source) {
+      event.source.postMessage({source:"cg-lernportal-parent",kind:"set-theme",theme:activeTheme},"*");
+    }
+    if (data.kind === "content-height" && Number.isFinite(data.height)) {
+      [document.getElementById("lessonframe"),document.getElementById("examframe")].some(function(frame){
+        if(frame && frame.contentWindow===event.source){
+          frame.style.height=Math.max(1,Math.ceil(data.height)+2)+"px";
+          frame.setAttribute("scrolling","no");
+          return true;
+        }
+        return false;
+      });
+    }
+    if (data.score && Number.isFinite(data.score.ok) && Number.isFinite(data.score.bad)) {
+      scores[data.topic]={ok:data.score.ok,bad:data.score.bad};
+      if (!document.getElementById("dashboard").hidden) { renderDashboard(); }
+      if (!document.getElementById("stats").hidden) { renderStatistics(); }
+    }
+    if (data.kind === "task-result" && data.exam && examState && TOPICS[examState.topicIndex].id === data.topic && !examState.answered) {
+      examState.results.push({topic:data.topic,part:examState.partIndex,correct:!!data.correct});
+      examState.answered=true;
+      var feedback=document.getElementById("examfeedback");
+      feedback.textContent=data.correct?"Richtig. Du kannst zur nächsten Aufgabe gehen.":"Nicht richtig. In der Klausur geht es ohne Wiederholung weiter.";
+      feedback.className="examfeedback " + (data.correct?"right":"wrong");
+      document.getElementById("nextExam").disabled=false;
+      var steps=document.querySelector(".examsteps"); if(steps){steps.innerHTML=renderSteps();}
+    }
+  });
+
+  function loadScoreProbes() {
+    document.getElementById("probes").innerHTML=TOPICS.map(function(t){
+      return '<iframe title="" data-topic="' + t.id + '" src="' + t.file + '?embed=1&scoreprobe=1&v=3' + themeParam() + '"></iframe>';
+    }).join('');
+  }
+
+  var first=(location.hash||"#dashboard").slice(1);
+  if (!topicById(first) && first !== "klausur" && first !== "dashboard" && first !== "stats") { first="dashboard"; }
+  applyTheme(activeTheme,false);
+  document.getElementById("themeToggle").addEventListener("click",function(){applyTheme(activeTheme==="dark"?"light":"dark",true);});
+  document.getElementById("backHome").addEventListener("click",function(){navigate("dashboard");});
+  renderDashboard(); loadScoreProbes(); navigate(first);
+  window.setInterval(updateExamCountdown,60000);
+}());
+</script>
+</body>
+</html>

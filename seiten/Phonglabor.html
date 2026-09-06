@@ -1,0 +1,936 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phonglabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#FAF9F6; --surface:#FFFFFF; --ink:#16203A; --ink-2:#55607A; --ink-3:#8590A8;
+    --blue:#1E3FAE; --blue-soft:#E8ECFA; --red:#C7362B; --grid:#DCE2EE; --grid-axis:#A9B3C7;
+    --rule:#E4E6EC; --good:#158A4A; --vl:#C51E86; --vv:#0E8FB0; --vr:#B8791C; --vn:#16203A;
+    --ghost:#B4BDD0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+      --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+      --rule:#262C3A; --good:#4FD08A; --vl:#FF77C4; --vv:#4FC7E8; --vr:#E0A93B; --vn:#E7EBF3;
+      --ghost:#4A5468;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+    --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+    --rule:#262C3A; --good:#4FD08A; --vl:#FF77C4; --vv:#4FC7E8; --vr:#E0A93B; --vn:#E7EBF3;
+    --ghost:#4A5468;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif; font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
+    display: flex; flex-direction: column; gap: 2.5rem; }
+  h1,h2,h3,.label,th,button { font-family: "Libre Franklin", Arial, sans-serif; }
+  .mono,input,td.n,.formula { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+  .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+  h1 { font-size: clamp(1.9rem,5vw,2.6rem); font-weight: 800; letter-spacing: -0.022em;
+    line-height: 1.1; margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--ink-2); max-width: 40rem; font-size: 1.05rem; }
+  h2 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  p { margin: 0; }
+  .note { color: var(--ink-2); font-size: 0.97rem; }
+  .label { font-size: 0.66rem; letter-spacing: 0.13em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); display: block; }
+  .tabs { display: flex; gap: 0.15rem; border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; z-index: 30; background: var(--paper);
+    margin: 0 -1.5rem -1.2rem; padding: 0.6rem 1.5rem 0; }
+  .tabs button { font-size: 0.9rem; font-weight: 600; padding: 0.5rem 0.95rem;
+    background: transparent; color: var(--ink-3); border: none; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; cursor: pointer; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+  #view-erklaerung, #view-training { display: flex; flex-direction: column; gap: 2.5rem; }
+
+  .lab { display: grid; grid-template-columns: minmax(0,20rem) minmax(0,1fr);
+    gap: 1.5rem; align-items: start; }
+  @media (max-width: 50rem) { .lab { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1.1rem 1.2rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+  .stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 0.9rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .stage svg { width: 100%; height: auto; display: block; touch-action: none; }
+
+  .krow { display: grid; grid-template-columns: 3.6rem repeat(3, 1fr); gap: 0.25rem 0.35rem; align-items: center; }
+  .krow .kn { font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; color: var(--ink-2); }
+  .krow .kh { font-family: "Libre Franklin", sans-serif; font-size: 0.58rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); text-align: center; font-weight: 600; }
+  input.cell { width: 100%; text-align: center; font-size: 0.88rem; padding: 0.2rem 0.05rem;
+    color: var(--ink); background: transparent; border: 1px solid transparent;
+    border-bottom: 1px dotted var(--ink-3); border-radius: 2px;
+    font-family: "IBM Plex Mono", monospace; }
+  input.cell:hover { background: var(--blue-soft); }
+  input.cell:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .presets button { font-size: 0.72rem; font-weight: 500; padding: 0.28rem 0.5rem;
+    background: transparent; color: var(--ink-2); border: 1px solid var(--rule);
+    border-radius: 2px; cursor: pointer; }
+  .presets button:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+  .presets button[aria-pressed="true"] { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+
+  .slider-row { display: grid; grid-template-columns: 4.2rem 1fr 2.4rem; align-items: center;
+    gap: 0.5rem; font-size: 0.78rem; }
+  .slider-row .k { font-family: "IBM Plex Mono", monospace; color: var(--ink-2); }
+  .slider-row .v { font-family: "IBM Plex Mono", monospace; text-align: right; color: var(--ink); }
+  input[type=range] { width: 100%; height: 2px; -webkit-appearance: none; appearance: none;
+    background: var(--grid); border-radius: 2px; outline: none; margin: 0; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px;
+    border-radius: 50%; background: var(--blue); cursor: grab; border: none; }
+  input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%;
+    background: var(--blue); cursor: grab; border: none; }
+
+  .readout { display: flex; flex-direction: column; gap: 0.28rem; font-size: 0.86rem; }
+  .readout .r { display: flex; justify-content: space-between; gap: 0.7rem; align-items: baseline; }
+  .readout .rk { font-family: "Libre Franklin", sans-serif; font-size: 0.64rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .readout .rv { font-family: "IBM Plex Mono", monospace; }
+  .readout .rv.l { color: var(--vl); }
+  .readout .rv.v { color: var(--vv); }
+  .readout .rv.r { color: var(--vr); }
+  .swatchrow { display: flex; align-items: center; gap: 0.8rem; }
+  .swatch { width: 3.2rem; height: 3.2rem; border-radius: 3px; border: 1px solid var(--rule); }
+
+  .formula { font-size: 0.88rem; line-height: 1.85; background: var(--blue-soft); color: var(--ink);
+    border-left: 2px solid var(--blue); padding: 0.7rem 0.9rem; border-radius: 0 2px 2px 0; overflow-x: auto; }
+  .formula em { font-style: normal; color: var(--ink-2); }
+  .steps { margin: 0; padding: 0 0 0 1.4rem; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.96rem; }
+  .steps li::marker { color: var(--blue); font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .traps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .traps li { font-size: 0.94rem; padding-left: 1.15rem; position: relative; }
+  .traps li::before { content: "✗"; position: absolute; left: 0; top: 0.05em; color: var(--red);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem,1fr)); gap: 0;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); overflow: hidden; }
+  .duo > article { padding: 1rem 1.1rem 1.15rem; border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 0.5rem; }
+  .duo > article:last-child { border-right: none; }
+  .duo h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--blue);
+    font-family: "IBM Plex Mono", monospace; }
+  .duo p { font-size: 0.92rem; }
+  .duo .cnote { font-size: 0.83rem; color: var(--ink-3); margin-top: auto; padding-top: 0.2rem; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  figure svg { width: 100%; max-width: 36rem; height: auto; align-self: center; }
+  figcaption { font-size: 0.85rem; color: var(--ink-3); text-align: center; }
+  .sfi { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--ink-2); }
+  .sfc { font-family: "Libre Franklin", sans-serif; font-size: 12px; font-weight: 700; fill: var(--ink); }
+
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th { text-align: left; font-size: 0.64rem; letter-spacing: 0.09em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); padding: 0 0.55rem 0.45rem 0;
+    border-bottom: 1px solid var(--ink-3); white-space: nowrap; }
+  td { padding: 0.45rem 0.55rem 0.45rem 0; border-bottom: 1px solid var(--rule); }
+  td.n { font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
+
+  /* Training */
+  .score { display: flex; align-items: center; gap: 1.6rem; padding: 0.75rem 1.1rem;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; flex-wrap: wrap; }
+  .score .s { display: flex; align-items: baseline; gap: 0.4rem; }
+  .score .sv { font-family: "IBM Plex Mono", monospace; font-size: 1.35rem; font-weight: 600; }
+  .score .sv.ok { color: var(--good); } .score .sv.bad { color: var(--red); }
+  .score .sk { font-family: "Libre Franklin", sans-serif; font-size: 0.66rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .linkish { margin-left: auto; background: none; border: none; cursor: pointer;
+    font-family: "Libre Franklin", sans-serif; font-size: 0.76rem; color: var(--ink-3);
+    text-decoration: underline; text-underline-offset: 3px; padding: 0.2rem; }
+  .taskcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    display: flex; flex-direction: column; }
+  .task-top { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+    padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--rule); }
+  .ttype { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--blue); }
+  .tno { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--ink-3); }
+  .tbody { padding: 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .tprompt { font-size: 1rem; }
+  .thint { font-size: 0.88rem; color: var(--ink-3); }
+  .trow { display: flex; gap: 1.3rem; flex-wrap: wrap; align-items: center; }
+  .trow svg { width: 100%; max-width: 17rem; height: auto; }
+  .fields { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 0.2rem; }
+  .field span { font-family: "Libre Franklin", sans-serif; font-size: 0.62rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .field input { width: 5.4rem; font-family: "IBM Plex Mono", monospace; font-size: 1rem;
+    padding: 0.35rem 0.4rem; color: var(--ink); background: transparent;
+    border: 1px solid var(--rule); border-radius: 2px; text-align: center; }
+  .field input:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+  .field input.ok, .field input.ok:disabled { color: var(--good); border-color: var(--good); }
+  .field input.bad, .field input.bad:disabled { color: var(--red); border-color: var(--red); }
+  .choices { display: flex; flex-direction: column; gap: 0.4rem; }
+  .choices label { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.95rem; cursor: pointer; }
+  .choices input { margin-top: 0.35rem; accent-color: var(--blue); cursor: pointer; }
+  .tactions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+    padding: 0.9rem 1.2rem; border-top: 1px solid var(--rule); }
+  .btn { font-family: "Libre Franklin", sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 0.48rem 0.95rem; border-radius: 2px; cursor: pointer; border: 1px solid transparent; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  :root[data-theme="dark"] .btn.primary, :root:not([data-theme="light"]) .btn.primary { color: #0F131B; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: #fff; } }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--rule); }
+  .btn.ghost:hover { color: var(--blue); border-color: var(--blue); background: var(--blue-soft); }
+  .verdict { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.9rem 1.2rem;
+    border-top: 1px solid var(--rule); }
+  .verdict .vhead { font-family: "Libre Franklin", sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .verdict.right .vhead { color: var(--good); } .verdict.wrong .vhead { color: var(--red); }
+  .verdict .vsol { font-size: 0.93rem; color: var(--ink-2); }
+  .repeat-note { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
+  .repeat-note.warn { color: var(--red); }
+  .donecard { text-align: center; padding: 2rem 1.2rem; display: flex; flex-direction: column;
+    gap: 0.8rem; align-items: center; }
+  .donecard h3 { margin: 0; font-family: "Libre Franklin", sans-serif; font-size: 1.2rem; }
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+  footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Aufgabe 4 · Phong Lighting &amp; Shading · 10–16 Punkte</div>
+    <h1>Phonglabor</h1>
+    <p>Licht und Kamera verschieben, die vier Vektoren mitwandern sehen, und ablesen, was dabei aus der Beleuchtungsformel herauskommt.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Ansicht">
+    <button role="tab" data-view="erklaerung" aria-selected="true">Erklärung</button>
+    <button role="tab" data-view="training" aria-selected="false">Training</button>
+  </nav>
+
+  <div id="view-erklaerung">
+    <section>
+      <div class="lab">
+        <div class="panel">
+          <div class="presets" id="lighttype">
+            <button data-lt="point" aria-pressed="true">Punktlicht</button>
+            <button data-lt="par" aria-pressed="false">Parallellicht</button>
+          </div>
+          <div class="slider-row">
+            <span class="k">Normale</span>
+            <input type="range" id="nang" min="-60" max="60" step="5" value="0" aria-label="Neigung der Normale">
+            <span class="v" id="nangv">0°</span>
+          </div>
+          <div class="slider-row">
+            <span class="k">n_shiny</span>
+            <input type="range" id="shiny" min="1" max="20" step="1" value="2" aria-label="Glanzexponent">
+            <span class="v" id="shinyv">2</span>
+          </div>
+          <div>
+            <span class="label">Materialkoeffizienten</span>
+            <div class="krow" id="krow"></div>
+          </div>
+          <div class="presets" id="mpresets">
+            <button data-m="0">2019 SS</button>
+            <button data-m="1">2020 WS</button>
+            <button data-m="2">2021 SS</button>
+            <button data-m="3">weiß diffus</button>
+          </div>
+          <div class="readout">
+            <div class="r"><span class="rk">l</span><span class="rv l" id="r_l"></span></div>
+            <div class="r"><span class="rk">v</span><span class="rv v" id="r_v"></span></div>
+            <div class="r"><span class="rk">r</span><span class="rv r" id="r_r"></span></div>
+            <div class="r"><span class="rk">n ∘ l</span><span class="rv" id="r_nl"></span></div>
+            <div class="r"><span class="rk">v ∘ r</span><span class="rv" id="r_vr"></span></div>
+          </div>
+        </div>
+        <div class="stage">
+          <svg id="plot" viewBox="0 0 420 300" role="img" aria-label="Szene mit Licht, Kamera und den vier Vektoren"></svg>
+          <div class="scroller">
+            <table>
+              <thead><tr><th>Anteil</th><th>R</th><th>G</th><th>B</th></tr></thead>
+              <tbody id="terms"></tbody>
+            </table>
+          </div>
+          <div class="swatchrow">
+            <div class="swatch" id="swatch"></div>
+            <div class="readout" style="flex:1">
+              <div class="r"><span class="rk">Ergebnis L</span><span class="rv" id="r_L"></span></div>
+              <div class="r"><span class="rk" id="clipnote"></span></div>
+            </div>
+          </div>
+          <p class="thint">Magenta ist das Licht, cyan die Kamera — beide lassen sich ziehen. Orange ist der Reflexionsvektor r.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Die eine Formel</h2>
+      <div class="formula">
+        <div>L = k<sub>amb</sub>·I<sub>amb</sub> + k<sub>diff</sub>·I<sub>in</sub>·(n ∘ l) + k<sub>spec</sub>·I<sub>in</sub>·(v ∘ r)<sup>n<sub>shiny</sub></sup></div>
+        <div>r = −l + 2(l ∘ n)·n</div>
+        <div><em>k und I sind RGB-Tripel und werden komponentenweise multipliziert.</em></div>
+      </div>
+      <ol class="steps">
+        <li><strong>Alles normieren.</strong> Der mit Abstand häufigste angestrichene Fehler in den Korrekturen.</li>
+        <li><strong>l zeigt zur Lichtquelle</strong>, v zum Auge. Bei Parallellicht ist l genau die negative Lichtrichtung.</li>
+        <li><strong>r über die Formel</strong>, nicht nach Augenmaß. Bei n = (0,1) wird daraus schlicht: x-Komponente von l umdrehen.</li>
+        <li><strong>Skalarprodukte bilden</strong>, dann in die Formel einsetzen und komponentenweise rechnen.</li>
+      </ol>
+      <ul class="traps">
+        <li>Vektoren nicht normieren. Dann stimmen alle Skalarprodukte nicht.</li>
+        <li>l als Richtung <em>vom</em> Licht statt <em>zum</em> Licht ansetzen.</li>
+        <li>Den Glanzanteil auf den Ambient-Term addieren, ohne den Exponenten anzuwenden.</li>
+        <li>Die Zahlen sind immer 3-4-5-Tripel. Kommt etwas Krummes heraus, hast du dich verrechnet.</li>
+      </ul>
+      <p class="note"><strong>Ein Detail aus den Korrekturen:</strong> ein negatives v ∘ r wird in dieser Vorlesung <em>nicht</em> auf 0 gesetzt, sondern einfach potenziert. In 2020 SS ergab sich für Punkt B ein v ∘ r von −0,28, und die als richtig gewertete Lösung rechnet damit (−0,28)² = 0,0784 weiter. Bei geradem Exponenten entsteht so ein Glanzlicht, obwohl die Kamera auf der falschen Seite steht. Das Labor oben rechnet genauso.</p>
+    </section>
+
+    <section>
+      <h2>Die drei Shading-Verfahren</h2>
+      <div class="duo">
+        <article>
+          <h3>Flat</h3>
+          <p>Eine Farbe pro Facette. An den Kanten springt die Helligkeit.</p>
+          <p class="cnote">Im Verlauf: Treppenstufen, innerhalb einer Facette konstant.</p>
+        </article>
+        <article>
+          <h3>Gouraud</h3>
+          <p>Farbe an den Ecken berechnen, dazwischen linear interpolieren.</p>
+          <p class="cnote">Im Verlauf: Geradenstücke zwischen den Eckwerten. Ein Glanzlicht mitten auf einer Facette geht verloren.</p>
+        </article>
+        <article>
+          <h3>Phong</h3>
+          <p>Normale interpolieren, Beleuchtung pro Pixel auswerten.</p>
+          <p class="cnote">Im Verlauf: gekrümmte Kurve, das Glanzlicht bleibt erhalten und sitzt an der richtigen Stelle.</p>
+        </article>
+      </div>
+      <figure>
+        <svg viewBox="0 0 540 190" role="img" aria-labelledby="shTitle">
+          <title id="shTitle">Helligkeitsverlauf bei Flat, Gouraud und Phong</title>
+          <line x1="40" y1="150" x2="500" y2="150" stroke="var(--grid-axis)" stroke-width="1.2"/>
+          <line x1="40" y1="30" x2="40" y2="150" stroke="var(--grid-axis)" stroke-width="1.2"/>
+          <text x="30" y="36" class="sfi" text-anchor="end">hell</text>
+          <text x="30" y="154" class="sfi" text-anchor="end">dunkel</text>
+          <text x="40" y="170" class="sfi" text-anchor="middle">A</text>
+          <text x="270" y="170" class="sfi" text-anchor="middle">B</text>
+          <text x="500" y="170" class="sfi" text-anchor="middle">C</text>
+          <polyline points="40,110 270,110 270,70 500,70" fill="none" stroke="var(--ghost)" stroke-width="2.5"/>
+          <polyline points="40,120 270,60 500,120" fill="none" stroke="var(--vv)" stroke-width="2.5"/>
+          <path d="M40,120 Q155,100 270,45 Q385,100 500,120" fill="none" stroke="var(--vl)" stroke-width="2.5"/>
+          <text x="512" y="74" class="sfi" fill="var(--ghost)">Flat</text>
+          <text x="512" y="124" class="sfi" fill="var(--vv)">Gouraud</text>
+          <text x="290" y="40" class="sfi" fill="var(--vl)">Phong</text>
+        </svg>
+        <figcaption>Nur bei Phong bleibt die Spitze des Glanzlichts stehen; Gouraud zieht eine Gerade dorthin, Flat stuft ab.</figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <h2>Die qualitativen Fragen</h2>
+      <p class="note">In drei Jahrgängen wurde nicht gerechnet, sondern argumentiert. Der Schlüssel steckt in einer einzigen Beobachtung.</p>
+      <div class="formula">
+        <div>Der diffuse Anteil hängt <em>nicht</em> von v ab &nbsp;→&nbsp; Kamera bewegen ändert ihn nicht</div>
+        <div>Der Glanzanteil hängt von beiden ab &nbsp;→&nbsp; jede Bewegung ändert ihn</div>
+      </div>
+      <ul class="traps" style="list-style:none">
+        <li style="padding-left:0"><strong>Gleicher diffuser Anteil:</strong> gespiegelt an der Senkrechten unter der Lichtquelle — dort ist der Winkel zwischen n und l derselbe.</li>
+        <li style="padding-left:0"><strong>Gleicher Glanzanteil:</strong> dort, wo der Winkel zwischen r und v gleich groß ist, also zwischen Kamera und Licht.</li>
+        <li style="padding-left:0"><strong>Licht bewegt sich:</strong> diffus und spekular ändern sich beide.</li>
+        <li style="padding-left:0"><strong>Kamera bewegt sich:</strong> diffus bleibt, nur der Glanz ändert sich.</li>
+      </ul>
+    </section>
+  </div>
+
+  <div id="view-training" hidden>
+    <section>
+      <h2>Training</h2>
+      <p class="note">Aufgaben in den sieben Formaten, in denen Aufgabe 4 über die Jahrgänge gestellt wurde.</p>
+      <div class="score">
+        <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
+        <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
+        <div class="s"><span class="sv" id="sc_rate">—</span><span class="sk">Quote</span></div>
+        <button class="linkish" id="sc_reset">Zähler zurücksetzen</button>
+      </div>
+      <div class="taskcard" id="taskcard"></div>
+    </section>
+  </div>
+
+  <footer>
+    Szenen, Materialwerte und Rechenkonventionen stammen aus den Klausuren Oktober 2019 bis Oktober 2021 des Lehrstuhls Graphische Datenverarbeitung.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function make(t, a) { var n = document.createElementNS(NS, t); for (var k in a) { n.setAttribute(k, a[k]); } return n; }
+  function clear(n) { while (n.firstChild) { n.removeChild(n.firstChild); } }
+  function fmt(v) { var r = Math.round(v * 10000) / 10000; if (Object.is(r, -0)) { r = 0; } return String(r).replace(".", ","); }
+  function parseNum(s) { s = String(s).trim().replace(",", "."); if (s === "") { return NaN; } var n = parseFloat(s); return isFinite(n) ? n : NaN; }
+  function nrm(v) { var L = Math.sqrt(v[0] * v[0] + v[1] * v[1]); return L < 1e-12 ? [0, 0] : [v[0] / L, v[1] / L]; }
+  function dot(a, b) { return a[0] * b[0] + a[1] * b[1]; }
+  function reflect(l, n) { var d = dot(l, n); return [-l[0] + 2 * d * n[0], -l[1] + 2 * d * n[1]]; }
+  function vtxt(v) { return "(" + fmt(v[0]) + " | " + fmt(v[1]) + ")"; }
+
+  /* Klausurkonvention: v∘r wird NICHT auf 0 geklemmt, sondern potenziert. */
+  function phong(sc, mat) {
+    var n = sc.n;
+    var l = sc.parallel ? nrm([-sc.light[0], -sc.light[1]]) : nrm([sc.light[0] - sc.P[0], sc.light[1] - sc.P[1]]);
+    var v = nrm([sc.cam[0] - sc.P[0], sc.cam[1] - sc.P[1]]);
+    var r = reflect(l, n);
+    var nl = dot(n, l), vr = dot(v, r);
+    var amb = [0, 1, 2].map(function (i) { return mat.ka[i] * mat.Iamb; });
+    var dif = [0, 1, 2].map(function (i) { return mat.kd[i] * nl; });
+    var spe = [0, 1, 2].map(function (i) { return mat.ks[i] * Math.pow(vr, mat.shiny); });
+    return { l: l, v: v, r: r, nl: nl, vr: vr, amb: amb, dif: dif, spe: spe,
+      L: [0, 1, 2].map(function (i) { return amb[i] + dif[i] + spe[i]; }) };
+  }
+
+  /* ================= LABOR ================= */
+  var MATS = [
+    { name: "2019 SS", ka: [0, 0, 0], kd: [1, 0, 0], ks: [0, 1, 0], shiny: 2, Iamb: 0 },
+    { name: "2020 WS", ka: [0, 0, 0], kd: [0, 0, 1], ks: [1, 0, 0], shiny: 2, Iamb: 0 },
+    { name: "2021 SS", ka: [0, 0, 0.2], kd: [0, 1, 0], ks: [1, 0, 1], shiny: 2, Iamb: 1 },
+    { name: "weiß", ka: [0, 0, 0], kd: [1, 1, 1], ks: [0, 0, 0], shiny: 2, Iamb: 0 }
+  ];
+  var MAT = { ka: [0, 0, 0], kd: [1, 0, 0], ks: [0, 1, 0], shiny: 2, Iamb: 1 };
+  var SC = { P: [0, 0], n: [0, 1], parallel: false, light: [-3, 3], cam: [3, 3] };
+
+  var VIEW = { w: 420, h: 300, x0: -6, x1: 6, y0: -1, y1: 7 };
+  function px(x) { return 30 + (x - VIEW.x0) / (VIEW.x1 - VIEW.x0) * (VIEW.w - 45); }
+  function py(y) { return VIEW.h - 40 - (y - VIEW.y0) / (VIEW.y1 - VIEW.y0) * (VIEW.h - 60); }
+  function toMathX(sx) { return VIEW.x0 + (sx - 30) / (VIEW.w - 45) * (VIEW.x1 - VIEW.x0); }
+  function toMathY(sy) { return VIEW.y0 + (VIEW.h - 40 - sy) / (VIEW.h - 60) * (VIEW.y1 - VIEW.y0); }
+
+  function krowBuild() {
+    var el = document.getElementById("krow");
+    el.innerHTML = "";
+    ["", "R", "G", "B"].forEach(function (h) {
+      var s = document.createElement("span");
+      s.className = h ? "kh" : "kn"; s.textContent = h; el.appendChild(s);
+    });
+    [["k_amb", "ka"], ["k_diff", "kd"], ["k_spec", "ks"]].forEach(function (row) {
+      var lab = document.createElement("span");
+      lab.className = "kn"; lab.textContent = row[0]; el.appendChild(lab);
+      [0, 1, 2].forEach(function (i) {
+        var inp = document.createElement("input");
+        inp.type = "text"; inp.inputMode = "decimal"; inp.className = "cell";
+        inp.value = fmt(MAT[row[1]][i]);
+        inp.setAttribute("aria-label", row[0] + " " + "RGB"[i]);
+        inp.addEventListener("input", function () {
+          var v = parseNum(this.value);
+          if (!isNaN(v)) { MAT[row[1]][i] = v; runLab(); }
+        });
+        el.appendChild(inp);
+      });
+    });
+  }
+  function syncK() {
+    var ins = document.getElementById("krow").querySelectorAll("input");
+    [["ka", 0], ["kd", 3], ["ks", 6]].forEach(function (r) {
+      [0, 1, 2].forEach(function (i) { ins[r[1] + i].value = fmt(MAT[r[0]][i]); });
+    });
+  }
+
+  var drag = null;
+  function runLab() {
+    var res = phong(SC, MAT);
+    var svg = document.getElementById("plot");
+    clear(svg);
+
+    // Boden
+    svg.appendChild(make("line", { x1: px(VIEW.x0), y1: py(0), x2: px(VIEW.x1), y2: py(0),
+      stroke: "var(--ink)", "stroke-width": 2 }));
+    var i;
+    for (i = Math.ceil(VIEW.x0); i <= VIEW.x1; i++) {
+      svg.appendChild(make("line", { x1: px(i), y1: py(VIEW.y0), x2: px(i), y2: py(VIEW.y1),
+        stroke: "var(--grid)", "stroke-width": 1 }));
+    }
+    for (i = Math.ceil(VIEW.y0); i <= VIEW.y1; i++) {
+      svg.appendChild(make("line", { x1: px(VIEW.x0), y1: py(i), x2: px(VIEW.x1), y2: py(i),
+        stroke: "var(--grid)", "stroke-width": 1 }));
+    }
+    svg.appendChild(make("line", { x1: px(VIEW.x0), y1: py(0), x2: px(VIEW.x1), y2: py(0),
+      stroke: "var(--ink)", "stroke-width": 2 }));
+
+    function arrow(from, to, color, w) {
+      var x1 = px(from[0]), y1 = py(from[1]), x2 = px(to[0]), y2 = py(to[1]);
+      var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 1) { return; }
+      var ux = dx / len, uy = dy / len, head = Math.min(9, len * 0.4);
+      svg.appendChild(make("line", { x1: x1, y1: y1, x2: x2 - ux * head, y2: y2 - uy * head,
+        stroke: color, "stroke-width": w, "stroke-linecap": "round" }));
+      svg.appendChild(make("polygon", {
+        points: x2 + "," + y2 + " " + (x2 - ux * head - uy * head * 0.45) + "," + (y2 - uy * head + ux * head * 0.45) +
+          " " + (x2 - ux * head + uy * head * 0.45) + "," + (y2 - uy * head - ux * head * 0.45),
+        fill: color }));
+    }
+
+    var S = 2.2;
+    arrow(SC.P, [SC.P[0] + SC.n[0] * S, SC.P[1] + SC.n[1] * S], "var(--vn)", 2);
+    arrow(SC.P, [SC.P[0] + res.l[0] * S, SC.P[1] + res.l[1] * S], "var(--vl)", 2.4);
+    arrow(SC.P, [SC.P[0] + res.v[0] * S, SC.P[1] + res.v[1] * S], "var(--vv)", 2.4);
+    arrow(SC.P, [SC.P[0] + res.r[0] * S, SC.P[1] + res.r[1] * S], "var(--vr)", 2.4);
+    [["n", SC.n, "var(--vn)"], ["l", res.l, "var(--vl)"], ["v", res.v, "var(--vv)"], ["r", res.r, "var(--vr)"]]
+      .forEach(function (t) {
+        var tx = make("text", { x: px(SC.P[0] + t[1][0] * (S + 0.45)), y: py(SC.P[1] + t[1][1] * (S + 0.45)) + 4,
+          fill: t[2], "font-size": 13, "font-family": "IBM Plex Mono, monospace", "text-anchor": "middle" });
+        tx.textContent = t[0];
+        svg.appendChild(tx);
+      });
+
+    if (SC.parallel) {
+      var d = nrm(SC.light), k;
+      for (k = -2; k <= 2; k++) {
+        var bx = SC.P[0] - d[0] * 5 + k * 0.9 * (-d[1]), by = SC.P[1] - d[1] * 5 + k * 0.9 * d[0];
+        arrow([bx, by], [bx + d[0] * 2, by + d[1] * 2], "var(--vl)", 1.1);
+      }
+    } else {
+      svg.appendChild(make("circle", { cx: px(SC.light[0]), cy: py(SC.light[1]), r: 8,
+        fill: "var(--vl)", "fill-opacity": 0.3, stroke: "var(--vl)", "stroke-width": 2,
+        "class": "grab", "data-h": "light" }));
+    }
+    svg.appendChild(make("rect", { x: px(SC.cam[0]) - 9, y: py(SC.cam[1]) - 7, width: 18, height: 14, rx: 2,
+      fill: "var(--vv)", "fill-opacity": 0.3, stroke: "var(--vv)", "stroke-width": 2,
+      "class": "grab", "data-h": "cam" }));
+    svg.appendChild(make("circle", { cx: px(SC.P[0]), cy: py(SC.P[1]), r: 4, fill: "var(--ink)" }));
+
+    document.getElementById("r_l").textContent = vtxt(res.l);
+    document.getElementById("r_v").textContent = vtxt(res.v);
+    document.getElementById("r_r").textContent = vtxt(res.r);
+    document.getElementById("r_nl").textContent = fmt(res.nl);
+    document.getElementById("r_vr").textContent = fmt(res.vr);
+
+    var tb = document.getElementById("terms");
+    tb.innerHTML = "";
+    [["ambient", res.amb], ["diffus", res.dif], ["spekular", res.spe], ["Summe", res.L]].forEach(function (row) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + row[0] + "</td>" + row[1].map(function (c) {
+        return '<td class="n">' + fmt(c) + "</td>"; }).join("");
+      tb.appendChild(tr);
+    });
+    document.getElementById("r_L").textContent = "(" + res.L.map(fmt).join(" | ") + ")";
+    var cl = res.L.map(function (c) { return Math.max(0, Math.min(1, c)); });
+    document.getElementById("swatch").style.background =
+      "rgb(" + cl.map(function (c) { return Math.round(c * 255); }).join(",") + ")";
+    var over = res.L.some(function (c) { return c > 1 || c < 0; });
+    document.getElementById("clipnote").textContent = over
+      ? "Für die Anzeige auf 0…1 begrenzt" : "";
+  }
+
+  function svgPoint(ev) {
+    var svg = document.getElementById("plot");
+    var r = svg.getBoundingClientRect();
+    if (!r.width) { return null; }
+    var s = VIEW.w / r.width;
+    return { x: toMathX((ev.clientX - r.left) * s), y: toMathY((ev.clientY - r.top) * s) };
+  }
+  document.getElementById("plot").addEventListener("pointerdown", function (ev) {
+    var t = ev.target.getAttribute && ev.target.getAttribute("data-h");
+    if (!t) { return; }
+    ev.preventDefault();
+    drag = t;
+  });
+  window.addEventListener("pointermove", function (ev) {
+    if (!drag) { return; }
+    var p = svgPoint(ev);
+    if (!p) { return; }
+    var x = Math.round(p.x * 2) / 2, y = Math.max(0.5, Math.round(p.y * 2) / 2);
+    if (drag === "light") { SC.light = [x, y]; } else { SC.cam = [x, y]; }
+    runLab();
+  });
+  window.addEventListener("pointerup", function () { drag = null; });
+
+  document.getElementById("lighttype").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-lt]");
+    if (!b) { return; }
+    Array.prototype.forEach.call(this.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    SC.parallel = b.getAttribute("data-lt") === "par";
+    if (SC.parallel) { SC.light = [0.6, -0.8]; } else { SC.light = [-3, 3]; }
+    runLab();
+  });
+  document.getElementById("nang").addEventListener("input", function () {
+    var a = parseFloat(this.value) * Math.PI / 180;
+    SC.n = [-Math.sin(a), Math.cos(a)];
+    document.getElementById("nangv").textContent = this.value + "°";
+    runLab();
+  });
+  document.getElementById("shiny").addEventListener("input", function () {
+    MAT.shiny = parseInt(this.value, 10);
+    document.getElementById("shinyv").textContent = this.value;
+    runLab();
+  });
+  document.getElementById("mpresets").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-m]");
+    if (!b) { return; }
+    var m = MATS[parseInt(b.getAttribute("data-m"), 10)];
+    MAT.ka = m.ka.slice(); MAT.kd = m.kd.slice(); MAT.ks = m.ks.slice();
+    MAT.shiny = m.shiny; MAT.Iamb = m.Iamb;
+    document.getElementById("shiny").value = m.shiny;
+    document.getElementById("shinyv").textContent = m.shiny;
+    syncK(); runLab();
+  });
+
+  krowBuild(); runLab();
+
+  /* ================= TABS + KONFETTI ================= */
+  var viewErk = document.getElementById("view-erklaerung");
+  var viewTra = document.getElementById("view-training");
+  var tabs = document.getElementById("tabs");
+  tabs.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-view]");
+    if (!b) { return; }
+    var v = b.getAttribute("data-view");
+    Array.prototype.forEach.call(tabs.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+    viewErk.hidden = (v !== "erklaerung");
+    viewTra.hidden = (v !== "training");
+  });
+  function cssVar(n, f) { var v = getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v || f; }
+  function confetti(ox, oy) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
+    var W = window.innerWidth || document.documentElement.clientWidth;
+    var H = window.innerHeight || document.documentElement.clientHeight;
+    if (!W || !H) { return; }
+    var stale = document.getElementById("confetti"); if (stale) { stale.remove(); }
+    var colors = [cssVar("--good", "#158A4A"), cssVar("--blue", "#1E3FAE"), cssVar("--vl", "#C51E86"), cssVar("--vr", "#B8791C")];
+    var cv = document.createElement("canvas"); cv.id = "confetti"; document.body.appendChild(cv);
+    var dpr = window.devicePixelRatio || 1; cv.width = W * dpr; cv.height = H * dpr;
+    var ctx = cv.getContext("2d"); ctx.scale(dpr, dpr);
+    var bits = [], i;
+    for (i = 0; i < 70; i++) {
+      var ang = (-Math.PI / 2) + (Math.random() - 0.5) * 2, spd = 5 + Math.random() * 8;
+      bits.push({ x: ox + (Math.random() - 0.5) * 90, y: oy, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        w: 4 + Math.random() * 5, h: 6 + Math.random() * 6, rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35, col: colors[Math.floor(Math.random() * colors.length)] });
+    }
+    var start = performance.now(), LIFE = 1500;
+    var killer = window.setTimeout(function () { cv.remove(); }, LIFE + 3000);
+    function frame(now) {
+      var t = now - start;
+      if (t > LIFE) { window.clearTimeout(killer); cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      var fade = t > LIFE * 0.6 ? 1 - (t - LIFE * 0.6) / (LIFE * 0.4) : 1;
+      bits.forEach(function (b) {
+        b.vy += 0.32; b.vx *= 0.995; b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+        ctx.save(); ctx.globalAlpha = fade; ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+        ctx.fillStyle = b.col; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); ctx.restore();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ================= TRAINING ================= */
+  var TYPE_LABEL = {
+    vec: "Vektoren bestimmen · wie 4a",
+    dots: "Skalarprodukte · wie 4a",
+    color: "Farbe berechnen · wie 4b",
+    refl: "Reflexionsvektor · wie 4a",
+    norm: "Normale bestimmen · wie 4a",
+    mc: "Shading und Argumentation · wie 4c"
+  };
+
+  var SCENES = [
+    { P: [3, 0], n: [0, 1], parallel: false, light: [7, 3], cam: [0, 4], jahr: "2019 SS" },
+    { P: [0, 0], n: [0, 1], parallel: false, light: [-4, 3], cam: [4, 3], jahr: "2020 WS" },
+    { P: [3, 0], n: [0, 1], parallel: true, light: [-0.6, -0.8], cam: [3, 2], jahr: "2021 SS" },
+    { P: [0, 0], n: [0, 1], parallel: true, light: [0.8, -0.6], cam: [4, 3], jahr: "2020 SS A" },
+    { P: [8, 0], n: [0, 1], parallel: true, light: [0.8, -0.6], cam: [4, 3], jahr: "2020 SS B" },
+    { P: [0, 0], n: [0, 1], parallel: false, light: [3, 4], cam: [-3, 4] },
+    { P: [0, 0], n: [0, 1], parallel: false, light: [-3, 4], cam: [3, 4] },
+    { P: [0, 0], n: [0, 1], parallel: false, light: [-6, 8], cam: [6, 8] },
+    { P: [2, 0], n: [0, 1], parallel: false, light: [-2, 3], cam: [6, 3] },
+    { P: [0, 0], n: [0, 1], parallel: true, light: [-0.8, -0.6], cam: [0, 5] },
+    { P: [0, 0], n: [0, 1], parallel: true, light: [0.6, -0.8], cam: [-4, 3] }
+  ];
+  var TMATS = [
+    { ka: [0, 0, 0], kd: [1, 0, 0], ks: [0, 1, 0], shiny: 2, Iamb: 0 },
+    { ka: [0, 0, 0], kd: [0, 0, 1], ks: [1, 0, 0], shiny: 2, Iamb: 0 },
+    { ka: [0, 0, 0.2], kd: [0, 1, 0], ks: [1, 0, 1], shiny: 2, Iamb: 1 },
+    { ka: [0.1, 0.1, 0.1], kd: [1, 1, 0], ks: [0, 0, 1], shiny: 2, Iamb: 1 }
+  ];
+  function sceneText(sc) {
+    return "P = (" + sc.P.join(" | ") + "), n = (" + sc.n.join(" | ") + "), " +
+      (sc.parallel ? "Parallellicht mit Richtung (" + sc.light.map(fmt).join(" | ") + ")"
+                   : "Punktlicht bei (" + sc.light.join(" | ") + ")") +
+      ", Kamera bei (" + sc.cam.join(" | ") + ")";
+  }
+  // Trenner muss " | " sein: das deutsche Dezimalkomma würde sonst mit
+  // dem Trennkomma verschmelzen, aus (0 | 0 | 0,2) würde (0,0,0,2).
+  function matText(m) {
+    return "k_amb = (" + m.ka.map(fmt).join(" | ") + "), k_diff = (" + m.kd.map(fmt).join(" | ") +
+      "), k_spec = (" + m.ks.map(fmt).join(" | ") + "), n_shiny = " + m.shiny +
+      ", I_in = (1 | 1 | 1)" + (m.Iamb ? ", I_amb = (1 | 1 | 1)" : ", I_amb = (0 | 0 | 0)");
+  }
+
+  var SEGS = [
+    { d: [3, 4], name: "(3,4)" }, { d: [4, 3], name: "(4,3)" }, { d: [1, 0], name: "(1,0)" },
+    { d: [5, 12], name: "(5,12)" }, { d: [12, 5], name: "(12,5)" }, { d: [3, -4], name: "(3,-4)" },
+    { d: [4, -3], name: "(4,-3)" }, { d: [8, 6], name: "(8,6)" }
+  ];
+  function upNormal(d) {
+    var n = nrm([-d[1], d[0]]);
+    return n[1] < 0 ? [-n[0], -n[1]] : n;
+  }
+
+  var MC = [
+    { q: "Die Kamera bewegt sich, das Licht bleibt stehen. Was passiert mit dem diffusen Anteil?",
+      o: ["Er ändert sich nicht", "Er wird dunkler", "Er wird heller"], a: 0,
+      w: "Der diffuse Term enthält v überhaupt nicht, nur n ∘ l." },
+    { q: "Die Kamera bewegt sich, das Licht bleibt stehen. Was passiert mit dem Glanzanteil?",
+      o: ["Er ändert sich", "Er bleibt gleich", "Er verschwindet ganz"], a: 0,
+      w: "Der Glanzterm hängt über v ∘ r von der Kameraposition ab." },
+    { q: "Auf einer unendlichen ebenen Fläche: wo liegt ein zweiter Punkt mit demselben diffusen Anteil wie P?",
+      o: ["Gespiegelt an der Senkrechten unter der Lichtquelle",
+          "Gespiegelt an der Senkrechten unter der Kamera",
+          "Genau zwischen Kamera und Lichtquelle"], a: 0,
+      w: "Der diffuse Anteil hängt nur vom Winkel zwischen n und l ab, und der ist dort gleich groß." },
+    { q: "Und ein zweiter Punkt mit demselben Glanzanteil?",
+      o: ["Dort, wo der Winkel zwischen r und v denselben Wert hat, also im Bereich zwischen Kamera und Licht",
+          "Direkt unter der Kamera", "Unendlich weit entfernt"], a: 0,
+      w: "Für den Glanz zählt v ∘ r, also die Lage relativ zu beiden." },
+    { q: "Welcher Verlauf gehört zu Flat Shading?",
+      o: ["Stufen: innerhalb jeder Facette konstant, an den Kanten Sprünge",
+          "Geradenstücke zwischen den Eckwerten", "Eine glatte gekrümmte Kurve"], a: 0,
+      w: "Flat berechnet eine Farbe pro Facette." },
+    { q: "Welcher Verlauf gehört zu Gouraud Shading?",
+      o: ["Geradenstücke zwischen den an den Ecken berechneten Werten",
+          "Stufen mit Sprüngen an den Kanten", "Eine glatte gekrümmte Kurve mit Glanzspitze"], a: 0,
+      w: "Zwischen den Eckfarben wird linear interpoliert, daraus werden Geraden." },
+    { q: "Warum kann Gouraud ein Glanzlicht verlieren, das mitten auf einer Facette läge?",
+      o: ["Weil nur an den Ecken beleuchtet wird und dazwischen interpoliert",
+          "Weil die Normale falsch gemittelt wird", "Weil der Exponent zu klein ist"], a: 0,
+      w: "Liegt die Spitze zwischen zwei Ecken, taucht sie in keinem der berechneten Werte auf." },
+    { q: "Was interpoliert Phong Shading zwischen den Ecken?",
+      o: ["Die Normale, und beleuchtet dann pro Pixel", "Die fertige Farbe", "Die Tiefe"], a: 0,
+      w: "Genau darin liegt der Unterschied zu Gouraud." },
+    { q: "Wie bestimmt man die Normale in einer Ecke zwischen zwei Facetten?",
+      o: ["Als Mittel der Normalen der angrenzenden Flächen", "Als Normale der längeren Fläche",
+          "Als Senkrechte auf die Verbindung der beiden Nachbarecken"], a: 0,
+      w: "So steht es als Hinweis in der Aufgabe von 2019 WS." },
+    { q: "Bei Parallellicht mit Richtung d — wie lautet der Lichtvektor l?",
+      o: ["l = −d, normiert", "l = d, normiert", "l = d − n"], a: 0,
+      w: "l zeigt immer zur Lichtquelle, die Strahlrichtung zeigt davon weg." },
+    { q: "In der Klausur ergibt sich v ∘ r = −0,28 bei n_shiny = 2. Was ist zu tun?",
+      o: ["Damit weiterrechnen: (−0,28)² = 0,0784",
+          "Den Glanzanteil auf 0 setzen", "Den Betrag nehmen und 0,28 einsetzen"], a: 0,
+      w: "Genau so steht es in der als richtig gewerteten Lösung von 2020 SS." }
+  ];
+
+  function shuffled(arr) {
+    var a = arr.slice(), i, j, t;
+    for (i = a.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function shuffleOpts(c) {
+    var idx = c.o.map(function (_, i) { return i; }), i, j, t;
+    for (i = idx.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
+    return { q: c.q, w: c.w, o: idx.map(function (k) { return c.o[k]; }), a: idx.indexOf(c.a) };
+  }
+
+  function buildDeck() {
+    var d = [];
+    SCENES.forEach(function (sc) {
+      d.push({ type: "vec", sc: sc });
+      d.push({ type: "dots", sc: sc });
+      d.push({ type: "refl", sc: sc });
+    });
+    SCENES.forEach(function (sc, i) {
+      d.push({ type: "color", sc: sc, mat: TMATS[i % TMATS.length] });
+    });
+    SEGS.forEach(function (s) { d.push({ type: "norm", seg: s }); });
+    MC.forEach(function (c) { d.push({ type: "mc", c: shuffleOpts(c) }); });
+    if (new URLSearchParams(window.location.search).get("exam") === "1") {
+      function one(types) {
+        var candidates=d.filter(function(t){return types.indexOf(t.type)>=0;});
+        return candidates[Math.floor(Math.random()*candidates.length)];
+      }
+      return [one(["vec"]),one(["dots","refl"]),one(["color"]),one(["norm","mc"])];
+    }
+    return shuffled(d);
+  }
+
+  var score = { ok: 0, bad: 0 };
+  try {
+    var raw = window.localStorage.getItem("cg-phong-score");
+    if (raw) { var p = JSON.parse(raw); if (p && typeof p.ok === "number") { score = p; } }
+  } catch (e) { /* egal */ }
+  function saveScore() { try { window.localStorage.setItem("cg-phong-score", JSON.stringify(score)); } catch (e) { /* egal */ } }
+  function paintScore() {
+    document.getElementById("sc_ok").textContent = score.ok;
+    document.getElementById("sc_bad").textContent = score.bad;
+    var t = score.ok + score.bad;
+    document.getElementById("sc_rate").textContent = t ? Math.round(score.ok / t * 100) + " %" : "—";
+  }
+  document.getElementById("sc_reset").addEventListener("click", function () {
+    score = { ok: 0, bad: 0 }; saveScore(); paintScore();
+  });
+
+  var card = document.getElementById("taskcard");
+  var deck = buildDeck(), deckIndex = -1, task = null, isRepeat = false, checker = null;
+
+  function fieldHTML(id, label) {
+    return '<label class="field"><span>' + label + '</span>' +
+      '<input type="text" inputmode="decimal" id="f_' + id + '"></label>';
+  }
+  function radioHTML(opts) {
+    return '<div class="choices">' + opts.map(function (o, i) {
+      return '<label><input type="radio" name="mc" value="' + i + '"><span>' + o + '</span></label>';
+    }).join("") + '</div>';
+  }
+  function readF(id) { var n = document.getElementById("f_" + id); return n ? parseNum(n.value) : NaN; }
+  function markF(id, ok) { var n = document.getElementById("f_" + id); if (n) { n.classList.add(ok ? "ok" : "bad"); } }
+  function checkFields(ids, sol, tol) {
+    var g = ids.map(readF);
+    if (g.some(isNaN)) { return null; }
+    var all = true;
+    ids.forEach(function (id, i) {
+      var good = Math.abs(g[i] - sol[i]) < (tol || 1e-6);
+      if (!good) { all = false; }
+      markF(id, good);
+    });
+    return all;
+  }
+
+  function renderTask() {
+    var t = task, body = "";
+    var head = '<div class="task-top"><span class="ttype">' + TYPE_LABEL[t.type] +
+      '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
+      (isRepeat ? " · Wiederholung" : "") + '</span></div>';
+
+    if (t.type === "vec" || t.type === "dots" || t.type === "refl" || t.type === "color") {
+      var res = phong(t.sc, t.mat || TMATS[0]);
+      if (t.type === "vec") {
+        body = '<p class="tprompt">' + sceneText(t.sc) + '.<br>Bestimme l, v und r.</p>' +
+          '<div class="fields">' + fieldHTML("lx", "l x") + fieldHTML("ly", "l y") +
+          fieldHTML("vx", "v x") + fieldHTML("vy", "v y") +
+          fieldHTML("rx", "r x") + fieldHTML("ry", "r y") + '</div>' +
+          '<p class="thint">Alle drei normiert. r = −l + 2(l ∘ n)·n</p>';
+        checker = function () {
+          var r = checkFields(["lx", "ly", "vx", "vy", "rx", "ry"],
+            [res.l[0], res.l[1], res.v[0], res.v[1], res.r[0], res.r[1]], 1e-4);
+          if (r === null) { return { incomplete: true }; }
+          return { ok: r, solText: "l = " + vtxt(res.l) + ", v = " + vtxt(res.v) + ", r = " + vtxt(res.r),
+            why: t.sc.parallel ? "Bei Parallellicht ist l die negative, normierte Lichtrichtung."
+                               : "l zeigt von P zur Lichtquelle, v von P zur Kamera, beide normiert." };
+        };
+      } else if (t.type === "dots") {
+        body = '<p class="tprompt">' + sceneText(t.sc) + '.<br>Bestimme n ∘ l und v ∘ r.</p>' +
+          '<div class="fields">' + fieldHTML("nl", "n ∘ l") + fieldHTML("vr", "v ∘ r") + '</div>' +
+          '<p class="thint">Ein negatives v ∘ r bleibt stehen, es wird nicht auf 0 gesetzt.</p>';
+        checker = function () {
+          var r = checkFields(["nl", "vr"], [res.nl, res.vr], 1e-4);
+          if (r === null) { return { incomplete: true }; }
+          return { ok: r, solText: "n ∘ l = " + fmt(res.nl) + ", v ∘ r = " + fmt(res.vr),
+            why: "l = " + vtxt(res.l) + ", v = " + vtxt(res.v) + ", r = " + vtxt(res.r) };
+        };
+      } else if (t.type === "refl") {
+        body = '<p class="tprompt">Für die Szene ' + sceneText(t.sc) +
+          ' ist l = ' + vtxt(res.l) + '. Wie lautet der Reflexionsvektor r?</p>' +
+          '<div class="fields">' + fieldHTML("rx", "r x") + fieldHTML("ry", "r y") + '</div>' +
+          '<p class="thint">r = −l + 2(l ∘ n)·n</p>';
+        checker = function () {
+          var r = checkFields(["rx", "ry"], [res.r[0], res.r[1]], 1e-4);
+          if (r === null) { return { incomplete: true }; }
+          return { ok: r, solText: "r = " + vtxt(res.r),
+            why: "l ∘ n = " + fmt(dot(res.l, t.sc.n)) + ", also r = −l + 2 · " +
+              fmt(dot(res.l, t.sc.n)) + " · n." };
+        };
+      } else {
+        body = '<p class="tprompt">' + sceneText(t.sc) + '.<br>Material: ' + matText(t.mat) +
+          '.<br>Berechne die Farbe L an diesem Punkt.</p>' +
+          '<div class="fields">' + fieldHTML("cr", "L rot") + fieldHTML("cg", "L grün") +
+          fieldHTML("cb", "L blau") + '</div>' +
+          '<p class="thint">L = k_amb·I_amb + k_diff·I_in·(n ∘ l) + k_spec·I_in·(v ∘ r)^n_shiny</p>';
+        checker = function () {
+          var r = checkFields(["cr", "cg", "cb"], res.L, 1e-4);
+          if (r === null) { return { incomplete: true }; }
+          return { ok: r, solText: "L = (" + res.L.map(fmt).join(" | ") + ")",
+            why: "n ∘ l = " + fmt(res.nl) + ", v ∘ r = " + fmt(res.vr) +
+              "; ambient " + res.amb.map(fmt).join("/") + ", diffus " + res.dif.map(fmt).join("/") +
+              ", spekular " + res.spe.map(fmt).join("/") };
+        };
+      }
+    } else if (t.type === "norm") {
+      var n1 = upNormal(t.seg.d);
+      body = '<p class="tprompt">Eine Facette verläuft in Richtung ' + t.seg.name +
+        '. Wie lautet ihre nach oben zeigende, normierte Normale?</p>' +
+        '<div class="fields">' + fieldHTML("nx", "n x") + fieldHTML("ny", "n y") + '</div>' +
+        '<p class="thint">Die Normale steht senkrecht auf der Richtung: aus (dx, dy) wird (−dy, dx), danach normieren und nach oben drehen.</p>';
+      checker = function () {
+        var r = checkFields(["nx", "ny"], n1, 1e-4);
+        if (r === null) { return { incomplete: true }; }
+        return { ok: r, solText: "n = " + vtxt(n1),
+          why: "Senkrecht auf " + t.seg.name + " steht (" + (-t.seg.d[1]) + " | " + t.seg.d[0] +
+            "), normiert und so gedreht, dass die y-Komponente positiv ist." };
+      };
+    } else {
+      body = '<p class="tprompt">' + t.c.q + '</p>' + radioHTML(t.c.o);
+      checker = function () {
+        var n = document.querySelector('input[name="mc"]:checked');
+        if (!n) { return { incomplete: true }; }
+        var v = parseInt(n.value, 10);
+        return { ok: v === t.c.a, solText: "Richtig: " + t.c.o[t.c.a], why: t.c.w };
+      };
+    }
+
+    card.innerHTML = head + '<div class="tbody">' + body + '</div>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
+    document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+  }
+
+  function confirmAnswer() {
+    var res = checker();
+    if (res.incomplete) {
+      var act = card.querySelector(".tactions");
+      var warn = act.querySelector(".repeat-note.warn");
+      if (!warn) { warn = document.createElement("span"); warn.className = "repeat-note warn"; act.appendChild(warn); }
+      warn.textContent = "Bitte alles ausfüllen.";
+      return;
+    }
+    if (!isRepeat) { if (res.ok) { score.ok++; } else { score.bad++; } saveScore(); paintScore(); }
+    Array.prototype.forEach.call(card.querySelectorAll("input"), function (n) { n.disabled = true; });
+    card.querySelector(".tactions").remove();
+    var v = document.createElement("div");
+    v.className = "verdict " + (res.ok ? "right" : "wrong");
+    var parts = '<span class="vhead">' + (res.ok ? "Richtig." : "Nicht richtig.") + '</span>';
+    if (!res.ok && res.solText) { parts += '<span class="vsol">' + res.solText + '</span>'; }
+    parts += '<span class="vsol">' + res.why + '</span>';
+    v.innerHTML = parts;
+    card.appendChild(v);
+    if (res.ok) { var vr = v.getBoundingClientRect(); confetti(vr.left + vr.width / 2, vr.top + 12); }
+    var act2 = document.createElement("div");
+    act2.className = "tactions";
+    act2.innerHTML = (res.ok ? "" : '<button class="btn ghost" id="btn_again">Wiederholen</button>') +
+      '<button class="btn primary" id="btn_next">Nächste Aufgabe</button>';
+    card.appendChild(act2);
+    document.getElementById("btn_next").addEventListener("click", function () { isRepeat = false; nextTask(); });
+    if (!res.ok) { document.getElementById("btn_again").addEventListener("click", function () { isRepeat = true; renderTask(); }); }
+  }
+
+  function nextTask() {
+    deckIndex++;
+    if (deckIndex >= deck.length) { renderDone(); return; }
+    task = deck[deckIndex];
+    renderTask();
+  }
+  function renderDone() {
+    card.innerHTML = '<div class="donecard"><h3>Durchlauf geschafft</h3>' +
+      '<p class="note">Alle ' + deck.length + ' Aufgaben einmal gesehen.</p>' +
+      '<button class="btn primary" id="btn_restart">Neuen Durchlauf starten</button></div>';
+    document.getElementById("btn_restart").addEventListener("click", function () {
+      deck = buildDeck(); deckIndex = -1; isRepeat = false; nextTask();
+    });
+  }
+
+  paintScore();
+  nextTask();
+}());
+</script>
+<script src="../scripts/portal-bridge.js?v=4"></script>

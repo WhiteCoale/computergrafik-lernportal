@@ -1,0 +1,728 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farblabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#FAF9F6; --surface:#FFFFFF; --ink:#16203A; --ink-2:#55607A; --ink-3:#8590A8;
+    --blue:#1E3FAE; --blue-soft:#E8ECFA; --red:#C7362B; --grid:#DCE2EE; --grid-axis:#A9B3C7;
+    --rule:#E4E6EC; --good:#158A4A; --accent2:#C51E86; --ghost:#B4BDD0; --amber:#B8791C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+      --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+      --rule:#262C3A; --good:#4FD08A; --accent2:#FF77C4; --ghost:#4A5468; --amber:#E0A93B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+    --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+    --rule:#262C3A; --good:#4FD08A; --accent2:#FF77C4; --ghost:#4A5468; --amber:#E0A93B;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif; font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
+    display: flex; flex-direction: column; gap: 2.5rem; }
+  h1,h2,h3,.label,th,button { font-family: "Libre Franklin", Arial, sans-serif; }
+  .mono,input,td.n,.formula { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+  .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+  h1 { font-size: clamp(1.9rem,5vw,2.6rem); font-weight: 800; letter-spacing: -0.022em;
+    line-height: 1.1; margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--ink-2); max-width: 40rem; font-size: 1.05rem; }
+  h2 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  p { margin: 0; }
+  .note { color: var(--ink-2); font-size: 0.97rem; }
+  .label { font-size: 0.66rem; letter-spacing: 0.13em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); display: block; }
+  .tabs { display: flex; gap: 0.15rem; border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; z-index: 30; background: var(--paper);
+    margin: 0 -1.5rem -1.2rem; padding: 0.6rem 1.5rem 0; }
+  .tabs button { font-size: 0.9rem; font-weight: 600; padding: 0.5rem 0.95rem;
+    background: transparent; color: var(--ink-3); border: none; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; cursor: pointer; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+  #view-erklaerung, #view-training { display: flex; flex-direction: column; gap: 2.5rem; }
+
+  .lab { display: grid; grid-template-columns: minmax(0,19rem) minmax(0,1fr);
+    gap: 1.5rem; align-items: start; }
+  @media (max-width: 50rem) { .lab { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1.1rem 1.2rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+  .stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+  .bigswatch { height: 5rem; border-radius: 3px; border: 1px solid var(--rule); }
+  .slider-row { display: grid; grid-template-columns: 1.3rem 1fr 2.6rem; align-items: center;
+    gap: 0.5rem; font-size: 0.8rem; }
+  .slider-row .k { font-family: "IBM Plex Mono", monospace; color: var(--ink-2); }
+  .slider-row .v { font-family: "IBM Plex Mono", monospace; text-align: right; color: var(--ink); }
+  input[type=range] { width: 100%; height: 3px; -webkit-appearance: none; appearance: none;
+    border-radius: 2px; outline: none; margin: 0; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--surface); border: 2px solid var(--ink-2); cursor: grab; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--ink-2); cursor: grab; }
+  .presets { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .presets button { font-size: 0.72rem; font-weight: 500; padding: 0.28rem 0.5rem;
+    background: transparent; color: var(--ink-2); border: 1px solid var(--rule);
+    border-radius: 2px; cursor: pointer; }
+  .presets button:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+  .models { display: grid; grid-template-columns: repeat(auto-fit,minmax(9rem,1fr)); gap: 0;
+    border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  .models > div { padding: 0.7rem 0.85rem; border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 0.2rem; }
+  .models > div:last-child { border-right: none; }
+  .models .mk { font-family: "Libre Franklin", sans-serif; font-size: 0.64rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .models .mv { font-family: "IBM Plex Mono", monospace; font-size: 0.92rem; }
+  .spec { width: 100%; height: auto; }
+
+  .formula { font-size: 0.88rem; line-height: 1.85; background: var(--blue-soft); color: var(--ink);
+    border-left: 2px solid var(--blue); padding: 0.7rem 0.9rem; border-radius: 0 2px 2px 0; overflow-x: auto; }
+  .formula em { font-style: normal; color: var(--ink-2); }
+  .traps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .traps li { font-size: 0.94rem; padding-left: 1.15rem; position: relative; }
+  .traps li::before { content: "✗"; position: absolute; left: 0; top: 0.05em; color: var(--red);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem,1fr)); gap: 0;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); overflow: hidden; }
+  .duo > article { padding: 1rem 1.1rem 1.15rem; border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 0.5rem; }
+  .duo > article:last-child { border-right: none; }
+  .duo h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--blue);
+    font-family: "IBM Plex Mono", monospace; }
+  .duo p { font-size: 0.92rem; }
+  .duo .cnote { font-size: 0.83rem; color: var(--ink-3); margin-top: auto; padding-top: 0.2rem; }
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th { text-align: left; font-size: 0.64rem; letter-spacing: 0.09em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); padding: 0 0.55rem 0.45rem 0;
+    border-bottom: 1px solid var(--ink-3); white-space: nowrap; }
+  td { padding: 0.45rem 0.55rem 0.45rem 0; border-bottom: 1px solid var(--rule); }
+  td.n { font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
+
+  .score { display: flex; align-items: center; gap: 1.6rem; padding: 0.75rem 1.1rem;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; flex-wrap: wrap; }
+  .score .s { display: flex; align-items: baseline; gap: 0.4rem; }
+  .score .sv { font-family: "IBM Plex Mono", monospace; font-size: 1.35rem; font-weight: 600; }
+  .score .sv.ok { color: var(--good); } .score .sv.bad { color: var(--red); }
+  .score .sk { font-family: "Libre Franklin", sans-serif; font-size: 0.66rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .linkish { margin-left: auto; background: none; border: none; cursor: pointer;
+    font-family: "Libre Franklin", sans-serif; font-size: 0.76rem; color: var(--ink-3);
+    text-decoration: underline; text-underline-offset: 3px; padding: 0.2rem; }
+  .taskcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    display: flex; flex-direction: column; }
+  .task-top { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+    padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--rule); }
+  .ttype { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--blue); }
+  .tno { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--ink-3); }
+  .tbody { padding: 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .tprompt { font-size: 1rem; }
+  .thint { font-size: 0.88rem; color: var(--ink-3); }
+  .trow { display: flex; gap: 1.3rem; flex-wrap: wrap; align-items: center; }
+  .qswatch { width: 3.6rem; height: 3.6rem; border-radius: 3px; border: 1px solid var(--rule); flex: none; }
+  .fields { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 0.2rem; }
+  .field span { font-family: "Libre Franklin", sans-serif; font-size: 0.62rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .field input { width: 5.4rem; font-family: "IBM Plex Mono", monospace; font-size: 1rem;
+    padding: 0.35rem 0.4rem; color: var(--ink); background: transparent;
+    border: 1px solid var(--rule); border-radius: 2px; text-align: center; }
+  .field input:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+  .field input.ok, .field input.ok:disabled { color: var(--good); border-color: var(--good); }
+  .field input.bad, .field input.bad:disabled { color: var(--red); border-color: var(--red); }
+  .choices { display: flex; flex-direction: column; gap: 0.4rem; }
+  .choices label { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.95rem; cursor: pointer; }
+  .choices input { margin-top: 0.35rem; accent-color: var(--blue); cursor: pointer; }
+  .modelchecks { display: flex; gap: 1.1rem; flex-wrap: wrap; }
+  .modelchecks label { display: flex; align-items: center; gap: 0.45rem; font-family: "IBM Plex Mono", monospace;
+    font-size: 0.95rem; cursor: pointer; }
+  .tactions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+    padding: 0.9rem 1.2rem; border-top: 1px solid var(--rule); }
+  .btn { font-family: "Libre Franklin", sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 0.48rem 0.95rem; border-radius: 2px; cursor: pointer; border: 1px solid transparent; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  :root[data-theme="dark"] .btn.primary, :root:not([data-theme="light"]) .btn.primary { color: #0F131B; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: #fff; } }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--rule); }
+  .btn.ghost:hover { color: var(--blue); border-color: var(--blue); background: var(--blue-soft); }
+  .verdict { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.9rem 1.2rem;
+    border-top: 1px solid var(--rule); }
+  .verdict .vhead { font-family: "Libre Franklin", sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .verdict.right .vhead { color: var(--good); } .verdict.wrong .vhead { color: var(--red); }
+  .verdict .vsol { font-size: 0.93rem; color: var(--ink-2); }
+  .repeat-note { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
+  .repeat-note.warn { color: var(--red); }
+  .donecard { text-align: center; padding: 2rem 1.2rem; display: flex; flex-direction: column;
+    gap: 0.8rem; align-items: center; }
+  .donecard h3 { margin: 0; font-family: "Libre Franklin", sans-serif; font-size: 1.2rem; }
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+  footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Aufgabe 5 · Farbmodelle · 6–12 Punkte</div>
+    <h1>Farblabor</h1>
+    <p>Eine Farbe einstellen und sie gleichzeitig in allen vier Modellen sehen — samt Spektrum. Die punkteeffizienteste Aufgabe der Klausur, weil sie reines Auswendigwissen abfragt.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Ansicht">
+    <button role="tab" data-view="erklaerung" aria-selected="true">Erklärung</button>
+    <button role="tab" data-view="training" aria-selected="false">Training</button>
+  </nav>
+
+  <div id="view-erklaerung">
+    <section>
+      <div class="lab">
+        <div class="panel">
+          <div class="bigswatch" id="swatch"></div>
+          <div class="slider-row"><span class="k">R</span><input type="range" id="sr" min="0" max="1" step="0.05" value="0" aria-label="Rot"><span class="v" id="vr">0</span></div>
+          <div class="slider-row"><span class="k">G</span><input type="range" id="sg" min="0" max="1" step="0.05" value="0.5" aria-label="Grün"><span class="v" id="vg">0,5</span></div>
+          <div class="slider-row"><span class="k">B</span><input type="range" id="sb" min="0" max="1" step="0.05" value="0" aria-label="Blau"><span class="v" id="vb">0</span></div>
+          <div class="presets" id="cpresets"></div>
+        </div>
+        <div class="stage">
+          <div class="models">
+            <div><span class="mk">RGB</span><span class="mv" id="m_rgb"></span></div>
+            <div><span class="mk">CMY</span><span class="mv" id="m_cmy"></span></div>
+            <div><span class="mk">CMYK</span><span class="mv" id="m_cmyk"></span></div>
+            <div><span class="mk">HSV</span><span class="mv" id="m_hsv"></span></div>
+          </div>
+          <div>
+            <span class="label">Spektrum</span>
+            <svg class="spec" id="spec" viewBox="0 0 460 160" role="img" aria-label="Spektrum der eingestellten Farbe"></svg>
+          </div>
+          <p class="thint" id="labnote"></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Umrechnen</h2>
+      <div class="formula">
+        <div>CMY = 1 − RGB &nbsp;<em>komponentenweise, in beide Richtungen</em></div>
+        <div>K = min(C, M, Y), danach C −= K, M −= K, Y −= K</div>
+        <div>V = max(R,G,B) &nbsp;&nbsp; S = (max − min) / max &nbsp;&nbsp; <em>S = 0 falls max = 0</em></div>
+        <div>H: rot 0° · gelb 60° · grün 120° · cyan 180° · blau 240° · magenta 300°</div>
+      </div>
+      <p class="note"><strong>Achtung bei CMYK.</strong> Es gibt zwei gängige Konventionen. Diese Vorlesung zieht K einfach ab und teilt <em>nicht</em> durch (1 − K). Bei Dunkelgrün (0 | 0,5 | 0) kommt damit (0,5 | 0 | 0,5 | 0,5) heraus — genau so steht es als richtig gewertet in 2020 SS. Die andere Konvention lieferte (1 | 0 | 1 | 0,5) und gäbe null Punkte.</p>
+      <ul class="traps">
+        <li>Bei CMYK die Vorgabe „K so groß wie möglich“ überlesen. K ist immer das Minimum von C, M und Y.</li>
+        <li>(1, 0, 0) für rot halten, obwohl nach CMY gefragt ist — dort ist es cyan.</li>
+        <li>Vergessen, dass HSV nicht eindeutig ist: bei V = 0 sind H und S beliebig, bei S = 0 ist H beliebig.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Wofür welches Modell</h2>
+      <div class="duo">
+        <article>
+          <h3>RGB</h3>
+          <p>Additiv. Farben addieren sich zu Weiß, Ausgangspunkt ist Schwarz.</p>
+          <p class="cnote">Monitore, Displays, alles Selbstleuchtende. Würfel mit Schwarz und Weiß auf der Raumdiagonale.</p>
+        </article>
+        <article>
+          <h3>CMY</h3>
+          <p>Subtraktiv. Farben ziehen von Weiß ab, Ausgangspunkt ist weißes Papier.</p>
+          <p class="cnote">Druck. Derselbe Würfel wie RGB, nur mit vertauschten Ecken.</p>
+        </article>
+        <article>
+          <h3>CMYK</h3>
+          <p>CMY plus separates Schwarz, damit man dunkle Töne nicht aus drei Farben mischen muss.</p>
+          <p class="cnote">Spart Tinte und ergibt ein sattes Schwarz statt eines matschigen Braun.</p>
+        </article>
+        <article>
+          <h3>HSV</h3>
+          <p>Wahrnehmungsorientiert: Farbton, Sättigung, Helligkeit statt Mischanteilen.</p>
+          <p class="cnote">Farbwähler. Kegel mit Schwarz an der Spitze, die Achse ist die Grauskala.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Spektren</h2>
+      <p class="note">2020 WS wollte zu jeder Farbe die Kurve skizziert haben. Drei Regeln reichen dafür.</p>
+      <div class="formula">
+        <div>weiß &nbsp;&nbsp;→ flach und hoch über den ganzen Bereich</div>
+        <div>grau &nbsp;&nbsp;→ flach, aber niedriger</div>
+        <div>gesättigt → ein schmaler Berg an der Stelle des Farbtons</div>
+        <div>hell und bunt → breite Kurve mit einem Buckel beim Farbton</div>
+      </div>
+      <p class="note">Magenta ist der Sonderfall: es gibt keine Wellenlänge dafür. Im Spektrum erscheinen <em>zwei</em> Berge, einer im Roten und einer im Blauen. Stell im Labor oben Magenta ein, dann siehst du es.</p>
+    </section>
+  </div>
+
+  <div id="view-training" hidden>
+    <section>
+      <h2>Training</h2>
+      <p class="note">Aufgaben in den Formaten, in denen Aufgabe 5 über die Jahrgänge gestellt wurde.</p>
+      <div class="score">
+        <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
+        <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
+        <div class="s"><span class="sv" id="sc_rate">—</span><span class="sk">Quote</span></div>
+        <button class="linkish" id="sc_reset">Zähler zurücksetzen</button>
+      </div>
+      <div class="taskcard" id="taskcard"></div>
+    </section>
+  </div>
+
+  <footer>
+    Farbwerte, Umrechnungskonvention und Aussagen stammen aus den Klausuren Oktober 2019 bis Oktober 2021 des Lehrstuhls Graphische Datenverarbeitung.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function make(t, a) { var n = document.createElementNS(NS, t); for (var k in a) { n.setAttribute(k, a[k]); } return n; }
+  function clear(n) { while (n.firstChild) { n.removeChild(n.firstChild); } }
+  function fmt(v) { var r = Math.round(v * 10000) / 10000; if (Object.is(r, -0)) { r = 0; } return String(r).replace(".", ","); }
+  function parseNum(s) { s = String(s).trim().replace(",", "."); if (s === "") { return NaN; } var n = parseFloat(s); return isFinite(n) ? n : NaN; }
+
+  /* ---- Umrechnungen, Konvention der Vorlesung ---- */
+  function toCMY(c) { return [1 - c[0], 1 - c[1], 1 - c[2]]; }
+  function toCMYK(c) {
+    var m = toCMY(c), K = Math.min(m[0], m[1], m[2]);
+    return [m[0] - K, m[1] - K, m[2] - K, K];
+  }
+  function toHSV(c) {
+    var mx = Math.max(c[0], c[1], c[2]), mn = Math.min(c[0], c[1], c[2]), d = mx - mn;
+    var h = 0;
+    if (d > 1e-9) {
+      if (mx === c[0]) { h = 60 * (((c[1] - c[2]) / d) % 6); }
+      else if (mx === c[1]) { h = 60 * ((c[2] - c[0]) / d + 2); }
+      else { h = 60 * ((c[0] - c[1]) / d + 4); }
+    }
+    if (h < 0) { h += 360; }
+    return [h, mx < 1e-9 ? 0 : d / mx, mx];
+  }
+  function fromHSV(h, s, v) {
+    var c = v * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = v - c, r, g, b;
+    var k = Math.floor(((h % 360) + 360) % 360 / 60);
+    if (k === 0) { r = c; g = x; b = 0; }
+    else if (k === 1) { r = x; g = c; b = 0; }
+    else if (k === 2) { r = 0; g = c; b = x; }
+    else if (k === 3) { r = 0; g = x; b = c; }
+    else if (k === 4) { r = x; g = 0; b = c; }
+    else { r = c; g = 0; b = x; }
+    return [r + m, g + m, b + m];
+  }
+  function css(c) { return "rgb(" + c.map(function (v) { return Math.round(Math.max(0, Math.min(1, v)) * 255); }).join(",") + ")"; }
+  function trip(c) { return "(" + c.map(fmt).join(" | ") + ")"; }
+
+  var NAMED = [
+    ["schwarz", [0, 0, 0]], ["weiß", [1, 1, 1]], ["rot", [1, 0, 0]], ["grün", [0, 1, 0]],
+    ["blau", [0, 0, 1]], ["cyan", [0, 1, 1]], ["magenta", [1, 0, 1]], ["gelb", [1, 1, 0]],
+    ["grau", [0.5, 0.5, 0.5]], ["dunkelrot", [0.5, 0, 0]], ["dunkelgrün", [0, 0.5, 0]],
+    ["dunkelblau", [0, 0, 0.5]], ["dunkelcyan", [0, 0.5, 0.5]], ["dunkelmagenta", [0.5, 0, 0.5]],
+    ["dunkelgelb", [0.5, 0.5, 0]], ["hellrot", [1, 0.5, 0.5]], ["hellgrün", [0.5, 1, 0.5]],
+    ["hellblau", [0.5, 0.5, 1]], ["hellcyan", [0.5, 1, 1]], ["hellmagenta", [1, 0.5, 1]],
+    ["hellgelb", [1, 1, 0.5]]
+  ];
+
+  /* ================= LABOR ================= */
+  var C = [0, 0.5, 0];
+  function runLab() {
+    document.getElementById("swatch").style.background = css(C);
+    ["r", "g", "b"].forEach(function (k, i) {
+      document.getElementById("s" + k).value = C[i];
+      document.getElementById("v" + k).textContent = fmt(C[i]);
+    });
+    document.getElementById("sr").style.background = "linear-gradient(to right," + css([0, C[1], C[2]]) + "," + css([1, C[1], C[2]]) + ")";
+    document.getElementById("sg").style.background = "linear-gradient(to right," + css([C[0], 0, C[2]]) + "," + css([C[0], 1, C[2]]) + ")";
+    document.getElementById("sb").style.background = "linear-gradient(to right," + css([C[0], C[1], 0]) + "," + css([C[0], C[1], 1]) + ")";
+
+    var hsv = toHSV(C);
+    document.getElementById("m_rgb").textContent = trip(C);
+    document.getElementById("m_cmy").textContent = trip(toCMY(C));
+    document.getElementById("m_cmyk").textContent = "(" + toCMYK(C).map(fmt).join(" | ") + ")";
+    document.getElementById("m_hsv").textContent = "(" + fmt(Math.round(hsv[0])) + "° | " + fmt(hsv[1]) + " | " + fmt(hsv[2]) + ")";
+
+    // Spektrum: drei Gaußberge, gewichtet mit R, G und B
+    var svg = document.getElementById("spec");
+    clear(svg);
+    var W = 460, H = 160, pad = 26;
+    svg.appendChild(make("line", { x1: pad, y1: H - 24, x2: W - 8, y2: H - 24, stroke: "var(--grid-axis)", "stroke-width": 1.2 }));
+    svg.appendChild(make("line", { x1: pad, y1: 12, x2: pad, y2: H - 24, stroke: "var(--grid-axis)", "stroke-width": 1.2 }));
+    var stops = [[420, "violett"], [480, "blau"], [530, "grün"], [580, "gelb"], [640, "rot"]];
+    function lx(nm) { return pad + (nm - 390) / (710 - 390) * (W - pad - 12); }
+    stops.forEach(function (s) {
+      var t = make("text", { x: lx(s[0]), y: H - 8, fill: "var(--ink-3)", "font-size": 9,
+        "font-family": "IBM Plex Mono, monospace", "text-anchor": "middle" });
+      t.textContent = s[1];
+      svg.appendChild(t);
+    });
+    function g(nm, mu) { return Math.exp(-Math.pow(nm - mu, 2) / (2 * 48 * 48)); }
+    var pts = [], nm;
+    for (nm = 390; nm <= 710; nm += 4) {
+      var val = C[0] * g(nm, 620) + C[1] * g(nm, 540) + C[2] * g(nm, 460);
+      pts.push(lx(nm) + "," + (H - 24 - Math.min(1.15, val) / 1.15 * (H - 44)));
+    }
+    svg.appendChild(make("polyline", { points: pts.join(" "), fill: "none",
+      stroke: css(C.map(function (v) { return Math.max(v, 0.25); })), "stroke-width": 2.4, "stroke-linejoin": "round" }));
+
+    var mx = Math.max(C[0], C[1], C[2]), mn = Math.min(C[0], C[1], C[2]);
+    var note;
+    if (mx < 0.02) { note = "Schwarz: kein Licht, die Kurve liegt auf der Grundlinie."; }
+    else if (mx - mn < 0.02) { note = "Unbunt: alle drei Anteile gleich, die Kurve ist flach — Höhe entspricht der Helligkeit. In HSV ist der Farbton hier beliebig."; }
+    else if (C[0] > 0.4 && C[2] > 0.4 && C[1] < C[0] - 0.2) { note = "Magenta-Bereich: zwei getrennte Berge. Für diesen Farbeindruck gibt es keine einzelne Wellenlänge."; }
+    else { note = "Je größer der Abstand zwischen höchstem und niedrigstem Anteil, desto schmaler der Berg und desto gesättigter die Farbe."; }
+    document.getElementById("labnote").textContent = note;
+  }
+  ["r", "g", "b"].forEach(function (k, i) {
+    document.getElementById("s" + k).addEventListener("input", function () {
+      C[i] = parseFloat(this.value); runLab();
+    });
+  });
+  (function () {
+    var el = document.getElementById("cpresets");
+    ["weiß", "rot", "grün", "blau", "cyan", "magenta", "gelb", "grau", "dunkelgrün", "hellcyan"]
+      .forEach(function (nm) {
+        var c = NAMED.filter(function (n) { return n[0] === nm; })[0];
+        var b = document.createElement("button");
+        b.textContent = nm;
+        b.addEventListener("click", function () { C = c[1].slice(); runLab(); });
+        el.appendChild(b);
+      });
+  }());
+  runLab();
+
+  /* ================= TABS + KONFETTI ================= */
+  var viewErk = document.getElementById("view-erklaerung");
+  var viewTra = document.getElementById("view-training");
+  var tabs = document.getElementById("tabs");
+  tabs.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-view]");
+    if (!b) { return; }
+    var v = b.getAttribute("data-view");
+    Array.prototype.forEach.call(tabs.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+    viewErk.hidden = (v !== "erklaerung");
+    viewTra.hidden = (v !== "training");
+  });
+  function cssVar(n, f) { var v = getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v || f; }
+  function confetti(ox, oy) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
+    var W = window.innerWidth || document.documentElement.clientWidth;
+    var H = window.innerHeight || document.documentElement.clientHeight;
+    if (!W || !H) { return; }
+    var stale = document.getElementById("confetti"); if (stale) { stale.remove(); }
+    var colors = [cssVar("--good", "#158A4A"), cssVar("--blue", "#1E3FAE"), cssVar("--accent2", "#C51E86"), cssVar("--amber", "#B8791C")];
+    var cv = document.createElement("canvas"); cv.id = "confetti"; document.body.appendChild(cv);
+    var dpr = window.devicePixelRatio || 1; cv.width = W * dpr; cv.height = H * dpr;
+    var ctx = cv.getContext("2d"); ctx.scale(dpr, dpr);
+    var bits = [], i;
+    for (i = 0; i < 70; i++) {
+      var ang = (-Math.PI / 2) + (Math.random() - 0.5) * 2, spd = 5 + Math.random() * 8;
+      bits.push({ x: ox + (Math.random() - 0.5) * 90, y: oy, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        w: 4 + Math.random() * 5, h: 6 + Math.random() * 6, rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35, col: colors[Math.floor(Math.random() * colors.length)] });
+    }
+    var start = performance.now(), LIFE = 1500;
+    var killer = window.setTimeout(function () { cv.remove(); }, LIFE + 3000);
+    function frame(now) {
+      var t = now - start;
+      if (t > LIFE) { window.clearTimeout(killer); cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      var fade = t > LIFE * 0.6 ? 1 - (t - LIFE * 0.6) / (LIFE * 0.4) : 1;
+      bits.forEach(function (b) {
+        b.vy += 0.32; b.vx *= 0.995; b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+        ctx.save(); ctx.globalAlpha = fade; ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+        ctx.fillStyle = b.col; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); ctx.restore();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ================= TRAINING ================= */
+  var TYPE_LABEL = {
+    cmy: "RGB nach CMY · wie 5a",
+    cmyk: "RGB nach CMYK · wie 5a",
+    hsv: "RGB nach HSV · wie 5a",
+    fromhsv: "HSV nach RGB · wie 5a",
+    name: "Farbe benennen · wie 5a",
+    stmt: "Aussagen zuordnen · wie 2021 SS 5",
+    mc: "Modellwissen · wie 5b/c"
+  };
+
+  var STATEMENTS = [
+    { s: "(1 | 1 | 0) ist blau", m: ["CMY"] },
+    { s: "subtraktive Farbmischung", m: ["CMY", "CMYK"] },
+    { s: "(1 | 1 | 1) ist schwarz", m: ["CMY"] },
+    { s: "wahrnehmungsorientiert aufgebaut", m: ["HSV"] },
+    { s: "(0 | 1 | 1) ist cyan", m: ["RGB"] },
+    { s: "(1 | 0 | 0) ist grün", m: [] },
+    { s: "gelb und magenta ergeben zusammen rot", m: ["CMY", "CMYK"] },
+    { s: "(0,5 | 0,5 | 0,5) ist grau", m: ["RGB", "CMY"] },
+    { s: "wird in Monitoren verwendet", m: ["RGB"] },
+    { s: "(60° | 1 | 1) ist gelb", m: ["HSV"] },
+    { s: "lässt sich als Würfel aus drei Grundfarben darstellen", m: ["RGB", "CMY"] },
+    { s: "additive Farbmischung", m: ["RGB"] },
+    { s: "hat eine eigene Achse nur für Schwarz", m: ["CMYK"] },
+    { s: "wird in Druckern verwendet", m: ["CMY", "CMYK"] },
+    { s: "eine Koordinate wird in Grad angegeben", m: ["HSV"] }
+  ];
+  var MODELS = ["RGB", "CMY", "CMYK", "HSV"];
+
+  var MC = [
+    { q: "Welches Tripel bedeutet in RGB und in CMY dieselbe Farbe?",
+      o: ["(0,5 | 0,5 | 0,5)", "(1 | 1 | 1)", "(0 | 0 | 0)"], a: 0,
+      w: "Nur bei 0,5 fällt der Wert mit seinem Komplement 1 − 0,5 zusammen: beide Male Grau." },
+    { q: "In HSV lässt sich dieselbe Farbe manchmal mit verschiedenen Tripeln schreiben. Wann?",
+      o: ["Bei V = 0 sind H und S beliebig, bei S = 0 ist H beliebig",
+          "Bei H = 0 ist V beliebig", "Nie, HSV ist immer eindeutig"], a: 0,
+      w: "Schwarz und alle Grautöne haben keinen definierten Farbton." },
+    { q: "Warum gibt es in CMYK überhaupt ein eigenes K?",
+      o: ["Weil aus C, M und Y gemischtes Schwarz matt wird und viel Tinte kostet",
+          "Weil CMY kein Dunkelgrau darstellen kann", "Weil Drucker nur vier Düsen haben"], a: 0,
+      w: "Reines Schwarz ist billiger und sauberer als ein Übereinanderdruck aller drei Farben." },
+    { q: "Wo liegt Weiß im HSV-Kegel?",
+      o: ["Auf der Achse ganz oben, S = 0 und V = 1", "An der Spitze unten", "Am äußeren Rand oben"], a: 0,
+      w: "Die Achse ist die Grauskala, oben hell, unten die schwarze Spitze." },
+    { q: "Welches Spektrum gehört zu einem Grau?",
+      o: ["Flach über den ganzen Bereich, aber auf niedriger Höhe",
+          "Ein schmaler Berg in der Mitte", "Zwei Berge an den Rändern"], a: 0,
+      w: "Unbunt heißt gleichmäßig über alle Wellenlängen, die Höhe bestimmt die Helligkeit." },
+    { q: "Welches Spektrum gehört zu Magenta?",
+      o: ["Zwei Berge, einer im Roten und einer im Blauen",
+          "Ein Berg zwischen Rot und Blau", "Eine flache Kurve"], a: 0,
+      w: "Magenta ist keine Spektralfarbe, es gibt keine Wellenlänge dafür." },
+    { q: "Ein Bild wird in RGB (1 | 1 | 1) angezeigt und in CMY (1 | 1 | 1) gedruckt. Was sieht man?",
+      o: ["Auf dem Monitor weiß, auf dem Papier schwarz",
+          "Beide Male weiß", "Beide Male schwarz"], a: 0,
+      w: "RGB ist additiv, volle Anteile ergeben Weiß. CMY ist subtraktiv, volle Anteile schlucken alles." }
+  ];
+
+  function shuffled(a) {
+    var r = a.slice(), i, j, t;
+    for (i = r.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = r[i]; r[i] = r[j]; r[j] = t; }
+    return r;
+  }
+  function shuffleOpts(c) {
+    var idx = c.o.map(function (_, i) { return i; }), i, j, t;
+    for (i = idx.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
+    return { q: c.q, w: c.w, o: idx.map(function (k) { return c.o[k]; }), a: idx.indexOf(c.a) };
+  }
+
+  function buildDeck() {
+    var d = [];
+    shuffled(NAMED).slice(0, 10).forEach(function (n) { d.push({ type: "cmy", col: n }); });
+    shuffled(NAMED).slice(0, 10).forEach(function (n) { d.push({ type: "cmyk", col: n }); });
+    shuffled(NAMED).slice(0, 10).forEach(function (n) { d.push({ type: "hsv", col: n }); });
+    shuffled(NAMED).slice(0, 8).forEach(function (n) { d.push({ type: "fromhsv", col: n }); });
+    shuffled(NAMED).slice(0, 8).forEach(function (n) { d.push({ type: "name", col: n }); });
+    STATEMENTS.forEach(function (s) { d.push({ type: "stmt", st: s }); });
+    MC.forEach(function (c) { d.push({ type: "mc", c: shuffleOpts(c) }); });
+    if (new URLSearchParams(window.location.search).get("exam") === "1") {
+      function one(types) {
+        var candidates=d.filter(function(t){return types.indexOf(t.type)>=0;});
+        return candidates[Math.floor(Math.random()*candidates.length)];
+      }
+      return [one(["cmy","cmyk"]),one(["hsv","fromhsv"]),one(["name","stmt"]),one(["mc"])];
+    }
+    return shuffled(d);
+  }
+
+  var score = { ok: 0, bad: 0 };
+  try {
+    var raw = window.localStorage.getItem("cg-farb-score");
+    if (raw) { var p = JSON.parse(raw); if (p && typeof p.ok === "number") { score = p; } }
+  } catch (e) { /* egal */ }
+  function saveScore() { try { window.localStorage.setItem("cg-farb-score", JSON.stringify(score)); } catch (e) { /* egal */ } }
+  function paintScore() {
+    document.getElementById("sc_ok").textContent = score.ok;
+    document.getElementById("sc_bad").textContent = score.bad;
+    var t = score.ok + score.bad;
+    document.getElementById("sc_rate").textContent = t ? Math.round(score.ok / t * 100) + " %" : "—";
+  }
+  document.getElementById("sc_reset").addEventListener("click", function () {
+    score = { ok: 0, bad: 0 }; saveScore(); paintScore();
+  });
+
+  var card = document.getElementById("taskcard");
+  var deck = buildDeck(), deckIndex = -1, task = null, isRepeat = false, checker = null;
+
+  function fieldHTML(id, label) {
+    return '<label class="field"><span>' + label + '</span>' +
+      '<input type="text" inputmode="decimal" id="f_' + id + '"></label>';
+  }
+  function readF(id) { var n = document.getElementById("f_" + id); return n ? parseNum(n.value) : NaN; }
+  function markF(id, ok) { var n = document.getElementById("f_" + id); if (n) { n.classList.add(ok ? "ok" : "bad"); } }
+  function checkFields(ids, sol, tol) {
+    var g = ids.map(readF);
+    if (g.some(isNaN)) { return null; }
+    var all = true;
+    ids.forEach(function (id, i) {
+      var good = Math.abs(g[i] - sol[i]) < (tol || 1e-6);
+      if (!good) { all = false; }
+      markF(id, good);
+    });
+    return all;
+  }
+  function swatchHTML(c) { return '<div class="qswatch" style="background:' + css(c) + '"></div>'; }
+
+  function renderTask() {
+    var t = task, body = "";
+    var head = '<div class="task-top"><span class="ttype">' + TYPE_LABEL[t.type] +
+      '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
+      (isRepeat ? " · Wiederholung" : "") + '</span></div>';
+
+    if (t.type === "cmy" || t.type === "cmyk" || t.type === "hsv") {
+      var c = t.col[1];
+      var isC = t.type === "cmy", isK = t.type === "cmyk";
+      var sol = isC ? toCMY(c) : (isK ? toCMYK(c) : toHSV(c));
+      var ids = isC ? ["c", "m", "y"] : (isK ? ["c", "m", "y", "k"] : ["h", "s", "v"]);
+      var labs = isC ? ["C", "M", "Y"] : (isK ? ["C", "M", "Y", "K"] : ["H in Grad", "S", "V"]);
+      body = '<p class="tprompt">Die Farbe <strong>' + t.col[0] + '</strong> hat in RGB die Werte ' +
+        trip(c) + '. Rechne sie nach ' + (isC ? "CMY" : (isK ? "CMYK" : "HSV")) + ' um.</p>' +
+        '<div class="trow">' + swatchHTML(c) + '<div class="fields">' +
+        ids.map(function (id, i) { return fieldHTML(id, labs[i]); }).join("") + '</div></div>' +
+        '<p class="thint">' + (isC ? "CMY = 1 − RGB"
+          : (isK ? "Erst CMY bilden, dann K = min(C, M, Y) von allen dreien abziehen."
+                 : "V = max, S = (max − min) / max, H aus der Lage des Maximums. Bei S = 0 zählt jeder Winkel.")) + '</p>';
+      checker = function () {
+        var r = checkFields(ids, sol, 0.005);
+        if (r === null) { return { incomplete: true }; }
+        if (!r && !isC && !isK && Math.abs(sol[1]) < 1e-9) {
+          // Farbton ist bei S = 0 beliebig
+          var g2 = ids.map(readF);
+          if (Math.abs(g2[1] - sol[1]) < 0.005 && Math.abs(g2[2] - sol[2]) < 0.005) {
+            markF("h", true);
+            return { ok: true, why: "Bei S = 0 ist der Farbton beliebig, jeder Winkel gilt." };
+          }
+        }
+        return { ok: r, solText: "Richtig wäre (" + sol.map(function (v, i) {
+            return fmt(!isC && !isK && i === 0 ? Math.round(v) : v); }).join(" | ") + ")",
+          why: isC ? "Jede Komponente von 1 abziehen."
+            : (isK ? "CMY = " + trip(toCMY(c)) + ", davon K = " + fmt(Math.min.apply(null, toCMY(c))) + " abziehen."
+                   : "max = " + fmt(Math.max.apply(null, c)) + ", min = " + fmt(Math.min.apply(null, c))) };
+      };
+    } else if (t.type === "fromhsv") {
+      var hsv = toHSV(t.col[1]);
+      body = '<p class="tprompt">Gegeben ist die HSV-Farbe (' + fmt(Math.round(hsv[0])) + '° | ' +
+        fmt(hsv[1]) + ' | ' + fmt(hsv[2]) + '). Wie lauten die RGB-Werte?</p>' +
+        '<div class="fields">' + fieldHTML("r", "R") + fieldHTML("g", "G") + fieldHTML("b", "B") + '</div>' +
+        '<p class="thint">V ist der größte Anteil, S sagt, wie weit der kleinste davon entfernt liegt, H welcher Kanal führt.</p>';
+      checker = function () {
+        var r = checkFields(["r", "g", "b"], t.col[1], 0.005);
+        if (r === null) { return { incomplete: true }; }
+        return { ok: r, solText: "Richtig wäre " + trip(t.col[1]) + " — das ist " + t.col[0] + ".",
+          why: "V = " + fmt(hsv[2]) + " ist der größte Kanal, der kleinste ist V · (1 − S) = " +
+            fmt(hsv[2] * (1 - hsv[1])) + "." };
+      };
+    } else if (t.type === "name") {
+      var opts = shuffled(NAMED.filter(function (n) { return n[0] !== t.col[0]; })).slice(0, 3)
+        .concat([t.col]);
+      opts = shuffled(opts);
+      body = '<p class="tprompt">Welche Farbe zeigt dieses Feld? In RGB hat sie die Werte ' + trip(t.col[1]) + '.</p>' +
+        '<div class="trow">' + swatchHTML(t.col[1]) +
+        '<div class="choices">' + opts.map(function (o, i) {
+          return '<label><input type="radio" name="mc" value="' + i + '"><span>' + o[0] + '</span></label>';
+        }).join("") + '</div></div>';
+      var correct = opts.map(function (o) { return o[0]; }).indexOf(t.col[0]);
+      checker = function () {
+        var n = document.querySelector('input[name="mc"]:checked');
+        if (!n) { return { incomplete: true }; }
+        return { ok: parseInt(n.value, 10) === correct, solText: "Richtig: " + t.col[0],
+          why: "Alle Anteile gleich heißt unbunt; ein Anteil auf 1 und die anderen auf 0 ergibt eine Grundfarbe, zwei auf 1 eine Mischfarbe." };
+      };
+    } else if (t.type === "stmt") {
+      body = '<p class="tprompt">Für welche Farbmodelle trifft diese Aussage zu?<br><strong>' +
+        t.st.s + '</strong></p>' +
+        '<div class="modelchecks">' + MODELS.map(function (m) {
+          return '<label><input type="checkbox" value="' + m + '"> ' + m + '</label>';
+        }).join("") + '</div>' +
+        '<p class="thint">Es können mehrere zutreffen — oder keines. Dann bleibt alles leer.</p>';
+      checker = function () {
+        var got = [];
+        Array.prototype.forEach.call(card.querySelectorAll('.modelchecks input'), function (n) {
+          if (n.checked) { got.push(n.value); }
+        });
+        var want = t.st.m;
+        var ok = got.length === want.length && want.every(function (m) { return got.indexOf(m) >= 0; });
+        return { ok: ok,
+          solText: "Richtig: " + (want.length ? want.join(", ") : "keines der vier Modelle"),
+          why: want.length ? "" : "Die Aussage trifft auf keines zu — auch das ist eine gültige Antwort." };
+      };
+    } else {
+      body = '<p class="tprompt">' + t.c.q + '</p><div class="choices">' +
+        t.c.o.map(function (o, i) {
+          return '<label><input type="radio" name="mc" value="' + i + '"><span>' + o + '</span></label>';
+        }).join("") + '</div>';
+      checker = function () {
+        var n = document.querySelector('input[name="mc"]:checked');
+        if (!n) { return { incomplete: true }; }
+        return { ok: parseInt(n.value, 10) === t.c.a, solText: "Richtig: " + t.c.o[t.c.a], why: t.c.w };
+      };
+    }
+
+    card.innerHTML = head + '<div class="tbody">' + body + '</div>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
+    document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+  }
+
+  function confirmAnswer() {
+    var res = checker();
+    if (res.incomplete) {
+      var act = card.querySelector(".tactions");
+      var warn = act.querySelector(".repeat-note.warn");
+      if (!warn) { warn = document.createElement("span"); warn.className = "repeat-note warn"; act.appendChild(warn); }
+      warn.textContent = "Bitte alles ausfüllen.";
+      return;
+    }
+    if (!isRepeat) { if (res.ok) { score.ok++; } else { score.bad++; } saveScore(); paintScore(); }
+    Array.prototype.forEach.call(card.querySelectorAll("input"), function (n) { n.disabled = true; });
+    card.querySelector(".tactions").remove();
+    var v = document.createElement("div");
+    v.className = "verdict " + (res.ok ? "right" : "wrong");
+    var parts = '<span class="vhead">' + (res.ok ? "Richtig." : "Nicht richtig.") + '</span>';
+    if (!res.ok && res.solText) { parts += '<span class="vsol">' + res.solText + '</span>'; }
+    if (res.why) { parts += '<span class="vsol">' + res.why + '</span>'; }
+    v.innerHTML = parts;
+    card.appendChild(v);
+    if (res.ok) { var vr = v.getBoundingClientRect(); confetti(vr.left + vr.width / 2, vr.top + 12); }
+    var act2 = document.createElement("div");
+    act2.className = "tactions";
+    act2.innerHTML = (res.ok ? "" : '<button class="btn ghost" id="btn_again">Wiederholen</button>') +
+      '<button class="btn primary" id="btn_next">Nächste Aufgabe</button>';
+    card.appendChild(act2);
+    document.getElementById("btn_next").addEventListener("click", function () { isRepeat = false; nextTask(); });
+    if (!res.ok) { document.getElementById("btn_again").addEventListener("click", function () { isRepeat = true; renderTask(); }); }
+  }
+
+  function nextTask() {
+    deckIndex++;
+    if (deckIndex >= deck.length) { renderDone(); return; }
+    task = deck[deckIndex];
+    renderTask();
+  }
+  function renderDone() {
+    card.innerHTML = '<div class="donecard"><h3>Durchlauf geschafft</h3>' +
+      '<p class="note">Alle ' + deck.length + ' Aufgaben einmal gesehen. Ein neuer Durchlauf zieht andere Farben.</p>' +
+      '<button class="btn primary" id="btn_restart">Neuen Durchlauf starten</button></div>';
+    document.getElementById("btn_restart").addEventListener("click", function () {
+      deck = buildDeck(); deckIndex = -1; isRepeat = false; nextTask();
+    });
+  }
+
+  paintScore();
+  nextTask();
+}());
+</script>
+<script src="../scripts/portal-bridge.js?v=4"></script>

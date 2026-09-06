@@ -1,0 +1,642 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strahlenlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#FAF9F6; --surface:#FFFFFF; --ink:#16203A; --ink-2:#55607A; --ink-3:#8590A8;
+    --blue:#1E3FAE; --blue-soft:#E8ECFA; --red:#C7362B; --grid:#DCE2EE; --grid-axis:#A9B3C7;
+    --rule:#E4E6EC; --good:#158A4A; --accent2:#C51E86; --ghost:#B4BDD0; --amber:#B8791C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+      --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+      --rule:#262C3A; --good:#4FD08A; --accent2:#FF77C4; --ghost:#4A5468; --amber:#E0A93B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+    --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+    --rule:#262C3A; --good:#4FD08A; --accent2:#FF77C4; --ghost:#4A5468; --amber:#E0A93B;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif; font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
+    display: flex; flex-direction: column; gap: 2.5rem; }
+  h1,h2,h3,.label,th,button { font-family: "Libre Franklin", Arial, sans-serif; }
+  .mono,input,td.n,.formula { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+  .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+  h1 { font-size: clamp(1.9rem,5vw,2.6rem); font-weight: 800; letter-spacing: -0.022em;
+    line-height: 1.1; margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--ink-2); max-width: 40rem; font-size: 1.05rem; }
+  h2 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  p { margin: 0; }
+  .note { color: var(--ink-2); font-size: 0.97rem; }
+  .label { font-size: 0.66rem; letter-spacing: 0.13em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); display: block; }
+  .tabs { display: flex; gap: 0.15rem; border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; z-index: 30; background: var(--paper);
+    margin: 0 -1.5rem -1.2rem; padding: 0.6rem 1.5rem 0; }
+  .tabs button { font-size: 0.9rem; font-weight: 600; padding: 0.5rem 0.95rem;
+    background: transparent; color: var(--ink-3); border: none; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; cursor: pointer; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+  #view-erklaerung, #view-training { display: flex; flex-direction: column; gap: 2.5rem; }
+
+  .lab { display: grid; grid-template-columns: minmax(0,17rem) minmax(0,1fr);
+    gap: 1.5rem; align-items: start; }
+  @media (max-width: 50rem) { .lab { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1.1rem 1.2rem 1.25rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 0.9rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .stage svg { width: 100%; height: auto; display: block; }
+  .toggles { display: flex; flex-direction: column; gap: 0.45rem; }
+  .toggles label { display: flex; align-items: center; gap: 0.55rem; font-size: 0.93rem; cursor: pointer; }
+  .toggles input { accent-color: var(--blue); cursor: pointer; }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; font-size: 0.76rem;
+    color: var(--ink-2); font-family: "IBM Plex Mono", monospace; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .sw { width: 16px; height: 0; border-top: 2px solid; display: inline-block; }
+
+  .formula { font-size: 0.88rem; line-height: 1.85; background: var(--blue-soft); color: var(--ink);
+    border-left: 2px solid var(--blue); padding: 0.7rem 0.9rem; border-radius: 0 2px 2px 0; overflow-x: auto; }
+  .formula em { font-style: normal; color: var(--ink-2); }
+  .traps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .traps li { font-size: 0.94rem; padding-left: 1.15rem; position: relative; }
+  .traps li::before { content: "✗"; position: absolute; left: 0; top: 0.05em; color: var(--red);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem,1fr)); gap: 0;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); overflow: hidden; }
+  .duo > article { padding: 1rem 1.1rem 1.15rem; border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 0.5rem; }
+  .duo > article:last-child { border-right: none; }
+  .duo h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--blue);
+    font-family: "IBM Plex Mono", monospace; }
+  .duo p { font-size: 0.92rem; }
+  .duo .cnote { font-size: 0.83rem; color: var(--ink-3); margin-top: auto; padding-top: 0.2rem; }
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th { text-align: left; font-size: 0.64rem; letter-spacing: 0.09em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); padding: 0 0.55rem 0.45rem 0;
+    border-bottom: 1px solid var(--ink-3); white-space: nowrap; }
+  td { padding: 0.5rem 0.55rem 0.5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.n { font-family: "IBM Plex Mono", monospace; white-space: nowrap; color: var(--blue); font-weight: 600; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  figure svg { width: 100%; max-width: 34rem; height: auto; align-self: center; }
+  figcaption { font-size: 0.85rem; color: var(--ink-3); text-align: center; }
+  .sfi { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--ink-2); }
+
+  .score { display: flex; align-items: center; gap: 1.6rem; padding: 0.75rem 1.1rem;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; flex-wrap: wrap; }
+  .score .s { display: flex; align-items: baseline; gap: 0.4rem; }
+  .score .sv { font-family: "IBM Plex Mono", monospace; font-size: 1.35rem; font-weight: 600; }
+  .score .sv.ok { color: var(--good); } .score .sv.bad { color: var(--red); }
+  .score .sk { font-family: "Libre Franklin", sans-serif; font-size: 0.66rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .linkish { margin-left: auto; background: none; border: none; cursor: pointer;
+    font-family: "Libre Franklin", sans-serif; font-size: 0.76rem; color: var(--ink-3);
+    text-decoration: underline; text-underline-offset: 3px; padding: 0.2rem; }
+  .taskcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    display: flex; flex-direction: column; }
+  .task-top { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+    padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--rule); }
+  .ttype { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--blue); }
+  .tno { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--ink-3); }
+  .tbody { padding: 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .tprompt { font-size: 1rem; }
+  .thint { font-size: 0.88rem; color: var(--ink-3); }
+  .choices { display: flex; flex-direction: column; gap: 0.4rem; }
+  .choices label { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.95rem; cursor: pointer; }
+  .choices input { margin-top: 0.35rem; accent-color: var(--blue); cursor: pointer; }
+  .tactions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+    padding: 0.9rem 1.2rem; border-top: 1px solid var(--rule); }
+  .btn { font-family: "Libre Franklin", sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 0.48rem 0.95rem; border-radius: 2px; cursor: pointer; border: 1px solid transparent; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  :root[data-theme="dark"] .btn.primary, :root:not([data-theme="light"]) .btn.primary { color: #0F131B; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: #fff; } }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--rule); }
+  .btn.ghost:hover { color: var(--blue); border-color: var(--blue); background: var(--blue-soft); }
+  .verdict { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.9rem 1.2rem;
+    border-top: 1px solid var(--rule); }
+  .verdict .vhead { font-family: "Libre Franklin", sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .verdict.right .vhead { color: var(--good); } .verdict.wrong .vhead { color: var(--red); }
+  .verdict .vsol { font-size: 0.93rem; color: var(--ink-2); }
+  .repeat-note { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
+  .repeat-note.warn { color: var(--red); }
+  .donecard { text-align: center; padding: 2rem 1.2rem; display: flex; flex-direction: column;
+    gap: 0.8rem; align-items: center; }
+  .donecard h3 { margin: 0; font-family: "Libre Franklin", sans-serif; font-size: 1.2rem; }
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+  footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Aufgabe 6 · Raytracing und VR · 5–6 Punkte</div>
+    <h1>Strahlenlabor</h1>
+    <p>Die wechselnde Zusatzaufgabe. In zwei von fünf Klausuren fehlte sie ganz, zuletzt kam zweimal Raytracing. Kurz, aber leicht mitzunehmen.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Ansicht">
+    <button role="tab" data-view="erklaerung" aria-selected="true">Erklärung</button>
+    <button role="tab" data-view="training" aria-selected="false">Training</button>
+  </nav>
+
+  <div id="view-erklaerung">
+    <section>
+      <div class="lab">
+        <div class="panel">
+          <span class="label">Strahlen einblenden</span>
+          <div class="toggles" id="toggles">
+            <label><input type="checkbox" id="t_eye" checked> Augstrahl durch das Pixel</label>
+            <label><input type="checkbox" id="t_shadow" checked> Schattenstrahlen zu beiden Lichtern</label>
+            <label><input type="checkbox" id="t_refl"> Reflexionsstrahl</label>
+            <label><input type="checkbox" id="t_aa"> Antialiasing: drei Augstrahlen</label>
+            <label><input type="checkbox" id="t_diff"> Distribution, diffuse Oberfläche</label>
+            <label><input type="checkbox" id="t_gloss"> Distribution, glänzende Oberfläche</label>
+          </div>
+          <p class="thint">Genau diese vier Teilbilder waren 2021 SS zu zeichnen.</p>
+        </div>
+        <div class="stage">
+          <svg id="scene" viewBox="0 0 480 300" role="img" aria-label="Raytracing-Szene mit Kamera, Tisch und zwei Lichtquellen"></svg>
+          <div class="legend">
+            <span><i class="sw" style="border-color:var(--blue)"></i> primär und sekundär, durchgezogen</span>
+            <span><i class="sw" style="border-color:var(--amber);border-top-style:dashed"></i> Schattenstrahlen, gestrichelt</span>
+          </div>
+          <p class="thint" id="scenenote"></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Die Strahlenarten</h2>
+      <div class="duo">
+        <article>
+          <h3>primär</h3>
+          <p>Der Augstrahl von der Kamera durch das Pixel in die Szene, bis er das erste Objekt trifft.</p>
+          <p class="cnote">Einer pro Pixel — außer beim Antialiasing.</p>
+        </article>
+        <article>
+          <h3>sekundär</h3>
+          <p>Vom Treffpunkt aus weiter: gespiegelt an der Oberfläche oder gebrochen durch sie hindurch.</p>
+          <p class="cnote">Wird wie ein neuer Augstrahl behandelt, daher durchgezogen gezeichnet.</p>
+        </article>
+        <article>
+          <h3>Schatten</h3>
+          <p>Vom Treffpunkt zu <em>jeder</em> Lichtquelle, um zu prüfen, ob etwas dazwischensteht.</p>
+          <p class="cnote">In der Klausur gestrichelt. Bei zwei Lichtern also immer zwei Stück.</p>
+        </article>
+      </div>
+      <ul class="traps">
+        <li>Nur einen Schattenstrahl zeichnen, obwohl zwei Lichtquellen in der Szene stehen.</li>
+        <li>Schattenstrahlen durchgezogen zeichnen. Die Aufgabe schreibt gestrichelt vor.</li>
+        <li>Beim Antialiasing drei Strahlen zum selben Punkt schicken. Sie müssen durch <em>verschiedene</em> Stellen des Pixels laufen.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Distribution Ray Tracing</h2>
+      <div class="duo">
+        <article>
+          <h3>diffus</h3>
+          <p>Vom Treffpunkt streuen die Strahlen breit über die ganze Halbkugel.</p>
+          <p class="cnote">Eine matte Oberfläche wirft Licht in alle Richtungen zurück.</p>
+        </article>
+        <article>
+          <h3>glossy</h3>
+          <p>Die Strahlen bleiben in einem engen Kegel um die ideale Spiegelrichtung.</p>
+          <p class="cnote">Je enger der Kegel, desto schärfer die Spiegelung.</p>
+        </article>
+      </div>
+      <p class="note">Der Unterschied zwischen den beiden Teilbildern ist genau der Öffnungswinkel. Beides ausprobieren kannst du im Labor oben.</p>
+    </section>
+
+    <section>
+      <h2>Komplexität</h2>
+      <p class="note">2020 WS: eine Szene aus <span class="mono">k</span> Kugeln, jede für die Rasterisierung in <span class="mono">n</span> Dreiecke zerlegt, gerendert in <span class="mono">p</span> Pixel. Die Kugeln füllen fast das ganze Bild, verdecken sich aber kaum.</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Verfahren</th><th>Komplexität</th><th>Warum</th></tr></thead>
+          <tbody>
+            <tr><td>Rasterisierung, Vertex-Shader</td><td class="n">O(k · n)</td>
+                <td>Jedes Dreieck jeder Kugel läuft genau einmal durch.</td></tr>
+            <tr><td>Rasterisierung, Pixel-Shader</td><td class="n">O(p)</td>
+                <td>Wenig Verdeckung heißt, jedes Pixel wird ungefähr einmal beschrieben.</td></tr>
+            <tr><td>Ray Casting, direkter Kugeltest</td><td class="n">O(p · k)</td>
+                <td>Für jedes Pixel wird gegen jede Kugel getestet, der Test selbst kostet O(1).</td></tr>
+            <tr><td>Ray Casting mit Bounding&nbsp;Volume Hierarchy</td><td class="n">O(p · log k)</td>
+                <td>Pro Strahl halbiert sich der Suchraum in jeder Ebene des Baums.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Nicht vergessen: der Aufbau der Hierarchie kostet einmalig <span class="mono">O(k · log k)</span>. Und die Rasterisierung wird gerade <em>nicht</em> schneller, wenn man die Kugeln feiner zerlegt — nur der Vertex-Anteil wächst.</p>
+    </section>
+
+    <section>
+      <h2>VR und Head-Mounted Displays</h2>
+      <p class="note">2019 SS. Drei Blöcke, alle drei mit knappen Antworten zu erledigen.</p>
+      <div class="duo">
+        <article>
+          <h3>Tiefenhinweise</h3>
+          <p><strong>Stereo-Parallaxe:</strong> ja. Für jedes Auge ein leicht versetztes Bild rendern.</p>
+          <p><strong>Bewegungsparallaxe:</strong> ja. Kopfbewegung tracken und die Kamera mitführen, nahe Objekte wandern schneller.</p>
+          <p><strong>Fokus:</strong> nein. Das Display sitzt in festem Abstand vor dem Auge.</p>
+        </article>
+        <article>
+          <h3>View Frusta</h3>
+          <p>Zwei <em>asymmetrische</em> Pyramidenstümpfe, deren Near- und Far-Plane parallel zum Display liegen.</p>
+          <p class="cnote">Mit gluPerspective nicht machbar, weil die Funktion nur symmetrische Frusta erzeugt. Stereoskopisch korrekt ist nur der Bereich, den beide Frusta abdecken.</p>
+        </article>
+        <article>
+          <h3>Latenz</h3>
+          <p>Drei Summanden: Zeit bis der Sensor die Kopfbewegung meldet, Zeit fürs Rendern (bei 60 fps rund 16 ms pro Bild), Zeit für Übertragung und Anzeige.</p>
+          <p class="cnote">Die Frage lautet ausdrücklich „briefly“ — drei Stichpunkte genügen.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <div id="view-training" hidden>
+    <section>
+      <h2>Training</h2>
+      <p class="note">Aufgaben zu beiden Themen, die in diesem Slot vorkamen.</p>
+      <div class="score">
+        <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
+        <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
+        <div class="s"><span class="sv" id="sc_rate">—</span><span class="sk">Quote</span></div>
+        <button class="linkish" id="sc_reset">Zähler zurücksetzen</button>
+      </div>
+      <div class="taskcard" id="taskcard"></div>
+    </section>
+  </div>
+
+  <footer>
+    Szenen, Komplexitätsangaben und VR-Fragen stammen aus den Klausuren Oktober 2019, April 2021 und Oktober 2021 des Lehrstuhls Graphische Datenverarbeitung.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function make(t, a) { var n = document.createElementNS(NS, t); for (var k in a) { n.setAttribute(k, a[k]); } return n; }
+  function clear(n) { while (n.firstChild) { n.removeChild(n.firstChild); } }
+
+  /* ================= SZENE ================= */
+  var CAM = [55, 165], PIX = [110, 158], HIT = [255, 195];
+  var L1 = [225, 60], L2 = [355, 60];
+
+  function ray(svg, a, b, dashed, w) {
+    svg.appendChild(make("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1],
+      stroke: dashed ? "var(--amber)" : "var(--blue)", "stroke-width": w || 1.6,
+      "stroke-dasharray": dashed ? "6 4" : "none", "stroke-linecap": "round" }));
+  }
+  function far(from, dir, len) {
+    var L = Math.sqrt(dir[0] * dir[0] + dir[1] * dir[1]);
+    return [from[0] + dir[0] / L * len, from[1] + dir[1] / L * len];
+  }
+
+  function drawScene() {
+    var svg = document.getElementById("scene");
+    clear(svg);
+    var on = {};
+    ["eye", "shadow", "refl", "aa", "diff", "gloss"].forEach(function (k) {
+      on[k] = document.getElementById("t_" + k).checked;
+    });
+
+    svg.appendChild(make("rect", { x: 8, y: 8, width: 464, height: 284, rx: 3,
+      fill: "var(--surface)", stroke: "var(--rule)", "stroke-width": 1.5 }));
+
+    // Tisch
+    svg.appendChild(make("rect", { x: 190, y: 190, width: 150, height: 10, rx: 2,
+      fill: "var(--ink)", "fill-opacity": 0.12, stroke: "var(--ink)", "stroke-width": 2 }));
+    svg.appendChild(make("rect", { x: 200, y: 200, width: 130, height: 8, rx: 1,
+      fill: "var(--ink)", "fill-opacity": 0.08, stroke: "var(--ink)", "stroke-width": 1.5 }));
+    [206, 318].forEach(function (x) {
+      svg.appendChild(make("rect", { x: x, y: 208, width: 7, height: 56,
+        fill: "var(--ink)", "fill-opacity": 0.12, stroke: "var(--ink)", "stroke-width": 1.8 }));
+    });
+
+    // Lichter
+    [L1, L2].forEach(function (L, i) {
+      svg.appendChild(make("circle", { cx: L[0], cy: L[1], r: 9,
+        fill: "var(--amber)", "fill-opacity": 0.35, stroke: "var(--amber)", "stroke-width": 2 }));
+      var t = make("text", { x: L[0] + 15, y: L[1] + 5, fill: "var(--ink-2)",
+        "font-size": 12, "font-family": "IBM Plex Mono, monospace" });
+      t.textContent = "L" + (i + 1);
+      svg.appendChild(t);
+    });
+
+    // Kamera und Bildebene
+    svg.appendChild(make("polygon", { points: "40,150 40,180 70,190 70,140",
+      fill: "var(--ink)", "fill-opacity": 0.15, stroke: "var(--ink)", "stroke-width": 2 }));
+    svg.appendChild(make("line", { x1: 105, y1: 120, x2: 105, y2: 200,
+      stroke: "var(--ink-3)", "stroke-width": 1.2 }));
+    svg.appendChild(make("rect", { x: 101, y: 150, width: 9, height: 16,
+      fill: "none", stroke: "var(--ink)", "stroke-width": 1.6 }));
+    var pt = make("text", { x: 92, y: 145, fill: "var(--ink-2)", "font-size": 12,
+      "font-family": "IBM Plex Mono, monospace", "text-anchor": "end" });
+    pt.textContent = "P";
+    svg.appendChild(pt);
+
+    if (on.eye && !on.aa) { ray(svg, CAM, HIT, false, 1.8); }
+    if (on.aa) {
+      [[101, 152], [105, 158], [109, 164]].forEach(function (p, i) {
+        var dir = [p[0] - CAM[0], p[1] - CAM[1]];
+        var end = [HIT[0] + (i - 1) * 26, HIT[1] - Math.abs(i - 1) * 2];
+        ray(svg, CAM, end, false, 1.5);
+      });
+    }
+    if (on.shadow) {
+      ray(svg, HIT, L1, true);
+      ray(svg, HIT, L2, true);
+    }
+    if (on.refl) {
+      // Einfallswinkel gleich Ausfallswinkel an der waagerechten Tischplatte
+      var din = [HIT[0] - CAM[0], HIT[1] - CAM[1]];
+      ray(svg, HIT, far(HIT, [din[0], -din[1]], 210), false, 1.8);
+    }
+    if (on.diff) {
+      [-70, -35, 0, 35, 70].forEach(function (a) {
+        var rad = (-90 + a) * Math.PI / 180;
+        ray(svg, HIT, far(HIT, [Math.cos(rad), Math.sin(rad)], 150), false, 1.2);
+      });
+    }
+    if (on.gloss) {
+      var d2 = [HIT[0] - CAM[0], -(HIT[1] - CAM[1])];
+      var base = Math.atan2(d2[1], d2[0]);
+      [-9, -3, 3, 9].forEach(function (a) {
+        var rad = base + a * Math.PI / 180;
+        ray(svg, HIT, far(HIT, [Math.cos(rad), Math.sin(rad)], 200), false, 1.2);
+      });
+    }
+    if (on.eye || on.aa || on.shadow || on.refl || on.diff || on.gloss) {
+      svg.appendChild(make("circle", { cx: HIT[0], cy: HIT[1], r: 3.5, fill: "var(--blue)" }));
+    }
+
+    var note;
+    if (on.diff && on.gloss) { note = "Beide Streuungen übereinander: der enge Fächer gehört zu glossy, der weite zu diffus."; }
+    else if (on.diff) { note = "Diffus: die Streuung deckt die ganze Halbkugel über dem Treffpunkt ab."; }
+    else if (on.gloss) { note = "Glossy: alle Strahlen bleiben dicht an der idealen Spiegelrichtung."; }
+    else if (on.aa) { note = "Antialiasing: die Strahlen laufen durch verschiedene Stellen desselben Pixels, nicht durch dieselbe."; }
+    else if (on.refl) { note = "Der Reflexionsstrahl gilt als Sekundärstrahl und wird deshalb durchgezogen gezeichnet."; }
+    else if (on.shadow) { note = "Zu jeder Lichtquelle gehört ein eigener Schattenstrahl, beide gestrichelt."; }
+    else { note = "Häkchen setzen, um die Strahlenarten einzublenden."; }
+    document.getElementById("scenenote").textContent = note;
+  }
+  document.getElementById("toggles").addEventListener("change", drawScene);
+  drawScene();
+
+  /* ================= TABS + KONFETTI ================= */
+  var viewErk = document.getElementById("view-erklaerung");
+  var viewTra = document.getElementById("view-training");
+  var tabs = document.getElementById("tabs");
+  tabs.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-view]");
+    if (!b) { return; }
+    var v = b.getAttribute("data-view");
+    Array.prototype.forEach.call(tabs.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+    viewErk.hidden = (v !== "erklaerung");
+    viewTra.hidden = (v !== "training");
+  });
+  function cssVar(n, f) { var v = getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v || f; }
+  function confetti(ox, oy) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
+    var W = window.innerWidth || document.documentElement.clientWidth;
+    var H = window.innerHeight || document.documentElement.clientHeight;
+    if (!W || !H) { return; }
+    var stale = document.getElementById("confetti"); if (stale) { stale.remove(); }
+    var colors = [cssVar("--good", "#158A4A"), cssVar("--blue", "#1E3FAE"), cssVar("--accent2", "#C51E86"), cssVar("--amber", "#B8791C")];
+    var cv = document.createElement("canvas"); cv.id = "confetti"; document.body.appendChild(cv);
+    var dpr = window.devicePixelRatio || 1; cv.width = W * dpr; cv.height = H * dpr;
+    var ctx = cv.getContext("2d"); ctx.scale(dpr, dpr);
+    var bits = [], i;
+    for (i = 0; i < 70; i++) {
+      var ang = (-Math.PI / 2) + (Math.random() - 0.5) * 2, spd = 5 + Math.random() * 8;
+      bits.push({ x: ox + (Math.random() - 0.5) * 90, y: oy, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        w: 4 + Math.random() * 5, h: 6 + Math.random() * 6, rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35, col: colors[Math.floor(Math.random() * colors.length)] });
+    }
+    var start = performance.now(), LIFE = 1500;
+    var killer = window.setTimeout(function () { cv.remove(); }, LIFE + 3000);
+    function frame(now) {
+      var t = now - start;
+      if (t > LIFE) { window.clearTimeout(killer); cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      var fade = t > LIFE * 0.6 ? 1 - (t - LIFE * 0.6) / (LIFE * 0.4) : 1;
+      bits.forEach(function (b) {
+        b.vy += 0.32; b.vx *= 0.995; b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+        ctx.save(); ctx.globalAlpha = fade; ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+        ctx.fillStyle = b.col; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); ctx.restore();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ================= TRAINING ================= */
+  var TYPE_LABEL = { rt: "Raytracing · wie 2021 SS 6", cx: "Komplexität · wie 2020 WS 6", vr: "VR und HMD · wie 2019 SS 5" };
+
+  var Q = [
+    { t: "rt", q: "Wie viele Schattenstrahlen gehen bei zwei Lichtquellen von einem Treffpunkt aus?",
+      o: ["Zwei, zu jeder Lichtquelle einer", "Einer, zur helleren Lichtquelle", "Keiner, Schatten entstehen aus dem Primärstrahl"],
+      a: 0, w: "Für jede Lichtquelle muss einzeln geprüft werden, ob etwas dazwischensteht." },
+    { t: "rt", q: "Wie werden Schattenstrahlen in der Klausur gezeichnet?",
+      o: ["Gestrichelt", "Durchgezogen wie alle anderen", "Gepunktet mit Pfeilspitze"],
+      a: 0, w: "Die Aufgabe schreibt durchgezogen für primäre und sekundäre, gestrichelt für Schattenstrahlen vor." },
+    { t: "rt", q: "Wie sieht Antialiasing für ein einzelnes Pixel aus?",
+      o: ["Mehrere Augstrahlen durch verschiedene Stellen desselben Pixels",
+          "Ein Augstrahl, dessen Ergebnis mit den Nachbarpixeln gemittelt wird",
+          "Mehrere Augstrahlen durch denselben Punkt des Pixels"],
+      a: 0, w: "Nur so werden die Kanten innerhalb des Pixels überhaupt abgetastet." },
+    { t: "rt", q: "Distribution Ray Tracing auf einer diffusen Oberfläche — wie streuen die Reflexionsstrahlen?",
+      o: ["Breit über die ganze Halbkugel", "In einem engen Kegel um die Spiegelrichtung", "Genau in eine Richtung"],
+      a: 0, w: "Matte Oberflächen werfen Licht in alle Richtungen zurück." },
+    { t: "rt", q: "Und auf einer glänzenden Oberfläche?",
+      o: ["In einem engen Kegel um die ideale Spiegelrichtung", "Breit über die Halbkugel", "Entlang der Oberfläche"],
+      a: 0, w: "Je enger der Kegel, desto schärfer die Spiegelung." },
+    { t: "rt", q: "Als was zählt der Reflexionsstrahl und wie wird er gezeichnet?",
+      o: ["Als Sekundärstrahl, durchgezogen", "Als Schattenstrahl, gestrichelt", "Als Primärstrahl, durchgezogen"],
+      a: 0, w: "Sekundärstrahlen werden wie neue Augstrahlen behandelt." },
+    { t: "rt", q: "Was passiert mit einem Schattenstrahl, der auf ein Objekt trifft, bevor er die Lichtquelle erreicht?",
+      o: ["Der Punkt liegt für diese Lichtquelle im Schatten",
+          "Der Strahl wird dort reflektiert und läuft weiter",
+          "Der Punkt wird doppelt beleuchtet"],
+      a: 0, w: "Genau dafür ist der Schattenstrahl da: er testet nur auf Verdeckung." },
+    { t: "cx", q: "k Kugeln, je in n Dreiecke zerlegt, p Pixel. Was kostet der Vertex-Shader bei Rasterisierung?",
+      o: ["O(k · n)", "O(p)", "O(p · k)", "O(k · log k)"],
+      a: 0, w: "Jedes der insgesamt k·n Dreiecke läuft genau einmal durch die Vertex-Stufe." },
+    { t: "cx", q: "Und der Pixel-Shader, wenn sich die Kugeln kaum verdecken?",
+      o: ["O(p)", "O(k · n)", "O(p · k)", "O(p · log k)"],
+      a: 0, w: "Ohne nennenswerte Verdeckung wird jedes Pixel etwa einmal beschrieben." },
+    { t: "cx", q: "Ray Casting mit direktem Kugeltest in O(1) pro Test — wie teuer insgesamt?",
+      o: ["O(p · k)", "O(p)", "O(k · n)", "O(p · log k)"],
+      a: 0, w: "Jeder der p Strahlen wird gegen jede der k Kugeln getestet." },
+    { t: "cx", q: "Ray Casting auf einer gut gewählten Bounding Volume Hierarchy?",
+      o: ["O(p · log k)", "O(p · k)", "O(p)", "O(k · log k)"],
+      a: 0, w: "Pro Strahl schrumpft die Kandidatenmenge in jeder Baumebene." },
+    { t: "cx", q: "Was kostet der einmalige Aufbau dieser Hierarchie?",
+      o: ["O(k · log k)", "O(p · log k)", "O(k²)", "Nichts, sie entsteht beim Rendern"],
+      a: 0, w: "Der Aufbau ist ein Sortiervorgang über die k Objekte." },
+    { t: "cx", q: "Die Kugeln werden für die Rasterisierung feiner zerlegt, n verdoppelt sich. Was wächst?",
+      o: ["Nur der Vertex-Anteil, der Pixel-Anteil bleibt bei O(p)",
+          "Beide Anteile verdoppeln sich", "Nur der Pixel-Anteil"],
+      a: 0, w: "Die Bildfläche ändert sich nicht, nur die Zahl der zu transformierenden Dreiecke." },
+    { t: "vr", q: "Kann ein HMD Stereo-Parallaxe darstellen?",
+      o: ["Ja, indem für jedes Auge ein leicht versetztes Bild gerendert wird",
+          "Nein, dafür wäre ein Lichtfelddisplay nötig",
+          "Nur bei Objekten weiter als zwei Meter"],
+      a: 0, w: "Zwei Displays, zwei leicht verschobene Kamerapositionen." },
+    { t: "vr", q: "Kann ein HMD Bewegungsparallaxe darstellen?",
+      o: ["Ja, über Kopftracking — nahe Objekte wandern dann schneller als ferne",
+          "Nein, das Bild ist fest mit dem Kopf verbunden",
+          "Nur wenn der Nutzer stillsteht"],
+      a: 0, w: "Die Kamera wird der Kopfbewegung nachgeführt, dadurch entsteht die Parallaxe." },
+    { t: "vr", q: "Kann ein HMD den Fokus als Tiefenhinweis bedienen?",
+      o: ["Nein, das Display sitzt in festem Abstand vor dem Auge",
+          "Ja, über die Linsenkrümmung",
+          "Ja, durch Weichzeichnen ferner Objekte"],
+      a: 0, w: "Die Akkommodation des Auges bleibt konstant, egal wie fern das dargestellte Objekt scheinbar ist." },
+    { t: "vr", q: "Wie sehen die beiden View Frusta eines HMD aus?",
+      o: ["Asymmetrisch, mit Near- und Far-Plane parallel zum Display",
+          "Symmetrisch, aber gegeneinander verdreht",
+          "Identisch, nur seitlich verschoben"],
+      a: 0, w: "Die Augen sitzen nicht mittig vor ihrer jeweiligen Displayhälfte, daher schiefe Frusta." },
+    { t: "vr", q: "Lassen sich diese Frusta mit gluPerspective erzeugen?",
+      o: ["Nein, gluPerspective erzeugt nur symmetrische Frusta",
+          "Ja, mit passendem Öffnungswinkel",
+          "Ja, wenn man zNear klein genug wählt"],
+      a: 0, w: "Für asymmetrische Frusta braucht man eine Funktion, die alle vier Seiten einzeln festlegt." },
+    { t: "vr", q: "Welcher Teil der Szene lässt sich stereoskopisch korrekt darstellen?",
+      o: ["Nur der Bereich, den beide Frusta gemeinsam abdecken",
+          "Die gesamte Szene", "Nur was näher als die Near-Plane liegt"],
+      a: 0, w: "Was nur ein Auge sieht, hat keine Entsprechung im anderen Bild." },
+    { t: "vr", q: "Aus welchen drei Summanden setzt sich die Latenz eines HMD zusammen?",
+      o: ["Sensor meldet die Bewegung, Bild wird gerendert, Bild wird übertragen und angezeigt",
+          "Kabellänge, Auflösung, Bildwiederholrate",
+          "Augenabstand, Linsenverzerrung, Displayhelligkeit"],
+      a: 0, w: "Bei 60 fps steuert allein das Rendern rund 16 ms bei." },
+    { t: "vr", q: "Warum ist niedrige Latenz bei einem HMD wichtiger als bei einem Monitor?",
+      o: ["Weil das Bild der Kopfbewegung sichtbar hinterherläuft und das Übelkeit auslöst",
+          "Weil die Auflösung höher ist", "Weil zwei Bilder statt einem berechnet werden"],
+      a: 0, w: "Der Versatz zwischen Bewegung und Bild ist der Hauptgrund für Motion Sickness." }
+  ];
+
+  function shuffled(a) {
+    var r = a.slice(), i, j, t;
+    for (i = r.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = r[i]; r[i] = r[j]; r[j] = t; }
+    return r;
+  }
+  function buildDeck() {
+    var d=Q.map(function (c) {
+      var idx = c.o.map(function (_, i) { return i; }), i, j, t;
+      for (i = idx.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
+      return { type: c.t, q: c.q, w: c.w, o: idx.map(function (k) { return c.o[k]; }), a: idx.indexOf(c.a) };
+    });
+    if (new URLSearchParams(window.location.search).get("exam") === "1") {
+      function one(types) {
+        var candidates=d.filter(function(t){return types.indexOf(t.type)>=0;});
+        return candidates[Math.floor(Math.random()*candidates.length)];
+      }
+      return [one(["rt"]),one(["cx","vr"])];
+    }
+    return shuffled(d);
+  }
+
+  var score = { ok: 0, bad: 0 };
+  try {
+    var raw = window.localStorage.getItem("cg-ray-score");
+    if (raw) { var p = JSON.parse(raw); if (p && typeof p.ok === "number") { score = p; } }
+  } catch (e) { /* egal */ }
+  function saveScore() { try { window.localStorage.setItem("cg-ray-score", JSON.stringify(score)); } catch (e) { /* egal */ } }
+  function paintScore() {
+    document.getElementById("sc_ok").textContent = score.ok;
+    document.getElementById("sc_bad").textContent = score.bad;
+    var t = score.ok + score.bad;
+    document.getElementById("sc_rate").textContent = t ? Math.round(score.ok / t * 100) + " %" : "—";
+  }
+  document.getElementById("sc_reset").addEventListener("click", function () {
+    score = { ok: 0, bad: 0 }; saveScore(); paintScore();
+  });
+
+  var card = document.getElementById("taskcard");
+  var deck = buildDeck(), deckIndex = -1, task = null, isRepeat = false;
+
+  function renderTask() {
+    var t = task;
+    card.innerHTML = '<div class="task-top"><span class="ttype">' + TYPE_LABEL[t.type] +
+      '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
+      (isRepeat ? " · Wiederholung" : "") + '</span></div>' +
+      '<div class="tbody"><p class="tprompt">' + t.q + '</p><div class="choices">' +
+      t.o.map(function (o, i) {
+        return '<label><input type="radio" name="mc" value="' + i + '"><span>' + o + '</span></label>';
+      }).join("") + '</div></div>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
+    document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+  }
+
+  function confirmAnswer() {
+    var n = document.querySelector('input[name="mc"]:checked');
+    if (!n) {
+      var act = card.querySelector(".tactions");
+      var warn = act.querySelector(".repeat-note.warn");
+      if (!warn) { warn = document.createElement("span"); warn.className = "repeat-note warn"; act.appendChild(warn); }
+      warn.textContent = "Bitte eine Antwort wählen.";
+      return;
+    }
+    var ok = parseInt(n.value, 10) === task.a;
+    if (!isRepeat) { if (ok) { score.ok++; } else { score.bad++; } saveScore(); paintScore(); }
+    Array.prototype.forEach.call(card.querySelectorAll("input"), function (x) { x.disabled = true; });
+    card.querySelector(".tactions").remove();
+    var v = document.createElement("div");
+    v.className = "verdict " + (ok ? "right" : "wrong");
+    v.innerHTML = '<span class="vhead">' + (ok ? "Richtig." : "Nicht richtig.") + '</span>' +
+      (ok ? "" : '<span class="vsol">Richtig: ' + task.o[task.a] + '</span>') +
+      '<span class="vsol">' + task.w + '</span>';
+    card.appendChild(v);
+    if (ok) { var vr = v.getBoundingClientRect(); confetti(vr.left + vr.width / 2, vr.top + 12); }
+    var act2 = document.createElement("div");
+    act2.className = "tactions";
+    act2.innerHTML = (ok ? "" : '<button class="btn ghost" id="btn_again">Wiederholen</button>') +
+      '<button class="btn primary" id="btn_next">Nächste Aufgabe</button>';
+    card.appendChild(act2);
+    document.getElementById("btn_next").addEventListener("click", function () { isRepeat = false; nextTask(); });
+    if (!ok) { document.getElementById("btn_again").addEventListener("click", function () { isRepeat = true; renderTask(); }); }
+  }
+
+  function nextTask() {
+    deckIndex++;
+    if (deckIndex >= deck.length) {
+      card.innerHTML = '<div class="donecard"><h3>Durchlauf geschafft</h3>' +
+        '<p class="note">Alle ' + deck.length + ' Aufgaben einmal gesehen.</p>' +
+        '<button class="btn primary" id="btn_restart">Neuen Durchlauf starten</button></div>';
+      document.getElementById("btn_restart").addEventListener("click", function () {
+        deck = buildDeck(); deckIndex = -1; isRepeat = false; nextTask();
+      });
+      return;
+    }
+    task = deck[deckIndex];
+    renderTask();
+  }
+
+  paintScore();
+  nextTask();
+}());
+</script>
+<script src="../scripts/portal-bridge.js?v=4"></script>

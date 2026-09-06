@@ -1,0 +1,865 @@
+<title>Klausurmuster Computergrafik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:      #FAF9F6;
+    --surface:    #FFFFFF;
+    --ink:        #16203A;
+    --ink-2:      #55607A;
+    --ink-3:      #8590A8;
+    --blue:       #1E3FAE;
+    --blue-soft:  #E8ECFA;
+    --red:        #C7362B;
+    --red-soft:   #FBEBE8;
+    --grid:       #DCE2EE;
+    --rule:       #E4E6EC;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #0F131B;
+      --surface:   #161B26;
+      --ink:       #E7EBF3;
+      --ink-2:     #A2ADC4;
+      --ink-3:     #737E95;
+      --blue:      #8AA4FF;
+      --blue-soft: #1A2340;
+      --red:       #FF8E7E;
+      --red-soft:  #331C1A;
+      --grid:      #222A3A;
+      --rule:      #262C3A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #0F131B;
+    --surface:   #161B26;
+    --ink:       #E7EBF3;
+    --ink-2:     #A2ADC4;
+    --ink-3:     #737E95;
+    --blue:      #8AA4FF;
+    --blue-soft: #1A2340;
+    --red:       #FF8E7E;
+    --red-soft:  #331C1A;
+    --grid:      #222A3A;
+    --rule:      #262C3A;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 47rem;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  h1, h2, h3, .label, .chip, .badge, th {
+    font-family: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+  }
+  .mono, code, .formula, td.num, .pts {
+    font-family: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+  }
+
+  /* ---------- Kopf ---------- */
+  header { display: flex; flex-direction: column; gap: 1rem; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blue);
+  }
+  h1 {
+    font-size: clamp(2rem, 5.5vw, 2.9rem);
+    font-weight: 800;
+    letter-spacing: -0.022em;
+    line-height: 1.08;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    margin: 0;
+    font-size: 1.09rem;
+    color: var(--ink-2);
+    max-width: 38rem;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: 0;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .fact {
+    padding: 0.85rem 1rem;
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .fact:last-child { border-right: none; }
+  .fact dt {
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .fact dd {
+    margin: 0;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.18rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  /* ---------- Abschnitte ---------- */
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  h2 {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  p { margin: 0; }
+  .note { color: var(--ink-2); font-size: 0.97rem; }
+
+  /* ---------- Matrix ---------- */
+  .scroller { overflow-x: auto; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.92rem;
+    min-width: 34rem;
+  }
+  th {
+    text-align: left;
+    font-size: 0.68rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-3);
+    padding: 0 0.5rem 0.5rem;
+    border-bottom: 1px solid var(--ink-3);
+    white-space: nowrap;
+  }
+  th:first-child, td:first-child { padding-left: 0; }
+  td {
+    padding: 0.55rem 0.5rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  td.num {
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--ink-2);
+    font-size: 0.86rem;
+    white-space: nowrap;
+  }
+  td.num.miss { color: var(--ink-3); }
+  .topic { font-weight: 600; font-family: "Libre Franklin", sans-serif; font-size: 0.93rem; }
+  tr.always td { background: transparent; }
+
+  /* ---------- Aufgabenkarten ---------- */
+  .task {
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+  }
+  .task-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .task-no {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: 0.04em;
+  }
+  .task-head h3 {
+    margin: 0;
+    font-size: 1.16rem;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    flex: 1 1 12rem;
+  }
+  .pts {
+    font-size: 0.82rem;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .badge {
+    font-size: 0.63rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 0.2rem 0.45rem;
+    border-radius: 2px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    white-space: nowrap;
+  }
+  .badge.var { background: transparent; color: var(--ink-3); border: 1px solid var(--rule); }
+
+  .task-body {
+    padding: 1.1rem 1.25rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+  }
+  .label {
+    font-size: 0.66rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-3);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  /* Rezept auf Karopapier */
+  .recipe {
+    background:
+      repeating-linear-gradient(to right,  var(--grid) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(to bottom, var(--grid) 0 1px, transparent 1px 22px),
+      var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.9rem 1rem 0.95rem 2.3rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+  }
+  .recipe li::marker { color: var(--blue); font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+
+  .formula {
+    font-size: 0.88rem;
+    line-height: 1.85;
+    background: var(--blue-soft);
+    color: var(--ink);
+    border-left: 2px solid var(--blue);
+    padding: 0.7rem 0.9rem;
+    border-radius: 0 2px 2px 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .formula div + div { margin-top: 0.1rem; }
+  .formula em { font-style: normal; color: var(--ink-2); }
+
+  .traps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .traps li {
+    font-size: 0.94rem;
+    padding-left: 1.15rem;
+    position: relative;
+    color: var(--ink);
+  }
+  .traps li::before {
+    content: "✗";
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    color: var(--red);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.85rem;
+  }
+
+  .variants { display: flex; flex-direction: column; gap: 0.75rem; }
+  .variant {
+    border-left: 2px solid var(--grid);
+    padding-left: 0.85rem;
+    font-size: 0.94rem;
+  }
+  .variant strong { font-family: "Libre Franklin", sans-serif; font-size: 0.88rem; font-weight: 600; }
+  .years { color: var(--ink-3); font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; }
+
+  /* ---------- Lernplan ---------- */
+  .plan { display: flex; flex-direction: column; }
+  .day {
+    display: grid;
+    grid-template-columns: 4.6rem 1fr;
+    gap: 1.1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+  }
+  .day:first-child { border-top: 1px solid var(--rule); }
+  .day-tag {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--blue);
+    text-transform: uppercase;
+    padding-top: 0.22rem;
+  }
+  .day-tag span { display: block; color: var(--ink-3); font-weight: 400; letter-spacing: 0; text-transform: none; }
+  .day-body { display: flex; flex-direction: column; gap: 0.3rem; }
+  .day-body h3 {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .day-body p { font-size: 0.95rem; color: var(--ink-2); }
+  .day-body .out {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    margin-top: 0.15rem;
+  }
+
+  .adjust {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1rem;
+  }
+  .adjust div {
+    border: 1px dashed var(--rule);
+    border-radius: 3px;
+    padding: 0.85rem 1rem;
+    font-size: 0.92rem;
+    color: var(--ink-2);
+  }
+  .adjust strong { color: var(--ink); font-family: "Libre Franklin", sans-serif; font-size: 0.86rem; display: block; margin-bottom: 0.2rem; }
+
+  /* ---------- Spickzettel ---------- */
+  .cheat {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .cheat > div {
+    padding: 0.9rem 1.1rem;
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .cheat .k {
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .cheat .v {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+
+  footer {
+    font-size: 0.86rem;
+    color: var(--ink-3);
+    border-top: 1px solid var(--rule);
+    padding-top: 1rem;
+  }
+
+  a { color: var(--blue); }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  @media (max-width: 30rem) {
+    .day { grid-template-columns: 1fr; gap: 0.35rem; }
+    .recipe { padding-left: 1.9rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">FAU Erlangen-Nürnberg · Lehrstuhl Graphische Datenverarbeitung · Prof. Stamminger</div>
+    <h1>Klausurmuster Computergrafik</h1>
+    <p class="standfirst">Fünf Altklausuren (2019 SS bis 2021 SS), ausgewertet nach Aufgabentyp. Die Struktur ist über alle Jahrgänge nahezu identisch — fünf Pflichtaufgaben, eine wechselnde.</p>
+    <dl class="facts">
+      <div class="fact"><dt>Dauer</dt><dd>60 min</dd></div>
+      <div class="fact"><dt>Punkte</dt><dd>60 P</dd></div>
+      <div class="fact"><dt>Budget</dt><dd>1 min/P</dd></div>
+      <div class="fact"><dt>Aufgaben</dt><dd>5–6</dd></div>
+      <div class="fact"><dt>Hilfsmittel</dt><dd>keine</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <h2>Themen nach Jahrgang</h2>
+    <p class="note">Punktzahl je Aufgabe. Die ersten fünf Zeilen kamen in <em>jeder</em> Klausur dran — das sind 54 bis 60 der 60 Punkte.</p>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>Aufgabentyp</th>
+            <th style="text-align:center">19 SS</th>
+            <th style="text-align:center">19 WS</th>
+            <th style="text-align:center">20 SS</th>
+            <th style="text-align:center">20 WS</th>
+            <th style="text-align:center">21 SS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="always">
+            <td class="topic">Affine Abbildungen 2D</td>
+            <td class="num">12</td><td class="num">12</td><td class="num">12</td><td class="num">12</td><td class="num">12</td>
+          </tr>
+          <tr class="always">
+            <td class="topic">Perspektivische Projektion<br><span class="years">(+ Texture Mapping ab 19 WS)</span></td>
+            <td class="num">12</td><td class="num">12</td><td class="num">12</td><td class="num">14</td><td class="num">14</td>
+          </tr>
+          <tr class="always">
+            <td class="topic">Rasterisierung<br><span class="years">Scanline ⇄ Bresenham</span></td>
+            <td class="num">12<br><span class="years">scan</span></td>
+            <td class="num">10<br><span class="years">bres</span></td>
+            <td class="num">14<br><span class="years">scan</span></td>
+            <td class="num">10<br><span class="years">scan</span></td>
+            <td class="num">10<br><span class="years">bres</span></td>
+          </tr>
+          <tr class="always">
+            <td class="topic">Phong Lighting &amp; Shading</td>
+            <td class="num">10</td><td class="num">16</td><td class="num">10</td><td class="num">12</td><td class="num">10</td>
+          </tr>
+          <tr class="always">
+            <td class="topic">Farbmodelle</td>
+            <td class="num">8</td><td class="num">10</td><td class="num">12</td><td class="num">6</td><td class="num">9</td>
+          </tr>
+          <tr>
+            <td class="topic">Raytracing</td>
+            <td class="num miss">—</td><td class="num miss">—</td><td class="num miss">—</td><td class="num">6</td><td class="num">5</td>
+          </tr>
+          <tr>
+            <td class="topic">VR / HMD</td>
+            <td class="num">6</td><td class="num miss">—</td><td class="num miss">—</td><td class="num miss">—</td><td class="num miss">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Die sechs Aufgabentypen</h2>
+
+    <!-- A1 -->
+    <article class="task">
+      <div class="task-head">
+        <span class="task-no">A1</span>
+        <h3>Affine Abbildungen in 2D</h3>
+        <span class="pts">12 P</span>
+        <span class="badge">5 / 5 Klausuren</span>
+      </div>
+      <div class="task-body">
+        <p>Immer identisch aufgebaut: Teilaufgaben a)–e) zeigen jeweils <em>Bild vorher → Matrix → Bild nachher</em>, eines der drei fehlt. Dann f) zur Klassifikation rigid / linear / affin.</p>
+
+        <div>
+          <span class="label">Rezept</span>
+          <ol class="recipe">
+            <li><strong>Matrix gesucht:</strong> Spalte 1 = wohin der grüne Pfeil (1,0) zeigt, Spalte 2 = wohin der blaue Pfeil (0,1) zeigt, Spalte 3 = wohin der magenta Ursprungspunkt wandert.</li>
+            <li><strong>Bild gesucht:</strong> die ersten beiden Spalten als Pfeile ab dem verschobenen Ursprung einzeichnen, Figur an diesem schiefen Achsenkreuz aufziehen.</li>
+            <li><strong>Vorbild gesucht:</strong> gleiches Spiel rückwärts — Matrix invertieren lohnt sich fast nie, das Achsenkreuz reicht.</li>
+            <li>Der magenta Punkt und die farbigen Pfeile sind die ganze Aufgabe. Nie Eckpunkte einzeln durchrechnen.</li>
+          </ol>
+        </div>
+
+        <div>
+          <span class="label">Klassifikation</span>
+          <div class="formula">
+            <div>rigid &nbsp;&nbsp;→ längen- und winkeltreu: Rotation, Spiegelung, Translation</div>
+            <div>linear &nbsp;→ Ursprung bleibt fix, also t = (0,0)</div>
+            <div>affin &nbsp;&nbsp;→ letzte Zeile (0 0 1) — alles hier ist affin</div>
+            <div>projektiv → letzte Zeile ≠ (0 0 1)</div>
+          </div>
+        </div>
+
+        <div>
+          <span class="label">Formate von f) über die Jahre</span>
+          <div class="variants">
+            <div class="variant"><strong>Mengendiagramm beschriften</strong> <span class="years">19 SS</span> — vier Abbildungen den Punkten in rigid/linear/affin zuordnen.</div>
+            <div class="variant"><strong>Umgekehrt skizzieren</strong> <span class="years">19 WS</span> — zu jedem Punkt im Diagramm ein passendes Ergebnis am Quadrat zeichnen.</div>
+            <div class="variant"><strong>Ankreuztabelle</strong> <span class="years">20 SS</span> — je Abbildung rigid / linear / affin ankreuzen.</div>
+            <div class="variant"><strong>Komposition</strong> <span class="years">20 WS</span> — eigene A und B erfinden, AB und BA anwenden und klassifizieren.</div>
+            <div class="variant"><strong>Matrix aus Template</strong> <span class="years">21 SS</span> — Lücken so füllen, dass die geforderte Klasse herauskommt, oder „unmöglich“ ankreuzen.</div>
+          </div>
+        </div>
+
+        <div>
+          <span class="label">Stolperfallen</span>
+          <ul class="traps">
+            <li>Translation ist rigid, aber <em>nicht</em> linear — der klassische Schnittmengen-Fehler.</li>
+            <li>Skalierung und Scherung sind linear, aber nicht rigid.</li>
+            <li>„Projektiv, aber nicht affin“ ist mit fixierter Zeile (0 0 1) im Template <em>unmöglich</em> — Kästchen ankreuzen.</li>
+            <li>Spalten sind die Bilder der Basisvektoren, nicht die Zeilen.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- A2 -->
+    <article class="task">
+      <div class="task-head">
+        <span class="task-no">A2</span>
+        <h3>Perspektivische Projektion &amp; Texture Mapping</h3>
+        <span class="pts">12–14 P</span>
+        <span class="badge">5 / 5 Klausuren</span>
+      </div>
+      <div class="task-body">
+        <p>Vier Eckpunkte, eine 4×4-Matrix, Tabelle mit Bildkoordinaten und Tiefe ausfüllen, Ergebnis ins 8×8-Raster skizzieren. Danach Textur-Teil: perspektivisch korrektes Mapping, MIP-Maps, Level-of-Detail.</p>
+
+        <div>
+          <span class="label">Rezept</span>
+          <ol class="recipe">
+            <li>Punkt homogenisieren: vierte Komponente 1 anhängen.</li>
+            <li>M · Ã ausrechnen — vier Zahlen, davon ist die letzte w.</li>
+            <li><em>Perspektivische Division</em> durch w. Erst danach liegen x, y in [−1,1] und z ist die normalisierte Tiefe.</li>
+            <li>Punkte ins Raster eintragen, Kanten gerade verbinden.</li>
+            <li>Zwischenergebnisse vor der Division danebenschreiben — dafür gab es in der Korrektur Punkte.</li>
+          </ol>
+        </div>
+
+        <div>
+          <span class="label">Kernsätze</span>
+          <div class="formula">
+            <div>Bildgröße ∝ 1 / Tiefe &nbsp;<em>→ doppelte Distanz = halbe Größe (120→60→40→30 px)</em></div>
+            <div>Geraden bleiben Geraden — Verhältnisse und Mittelpunkte <em>nicht</em></div>
+            <div>Mitte einer Fläche = Schnitt der Diagonalen, nicht arithmetisches Mittel</div>
+            <div>Fluchtpunkt: Richtung mit w = 0 einsetzen, M anwenden, dividieren</div>
+            <div>MIP-Level n+1 = Mittelwert je 2×2 Texel aus Level n</div>
+            <div>halbe Bildgröße = ein Level gröber &nbsp;<em>Δlevel = log₂(Faktor)</em></div>
+          </div>
+        </div>
+
+        <div>
+          <span class="label">Textur-Teilaufgaben</span>
+          <ul class="traps" style="list-style:none">
+            <li style="padding-left:0"><strong>Minification</strong> (Textur zu fein, Horizont): neue Muster / Aliasing → MIP-Map, über Pixel-Footprint mitteln.</li>
+            <li style="padding-left:0"><strong>Magnification</strong> (Textur zu grob, Vordergrund): einzelne Texel werden sichtbar → bilineare Interpolation.</li>
+            <li style="padding-left:0"><strong>Trilinear</strong>: zwischen den zwei benachbarten Leveln zusätzlich interpolieren.</li>
+          </ul>
+        </div>
+
+        <div>
+          <span class="label">Stolperfallen</span>
+          <ul class="traps">
+            <li>Division durch w vergessen — dann stimmt nichts, weder Koordinate noch Tiefe.</li>
+            <li>Beim Schachbrett den Bildmittelpunkt als Mittelwert der Ecken konstruieren statt über die Diagonalen.</li>
+            <li>Tiefe soll <em>nach</em> Normalisierung angegeben werden; die Aufgabe sagt es explizit.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- A3 -->
+    <article class="task">
+      <div class="task-head">
+        <span class="task-no">A3</span>
+        <h3>Rasterisierung</h3>
+        <span class="pts">10–14 P</span>
+        <span class="badge">5 / 5 Klausuren</span>
+      </div>
+      <div class="task-body">
+        <p>Zwei Varianten, die sich abwechseln. Beide beherrschen — im Beobachtungszeitraum kam keine zweimal hintereinander.</p>
+
+        <div>
+          <span class="label">Variante A — Scanline / Polygon <span class="years" style="text-transform:none;letter-spacing:0"> 19 SS, 20 SS, 20 WS</span></span>
+          <div class="formula">
+            <div>Edge Table: y<sub>lower</sub> | x<sub>lower</sub> | y<sub>upper</sub> | 1/m | next &nbsp;<em>sortiert nach y<sub>lower</sub></em></div>
+            <div>1/m = Δx / Δy &nbsp;<em>(Kehrwert der Steigung!)</em></div>
+            <div>AET bei Scanline y: x<sub>inter</sub> = x<sub>lower</sub> + (y − y<sub>lower</sub>) · 1/m</div>
+          </div>
+          <ul class="traps" style="margin-top:0.5rem">
+            <li>Horizontale Kanten (m = 0) kommen <em>nicht</em> in die Edge Table und werden separat gezeichnet.</li>
+            <li>Vertikale Kanten brauchen keine Sonderbehandlung: 1/m = 0.</li>
+            <li>AET zusätzlich nach x<sub>inter</sub> sortieren, sonst füllt man die falschen Spannen.</li>
+          </ul>
+          <p class="note" style="margin-top:0.5rem"><strong>Auch gefragt:</strong> Edge Table gegeben → Polygon zurückzeichnen (20 WS). Gouraud in den Scanline-Algorithmus einbauen: Farben an den Vertices, entlang der Kanten interpolieren, dann zwischen den beiden Hitpoints einer Scanline. Wireframe: nur erstes und letztes Pixel je Scanline — bei 1/m &gt; 1 entstehen Löcher. Edge-Equation-Test statt Scanline funktioniert nur für <em>konvexe</em> Polygone.</p>
+        </div>
+
+        <div>
+          <span class="label">Variante B — Bresenham <span class="years" style="text-transform:none;letter-spacing:0"> 19 WS, 21 SS</span></span>
+          <div class="formula">
+            <div>D = Δx − 2Δy &nbsp;&nbsp; ΔDE = −2Δy &nbsp;&nbsp; ΔDNE = 2(Δx − Δy)</div>
+            <div>D &lt; 0 → y++ und D += ΔDNE &nbsp;|&nbsp; sonst D += ΔDE</div>
+          </div>
+          <ul class="traps" style="margin-top:0.5rem">
+            <li>Die Tabelle will die Werte <em>am Anfang</em> jeder Iteration — nicht am Ende. Steht im Aufgabentext gelb markiert.</li>
+            <li>Warum eine Pixelmenge keine Bresenham-Linie sein kann: (1) x wird pro Durchlauf immer um 1 erhöht → jede Spalte zwischen Start und Ende hat genau ein Pixel; (2) alle Pixel müssen die Gerade durch erstes und letztes Pixel berühren.</li>
+            <li>Bei Δy &gt; Δx sind ΔDE und ΔDNE beide negativ → D bleibt negativ → es entsteht immer eine Gerade mit m = 1.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- A4 -->
+    <article class="task">
+      <div class="task-head">
+        <span class="task-no">A4</span>
+        <h3>Phong Lighting &amp; Shading</h3>
+        <span class="pts">10–16 P</span>
+        <span class="badge">5 / 5 Klausuren</span>
+      </div>
+      <div class="task-body">
+        <p>Teil a) Vektoren n, l, v, r bestimmen. Teil b) Farbe einsetzen und ausrechnen. Teil c) qualitativ: Verlaufsskizzen für Flat / Gouraud / Phong oder Tabelle „wird heller / dunkler / bleibt gleich“.</p>
+
+        <div>
+          <span class="label">Die eine Formel</span>
+          <div class="formula">
+            <div>L = k<sub>amb</sub>·I<sub>amb</sub> + k<sub>diff</sub>·I<sub>in</sub>·(n∘l) + k<sub>spec</sub>·I<sub>in</sub>·(v∘r)<sup>n<sub>shiny</sub></sup></div>
+            <div>r = −l + 2(l∘n)·n</div>
+            <div><em>k und I sind RGB-Tripel — komponentenweise multiplizieren</em></div>
+          </div>
+        </div>
+
+        <div>
+          <span class="label">Rezept</span>
+          <ol class="recipe">
+            <li>Alle Vektoren <strong>normieren</strong>. In den Korrekturen war das der meistangestrichene Fehler.</li>
+            <li>l zeigt <em>zur</em> Lichtquelle, v <em>zum</em> Auge. Bei Parallellicht: l = −Lichtrichtung.</li>
+            <li>Normale eines Eckpunkts = Mittel der Normalen der angrenzenden Flächen (bzw. Linien in 2D).</li>
+            <li>Die Zahlen sind immer 3-4-5-Tripel: (3,4)/5, (0.6, 0.8), (0.8, 0.6). Wenn es krumm wird, hast du dich verrechnet.</li>
+            <li>Skalarprodukt negativ → Anteil ist 0, nicht negativ.</li>
+          </ol>
+        </div>
+
+        <div>
+          <span class="label">Qualitativer Teil</span>
+          <ul class="traps" style="list-style:none">
+            <li style="padding-left:0"><strong>Flat</strong>: pro Facette ein konstanter Wert, Sprünge an den Kanten.</li>
+            <li style="padding-left:0"><strong>Gouraud</strong>: Farbe an den Vertices berechnet, dann linear interpoliert → Glanzlichter zwischen Vertices gehen verloren.</li>
+            <li style="padding-left:0"><strong>Phong</strong>: Normale interpoliert, Beleuchtung pro Pixel → gekrümmter Verlauf, Glanzlicht bleibt.</li>
+            <li style="padding-left:0"><strong>Diffus hängt nicht von v ab</strong> → Kamera bewegen ändert den diffusen Anteil nicht. Der Schlüssel für die Ankreuztabellen.</li>
+            <li style="padding-left:0">Gleicher diffuser Anteil: gespiegelt an der Lot-Achse unter dem Licht. Gleicher spekularer Anteil: dort, wo Einfalls- gleich Ausfallswinkel zwischen Licht und Kamera liegt.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- A5 -->
+    <article class="task">
+      <div class="task-head">
+        <span class="task-no">A5</span>
+        <h3>Farbmodelle</h3>
+        <span class="pts">6–12 P</span>
+        <span class="badge">5 / 5 Klausuren</span>
+      </div>
+      <div class="task-body">
+        <p>Die punkteeffizienteste Aufgabe der Klausur: reines Auswendigwissen, in fünf verschiedenen Verpackungen gefragt.</p>
+
+        <div>
+          <span class="label">Was du wissen musst</span>
+          <div class="formula">
+            <div>CMY = 1 − RGB &nbsp;&nbsp; CMYK: K so groß wie möglich, dann C,M,Y entsprechend reduziert</div>
+            <div>RGB additiv, schwarzer Grund, Monitor &nbsp;|&nbsp; CMY(K) subtraktiv, weißer Grund, Drucker</div>
+            <div>HSV perzeptuell, Colorpicker — Kegelspitze unten = schwarz</div>
+            <div>H: rot 0° · gelb 60° · grün 120° · cyan 180° · blau 240° · magenta 300°</div>
+            <div>S = Radius (Achse = grau) &nbsp;&nbsp; V = Höhe</div>
+            <div>(0.5, 0.5, 0.5) meint in RGB und CMY dieselbe Farbe: Grau</div>
+          </div>
+        </div>
+
+        <div>
+          <span class="label">Gefragte Formate</span>
+          <div class="variants">
+            <div class="variant"><strong>Farben in Würfel und Kegel einzeichnen</strong> <span class="years">19 SS, 19 WS</span> — plus Achsen beschriften.</div>
+            <div class="variant"><strong>Umrechnungstabelle</strong> <span class="years">20 SS</span> — Zeile für Zeile RGB ⇄ CMYK ⇄ HSV vervollständigen.</div>
+            <div class="variant"><strong>Spektren skizzieren</strong> <span class="years">20 WS</span> — weiß = flach hoch, grau = flach niedrig, gesättigt = schmaler Peak, hell + bunt = breit mit Buckel.</div>
+            <div class="variant"><strong>Aussagen zuordnen</strong> <span class="years">21 SS</span> — je Aussage <em>alle</em> passenden Modelle nennen, „none“ ist eine gültige Antwort.</div>
+          </div>
+        </div>
+
+        <div>
+          <span class="label">Stolperfallen</span>
+          <ul class="traps">
+            <li>(1,0,0) ist in RGB rot, in CMY cyan — bei Zuordnungsaufgaben immer beide prüfen.</li>
+            <li>HSV ist nicht eindeutig: bei V = 0 sind H und S beliebig. Genau danach wird gefragt.</li>
+            <li>Bei CMYK die Vorgabe „K so groß wie möglich“ nicht überlesen.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- A6 -->
+    <article class="task">
+      <div class="task-head">
+        <span class="task-no">A6</span>
+        <h3>Wechselnde Zusatzaufgabe</h3>
+        <span class="pts">5–6 P</span>
+        <span class="badge var">3 / 5 Klausuren</span>
+      </div>
+      <div class="task-body">
+        <p>In zwei von fünf Klausuren fehlte diese Aufgabe ganz. Wenn sie kommt, ist sie kurz und mit wenig Aufwand mitzunehmen — zuletzt zweimal Raytracing.</p>
+
+        <div>
+          <span class="label">Raytracing <span class="years" style="text-transform:none;letter-spacing:0"> 20 WS, 21 SS</span></span>
+          <ul class="traps" style="list-style:none">
+            <li style="padding-left:0">Strahlenskizzen: Primär- und Sekundärstrahlen durchgezogen, Schattenstrahlen gestrichelt zu <em>jeder</em> Lichtquelle.</li>
+            <li style="padding-left:0">Antialiasing = mehrere Eye Rays durch dasselbe Pixel.</li>
+            <li style="padding-left:0">Distribution RT: diffus → Streuung breit über die Hemisphäre; glossy → enger Kegel um die Spiegelrichtung.</li>
+            <li style="padding-left:0">Komplexität bei k Kugeln, n Dreiecken, p Pixeln: Rasterisierung Vertex-Shader O(kn), Pixel-Shader O(p); Ray Casting direkt O(pk); mit BVH O(p·log k), Aufbau O(k log k).</li>
+          </ul>
+        </div>
+
+        <div>
+          <span class="label">VR / HMD <span class="years" style="text-transform:none;letter-spacing:0"> 19 SS</span></span>
+          <ul class="traps" style="list-style:none">
+            <li style="padding-left:0">Tiefenhinweise: Stereo-Parallaxe <strong>ja</strong> (zwei leicht versetzte Perspektiven), Bewegungsparallaxe <strong>ja</strong> (Kopftracking, nahe Objekte wandern schneller), Fokus <strong>nein</strong> (Display in festem Abstand).</li>
+            <li style="padding-left:0">Zwei <em>skewed</em> View Frusta mit zum Screen parallelen Near-/Far-Planes; gluPerspective reicht nicht, weil die Frusta asymmetrisch sind.</li>
+            <li style="padding-left:0">Latenz = Sensor → Rendering (60 fps ≈ 16 ms) → Transfer und Anzeige.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>Lernplan · 7 Tage</h2>
+    <p class="note">Angesetzt auf 2–3 h pro Tag mit der Klausur am Ende. Die Reihenfolge folgt dem Punktegewicht: A1 und A2 zusammen sind fast die Hälfte der Klausur. Die drei Probeklausuren am Schluss sind der eigentliche Kern — die Aufgaben wiederholen sich so stark, dass Rechnen mehr bringt als Lesen.</p>
+    <div class="plan">
+
+      <div class="day">
+        <div class="day-tag">Tag 1<span>2,5 h</span></div>
+        <div class="day-body">
+          <h3>Homogene Koordinaten: A1 + A2 rechnen</h3>
+          <p>Beide Aufgaben aus 2019 SS und 2020 SS lösen, ohne die Lösungen anzusehen. Der Punkt ist, das Spaltenbild der Matrix und die perspektivische Division in die Finger zu bekommen.</p>
+          <p class="out">→ Ergebnis: A1 und A2 in je 12 min lösbar</p>
+        </div>
+      </div>
+
+      <div class="day">
+        <div class="day-tag">Tag 2<span>2 h</span></div>
+        <div class="day-body">
+          <h3>Rasterisierung, beide Varianten</h3>
+          <p>Scanline aus 2020 SS und Bresenham aus 2021 SS. Bresenham einmal komplett per Hand durchtabellieren, bis der Ablauf ohne Nachdenken sitzt. Dazu die drei Standardfragen: horizontale Kanten, Δy &gt; Δx, warum keine Bresenham-Linie.</p>
+          <p class="out">→ Ergebnis: Edge Table und D-Tabelle fehlerfrei</p>
+        </div>
+      </div>
+
+      <div class="day">
+        <div class="day-tag">Tag 3<span>2 h</span></div>
+        <div class="day-body">
+          <h3>Phong: rechnen und qualitativ argumentieren</h3>
+          <p>Formel aus dem Kopf aufschreiben, dann A4 aus 2019 WS (16 P, die umfangreichste Version) rechnen. Danach die Verlaufsskizzen Flat / Gouraud / Phong dreimal aus dem Kopf zeichnen und die Ankreuztabelle aus 2020 WS begründen.</p>
+          <p class="out">→ Ergebnis: L-Formel und r-Formel sitzen ohne Blick ins Skript</p>
+        </div>
+      </div>
+
+      <div class="day">
+        <div class="day-tag">Tag 4<span>1,5 h</span></div>
+        <div class="day-body">
+          <h3>Farbmodelle und Zusatzthema</h3>
+          <p>Farbwürfel, CMY-Würfel und HSV-Kegel je einmal komplett beschriftet aufmalen. Umrechnungstabelle aus 2020 SS ausfüllen. Danach Raytracing-Skizzen aus 2021 SS und die Komplexitäten aus 2020 WS.</p>
+          <p class="out">→ Ergebnis: die günstigsten 15 Punkte der Klausur gesichert</p>
+        </div>
+      </div>
+
+      <div class="day">
+        <div class="day-tag">Tag 5<span>2 h</span></div>
+        <div class="day-body">
+          <h3>Probeklausur 2019 SS, auf Zeit</h3>
+          <p>60 Minuten, Uhr mitlaufen lassen, nichts nachschlagen. Danach ehrlich korrigieren und notieren, wo Zeit verloren ging — nicht nur, wo Punkte fehlten.</p>
+          <p class="out">→ Ergebnis: Liste der eigenen Lücken</p>
+        </div>
+      </div>
+
+      <div class="day">
+        <div class="day-tag">Tag 6<span>2,5 h</span></div>
+        <div class="day-body">
+          <h3>Lücken schließen, dann 2020 WS auf Zeit</h3>
+          <p>Erst gezielt die Aufgabentypen von gestern nacharbeiten, dann die nächste Klausur unter Prüfungsbedingungen. 2020 WS enthält die beiden ungewöhnlichsten Teile (Edge Table rückwärts, Fluchtpunkt berechnen).</p>
+          <p class="out">→ Ergebnis: zwei vollständige Klausuren im Zeitbudget</p>
+        </div>
+      </div>
+
+      <div class="day">
+        <div class="day-tag">Tag 7<span>2 h</span></div>
+        <div class="day-body">
+          <h3>2021 SS auf Zeit, dann Formelblatt aus dem Kopf</h3>
+          <p>Letzte Probeklausur. Danach den Spickzettel unten aus dem Gedächtnis auf ein Blatt schreiben und mit dem Original vergleichen — was fehlt, ist genau das, was du morgen früh nochmal ansiehst.</p>
+          <p class="out">→ Ergebnis: alle Formeln reproduzierbar</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="adjust">
+      <div><strong>Nur 3 Tage Zeit?</strong> Tag 1 und 2 zusammenlegen, Tag 3 und 4 zusammenlegen, dann zwei Probeklausuren. Auf keinen Fall die Probeklausuren streichen — sie sind der Teil, der wirkt.</div>
+      <div><strong>Zwei Wochen Zeit?</strong> Den Plan einmal wie beschrieben durchlaufen, dann in Woche 2 die verbleibenden zwei Klausuren auf Zeit und jeden Aufgabentyp einmal quer über alle fünf Jahrgänge hintereinander rechnen.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Spickzettel</h2>
+    <p class="note">Das ist der Inhalt, den du am Prüfungsmorgen in fünf Minuten aus dem Kopf auf ein Blatt bringen können solltest.</p>
+    <div class="cheat">
+      <div>
+        <span class="k">Affine Matrix 2D</span>
+        <span class="v">[ e₁ | e₂ | t ]<br>letzte Zeile (0 0 1)</span>
+      </div>
+      <div>
+        <span class="k">Projektion</span>
+        <span class="v">M·(x,y,z,1)ᵀ → durch w teilen<br>Größe ∝ 1/Tiefe</span>
+      </div>
+      <div>
+        <span class="k">Edge Table</span>
+        <span class="v">y_low | x_low | y_up | 1/m<br>1/m = Δx/Δy</span>
+      </div>
+      <div>
+        <span class="k">Bresenham</span>
+        <span class="v">D = Δx − 2Δy<br>ΔDE = −2Δy<br>ΔDNE = 2(Δx − Δy)</span>
+      </div>
+      <div>
+        <span class="k">Phong</span>
+        <span class="v">L = k_a·I_a<br>&nbsp;&nbsp;+ k_d·I·(n∘l)<br>&nbsp;&nbsp;+ k_s·I·(v∘r)^n<br>r = −l + 2(l∘n)n</span>
+      </div>
+      <div>
+        <span class="k">Farbe</span>
+        <span class="v">CMY = 1 − RGB<br>H: 0° R · 120° G · 240° B<br>S = Radius, V = Höhe</span>
+      </div>
+      <div>
+        <span class="k">MIP-Map</span>
+        <span class="v">Level+1 = Ø je 2×2<br>Δlevel = log₂(Faktor)</span>
+      </div>
+      <div>
+        <span class="k">Raytracing</span>
+        <span class="v">Raster: O(kn) / O(p)<br>Ray Cast: O(pk)<br>mit BVH: O(p·log k)</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Ausgewertet aus fünf Altklausuren: Oktober 2019, Juni 2020, Oktober 2020, April 2021, Oktober 2021. Punktzahlen und Aufgabenformate wie dort abgedruckt; die Zeitangaben im Lernplan gehen von 2–3 Stunden täglich aus.
+  </footer>
+
+</div>

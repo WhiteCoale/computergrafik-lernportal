@@ -1,0 +1,1142 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rasterlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#FAF9F6; --surface:#FFFFFF; --ink:#16203A; --ink-2:#55607A; --ink-3:#8590A8;
+    --blue:#1E3FAE; --blue-soft:#E8ECFA; --red:#C7362B; --grid:#DCE2EE; --grid-axis:#A9B3C7;
+    --rule:#E4E6EC; --good:#158A4A; --accent2:#C51E86; --ghost:#B4BDD0; --amber:#B8791C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+      --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+      --rule:#262C3A; --good:#4FD08A; --accent2:#FF77C4; --ghost:#4A5468; --amber:#E0A93B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+    --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+    --rule:#262C3A; --good:#4FD08A; --accent2:#FF77C4; --ghost:#4A5468; --amber:#E0A93B;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  img { max-width: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif; font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
+    display: flex; flex-direction: column; gap: 2.5rem; }
+  h1,h2,h3,.label,th,button { font-family: "Libre Franklin", Arial, sans-serif; }
+  .mono,input,td.n,.formula { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+  .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+  h1 { font-size: clamp(1.9rem,5vw,2.6rem); font-weight: 800; letter-spacing: -0.022em;
+    line-height: 1.1; margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--ink-2); max-width: 40rem; font-size: 1.05rem; }
+
+  h2 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  p { margin: 0; }
+  .note { color: var(--ink-2); font-size: 0.97rem; }
+  .label { font-size: 0.66rem; letter-spacing: 0.13em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); display: block; }
+
+  .tabs { display: flex; gap: 0.15rem; border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; z-index: 30; background: var(--paper);
+    margin: 0 -1.5rem -1.2rem; padding: 0.6rem 1.5rem 0; }
+  .tabs button { font-size: 0.9rem; font-weight: 600; padding: 0.5rem 0.95rem;
+    background: transparent; color: var(--ink-3); border: none; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; cursor: pointer; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+  #view-erklaerung, #view-training { display: flex; flex-direction: column; gap: 2.5rem; }
+
+  .switch { display: flex; gap: 0.25rem; }
+  .switch button { font-size: 0.8rem; font-weight: 600; padding: 0.35rem 0.75rem;
+    background: transparent; color: var(--ink-2); border: 1px solid var(--rule);
+    border-radius: 2px; cursor: pointer; }
+  .switch button[aria-pressed="true"] { background: var(--blue-soft); color: var(--blue);
+    border-color: var(--blue); }
+
+  .lab { display: grid; grid-template-columns: minmax(0,20rem) minmax(0,1fr);
+    gap: 1.5rem; align-items: start; }
+  @media (max-width: 50rem) { .lab { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1.1rem 1.2rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+  .stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 0.9rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .stage svg { width: 100%; max-width: 26rem; height: auto; display: block; align-self: center; }
+
+  .ptable { display: grid; grid-template-columns: 1.6rem 1fr 1fr; gap: 0.25rem 0.4rem; align-items: center; }
+  .ptable .vn { font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; color: var(--ink-2); }
+  .ptable .vh { font-family: "Libre Franklin", sans-serif; font-size: 0.62rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); text-align: center; font-weight: 600; }
+  input.cell { width: 100%; text-align: center; font-size: 0.92rem; font-variant-numeric: tabular-nums;
+    padding: 0.22rem 0.1rem; color: var(--ink); background: transparent;
+    border: 1px solid transparent; border-bottom: 1px dotted var(--ink-3); border-radius: 2px;
+    font-family: "IBM Plex Mono", monospace; }
+  input.cell:hover { background: var(--blue-soft); }
+  input.cell:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .presets button { font-size: 0.72rem; font-weight: 500; padding: 0.28rem 0.5rem;
+    background: transparent; color: var(--ink-2); border: 1px solid var(--rule);
+    border-radius: 2px; cursor: pointer; }
+  .presets button:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+
+  .slider-row { display: grid; grid-template-columns: auto 1fr 2rem; align-items: center;
+    gap: 0.6rem; font-size: 0.8rem; }
+  .slider-row .k { font-family: "IBM Plex Mono", monospace; color: var(--ink-2); }
+  .slider-row .v { font-family: "IBM Plex Mono", monospace; text-align: right; color: var(--ink); }
+  input[type=range] { width: 100%; height: 2px; -webkit-appearance: none; appearance: none;
+    background: var(--grid); border-radius: 2px; outline: none; margin: 0; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px;
+    border-radius: 50%; background: var(--blue); cursor: grab; border: none; }
+  input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%;
+    background: var(--blue); cursor: grab; border: none; }
+
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+  th { text-align: left; font-size: 0.64rem; letter-spacing: 0.09em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); padding: 0 0.55rem 0.45rem 0;
+    border-bottom: 1px solid var(--ink-3); white-space: nowrap; }
+  td { padding: 0.35rem 0.55rem 0.35rem 0; border-bottom: 1px solid var(--rule); }
+  td.n { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.active td { background: var(--blue-soft); }
+  tr.step td { color: var(--ink-2); }
+  tr.step.up td.d { color: var(--accent2); font-weight: 600; }
+
+  .formula { font-size: 0.88rem; line-height: 1.85; background: var(--blue-soft); color: var(--ink);
+    border-left: 2px solid var(--blue); padding: 0.7rem 0.9rem; border-radius: 0 2px 2px 0; overflow-x: auto; }
+  .formula em { font-style: normal; color: var(--ink-2); }
+  .steps { margin: 0; padding: 0 0 0 1.4rem; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.96rem; }
+  .steps li::marker { color: var(--blue); font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .traps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .traps li { font-size: 0.94rem; padding-left: 1.15rem; position: relative; }
+  .traps li::before { content: "✗"; position: absolute; left: 0; top: 0.05em; color: var(--red);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem,1fr)); gap: 0;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); overflow: hidden; }
+  .duo > article { padding: 1rem 1.1rem 1.15rem; border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 0.5rem; }
+  .duo > article:last-child { border-right: none; }
+  .duo h3 { margin: 0; font-size: 1.02rem; font-weight: 600; color: var(--blue);
+    font-family: "IBM Plex Mono", monospace; }
+  .duo p { font-size: 0.93rem; }
+  .duo .cnote { font-size: 0.84rem; color: var(--ink-3); margin-top: auto; padding-top: 0.2rem; }
+
+  /* Training */
+  .score { display: flex; align-items: center; gap: 1.6rem; padding: 0.75rem 1.1rem;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; flex-wrap: wrap; }
+  .score .s { display: flex; align-items: baseline; gap: 0.4rem; }
+  .score .sv { font-family: "IBM Plex Mono", monospace; font-size: 1.35rem; font-weight: 600;
+    font-variant-numeric: tabular-nums; }
+  .score .sv.ok { color: var(--good); }
+  .score .sv.bad { color: var(--red); }
+  .score .sk { font-family: "Libre Franklin", sans-serif; font-size: 0.66rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .linkish { margin-left: auto; background: none; border: none; cursor: pointer;
+    font-family: "Libre Franklin", sans-serif; font-size: 0.76rem; color: var(--ink-3);
+    text-decoration: underline; text-underline-offset: 3px; padding: 0.2rem; }
+  .linkish:hover { color: var(--blue); }
+
+  .taskcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    display: flex; flex-direction: column; }
+  .task-top { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+    padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--rule); }
+  .ttype { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--blue); }
+  .tno { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 0.74rem;
+    color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .tbody { padding: 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .tprompt { font-size: 1rem; }
+  .thint { font-size: 0.88rem; color: var(--ink-3); }
+  .trow { display: flex; gap: 1.3rem; flex-wrap: wrap; align-items: center; }
+  .trow svg { width: 100%; max-width: 17rem; height: auto; }
+
+  .fields { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 0.2rem; }
+  .field span { font-family: "Libre Franklin", sans-serif; font-size: 0.62rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .field input { width: 5.4rem; font-family: "IBM Plex Mono", monospace; font-size: 1rem;
+    padding: 0.35rem 0.4rem; color: var(--ink); background: transparent;
+    border: 1px solid var(--rule); border-radius: 2px; text-align: center; }
+  .field input:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+  .field input.ok, .field input.ok:disabled { color: var(--good); border-color: var(--good); }
+  .field input.bad, .field input.bad:disabled { color: var(--red); border-color: var(--red); }
+
+  .choices { display: flex; flex-direction: column; gap: 0.4rem; }
+  .choices label { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.95rem;
+    cursor: pointer; }
+  .choices input { margin-top: 0.35rem; accent-color: var(--blue); cursor: pointer; }
+
+  .tactions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+    padding: 0.9rem 1.2rem; border-top: 1px solid var(--rule); }
+  .btn { font-family: "Libre Franklin", sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 0.48rem 0.95rem; border-radius: 2px; cursor: pointer; border: 1px solid transparent; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  :root[data-theme="dark"] .btn.primary, :root:not([data-theme="light"]) .btn.primary { color: #0F131B; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: #fff; } }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--rule); }
+  .btn.ghost:hover { color: var(--blue); border-color: var(--blue); background: var(--blue-soft); }
+
+  .verdict { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.9rem 1.2rem;
+    border-top: 1px solid var(--rule); }
+  .verdict .vhead { font-family: "Libre Franklin", sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .verdict.right .vhead { color: var(--good); }
+  .verdict.wrong .vhead { color: var(--red); }
+  .verdict .vsol { font-size: 0.93rem; color: var(--ink-2); }
+  .repeat-note { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
+  .repeat-note.warn { color: var(--red); }
+  .donecard { text-align: center; padding: 2rem 1.2rem; display: flex; flex-direction: column;
+    gap: 0.8rem; align-items: center; }
+  .donecard h3 { margin: 0; font-family: "Libre Franklin", sans-serif; font-size: 1.2rem; }
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+
+  footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Aufgabe 3 · Rasterisierung · 10–14 Punkte</div>
+    <h1>Rasterlabor</h1>
+    <p>Die beiden Varianten, die sich über die Jahrgänge abwechseln: Scanline mit Edge Table und Bresenham für Linien. Keine kam zweimal hintereinander, verlassen würde ich mich darauf nicht.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Ansicht">
+    <button role="tab" data-view="erklaerung" aria-selected="true">Erklärung</button>
+    <button role="tab" data-view="training" aria-selected="false">Training</button>
+  </nav>
+
+  <div id="view-erklaerung">
+
+    <section>
+      <div class="switch" id="labswitch">
+        <button data-lab="scan" aria-pressed="true">Scanline</button>
+        <button data-lab="bres" aria-pressed="false">Bresenham</button>
+      </div>
+
+      <!-- ---------- Scanline ---------- -->
+      <div class="lab" id="lab-scan">
+        <div class="panel">
+          <div>
+            <span class="label">Polygonecken</span>
+            <div class="ptable" id="ptable"></div>
+          </div>
+          <div class="presets" id="ppresets">
+            <button data-p="d19ss">Dreieck 2019 SS</button>
+            <button data-p="d20ss">Dreieck 2020 SS</button>
+            <button data-p="viereck">Viereck</button>
+            <button data-p="fuenfeck">Fünfeck</button>
+          </div>
+          <div class="slider-row">
+            <span class="k">Scanline y</span>
+            <input type="range" id="scany" min="0" max="8" step="1" value="2" aria-label="Scanline y">
+            <span class="v" id="scanyv">2</span>
+          </div>
+        </div>
+        <div class="stage">
+          <svg id="scanplot" viewBox="0 0 380 380" role="img" aria-label="Polygon im Raster mit Scanline"></svg>
+          <div>
+            <span class="label">Edge Table</span>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>y<sub>lower</sub></th><th>x<sub>lower</sub></th><th>y<sub>upper</sub></th><th>1/m</th></tr></thead>
+                <tbody id="ettbl"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <span class="label">Active Edge Table bei y = <span id="aety">2</span></span>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>x<sub>inter</sub></th><th>y<sub>upper</sub></th><th>1/m</th></tr></thead>
+                <tbody id="aettbl"></tbody>
+              </table>
+            </div>
+          </div>
+          <p class="thint" id="scannote"></p>
+        </div>
+      </div>
+
+      <!-- ---------- Bresenham ---------- -->
+      <div class="lab" id="lab-bres" hidden>
+        <div class="panel">
+          <div>
+            <span class="label">Endpunkte</span>
+            <div class="ptable" id="btable"></div>
+          </div>
+          <div class="presets" id="bpresets">
+            <button data-b="0">2019 WS · (1,1)→(9,4)</button>
+            <button data-b="1">2021 SS · (1,0)→(9,5)</button>
+            <button data-b="2">flach · (0,0)→(10,2)</button>
+            <button data-b="3">Δy &gt; Δx</button>
+          </div>
+          <div class="formula" id="bstart"></div>
+        </div>
+        <div class="stage">
+          <svg id="bresplot" viewBox="0 0 420 300" role="img" aria-label="Gerasterte Linie im Pixelraster"></svg>
+          <div>
+            <span class="label">Werte am Anfang jeder Iteration</span>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>x</th><th>y</th><th>D</th><th>Schritt</th></tr></thead>
+                <tbody id="brestbl"></tbody>
+              </table>
+            </div>
+          </div>
+          <p class="thint" id="bresnote"></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Scanline: der Ablauf</h2>
+      <ol class="steps">
+        <li><strong>Edge Table bauen.</strong> Jede nicht-horizontale Kante liefert eine Zeile: unterer y-Wert, das dazugehörige x, oberer y-Wert und 1/m. Sortiert nach y<sub>lower</sub>.</li>
+        <li><strong>Scanline hochlaufen.</strong> Bei jedem y kommen die Kanten mit y<sub>lower</sub> = y dazu, Kanten mit y<sub>upper</sub> = y fallen raus.</li>
+        <li><strong>Active Edge Table sortieren</strong>, und zwar nach x<sub>inter</sub>.</li>
+        <li><strong>Paarweise füllen.</strong> Zwischen der ersten und zweiten Schnittstelle, zwischen der dritten und vierten, und so weiter.</li>
+      </ol>
+      <div class="formula">
+        <div>1/m = Δx / Δy &nbsp;<em>Kehrwert der Steigung, nicht die Steigung</em></div>
+        <div>x<sub>inter</sub>(y) = x<sub>lower</sub> + (y − y<sub>lower</sub>) · 1/m</div>
+        <div>pro Scanline: x<sub>inter</sub> += 1/m &nbsp;<em>deshalb speichert man 1/m</em></div>
+      </div>
+      <ul class="traps">
+        <li>m statt 1/m eintragen. Der Algorithmus geht in y voran, gebraucht wird also Δx pro Zeile.</li>
+        <li>Horizontale Kanten in die Edge Table schreiben. Sie kommen nicht hinein und werden separat gezeichnet.</li>
+        <li>Vertikale Kanten für einen Sonderfall halten. Sie sind unauffällig, 1/m = 0.</li>
+        <li>Die Active Edge Table nicht nach x sortieren. Dann füllt man die falschen Bereiche.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Scanline: die Zusatzfragen</h2>
+      <div class="duo">
+        <article>
+          <h3>Gouraud einbauen</h3>
+          <p>Farben an den Ecken berechnen, entlang der Kanten linear interpolieren, dann pro Scanline zwischen den beiden Schnittpunkten interpolieren.</p>
+          <p class="cnote">Genau wie x<sub>inter</sub> lässt sich auch die Farbe pro Zeile inkrementell fortschreiben.</p>
+        </article>
+        <article>
+          <h3>Wireframe</h3>
+          <p>Pro Scanline nur das erste und das letzte Pixel setzen statt der ganzen Spanne.</p>
+          <p class="cnote">Bei 1/m &gt; 1 reißen dabei Lücken auf, weil die Kante pro Zeile mehr als ein Pixel weiterwandert — die müssen zusätzlich gefüllt werden.</p>
+        </article>
+        <article>
+          <h3>Kantengleichungen</h3>
+          <p>Statt Scanline jedes Pixel gegen alle Kantengeraden testen. Funktioniert nur bei <strong>konvexen</strong> Polygonen.</p>
+          <p class="cnote">Ein konkaves Polygon muss man vorher in konvexe Teile zerlegen.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Bresenham</h2>
+      <div class="formula">
+        <div>Δx = x₁ − x₀ &nbsp;&nbsp; Δy = y₁ − y₀</div>
+        <div>D = Δx − 2Δy &nbsp;&nbsp; ΔDE = −2Δy &nbsp;&nbsp; ΔDNE = 2(Δx − Δy)</div>
+        <div>je Durchlauf: Pixel setzen, x++, dann &nbsp; D &lt; 0 → y++ und D += ΔDNE &nbsp;|&nbsp; sonst D += ΔDE</div>
+      </div>
+      <ul class="traps">
+        <li>Die Tabelle mit den Werten am <em>Ende</em> der Iteration füllen. Gefragt sind die Werte am Anfang — das steht in der Aufgabe markiert.</li>
+        <li>Beim ersten Eintrag D vergessen. Die erste Zeile enthält bereits D = Δx − 2Δy.</li>
+      </ul>
+      <p class="note"><strong>Warum eine Pixelmenge keine Bresenham-Linie sein kann.</strong> Zwei Argumente reichen: erstens wird x in jedem Durchlauf um genau 1 erhöht, also enthält jede Spalte zwischen Start und Ende genau ein Pixel — keine leere, keine doppelte. Zweitens müssen alle gesetzten Pixel die Gerade durch das erste und das letzte Pixel berühren.</p>
+      <p class="note"><strong>Und bei Δy &gt; Δx?</strong> Dann sind ΔDE = −2Δy und ΔDNE = 2(Δx − Δy) beide negativ. D startet negativ und bleibt es, also wird in jedem Schritt y erhöht — heraus kommt immer eine Gerade mit Steigung 1. Im Labor oben kannst du das mit dem letzten Preset ansehen.</p>
+    </section>
+  </div>
+
+  <div id="view-training" hidden>
+    <section>
+      <h2>Training</h2>
+      <p class="note">Aufgaben in den sieben Formaten, in denen Aufgabe 3 über die Jahrgänge gestellt wurde — beide Varianten gemischt.</p>
+      <div class="score">
+        <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
+        <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
+        <div class="s"><span class="sv" id="sc_rate">—</span><span class="sk">Quote</span></div>
+        <button class="linkish" id="sc_reset">Zähler zurücksetzen</button>
+      </div>
+      <div class="taskcard" id="taskcard"></div>
+    </section>
+  </div>
+
+  <footer>
+    Dreiecke, Linien und Zahlenwerte stammen aus den Klausuren Oktober 2019 bis Oktober 2021 des Lehrstuhls Graphische Datenverarbeitung.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function make(t, a) { var n = document.createElementNS(NS, t); for (var k in a) { n.setAttribute(k, a[k]); } return n; }
+  function clear(n) { while (n.firstChild) { n.removeChild(n.firstChild); } }
+  function fmt(v) { var r = Math.round(v * 10000) / 10000; if (Object.is(r, -0)) { r = 0; } return String(r).replace(".", ","); }
+  function parseNum(s) { s = String(s).trim().replace(",", "."); if (s === "") { return NaN; } var n = parseFloat(s); return isFinite(n) ? n : NaN; }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+  /* ---------- Raster zeichnen ---------- */
+  function Grid(svg, xmax, ymax, W, H) {
+    var pad = 26;
+    var ux = (W - 2 * pad) / xmax, uy = (H - 2 * pad) / ymax;
+    var u = Math.min(ux, uy);
+    var P = {
+      x: function (x) { return pad + x * u; },
+      y: function (y) { return H - pad - y * u; },
+      u: u
+    };
+    var i;
+    for (i = 0; i <= xmax; i++) {
+      svg.appendChild(make("line", { x1: P.x(i), y1: P.y(0), x2: P.x(i), y2: P.y(ymax),
+        stroke: "var(--grid)", "stroke-width": 1 }));
+    }
+    for (i = 0; i <= ymax; i++) {
+      svg.appendChild(make("line", { x1: P.x(0), y1: P.y(i), x2: P.x(xmax), y2: P.y(i),
+        stroke: "var(--grid)", "stroke-width": 1 }));
+    }
+    for (i = 0; i <= xmax; i += (xmax > 8 ? 2 : 1)) {
+      var tx = make("text", { x: P.x(i), y: P.y(0) + 15, fill: "var(--ink-3)", "font-size": 10,
+        "font-family": "IBM Plex Mono, monospace", "text-anchor": "middle" });
+      tx.textContent = i; svg.appendChild(tx);
+    }
+    for (i = 0; i <= ymax; i += (ymax > 8 ? 2 : 1)) {
+      var ty = make("text", { x: P.x(0) - 9, y: P.y(i) + 4, fill: "var(--ink-3)", "font-size": 10,
+        "font-family": "IBM Plex Mono, monospace", "text-anchor": "middle" });
+      ty.textContent = i; svg.appendChild(ty);
+    }
+    return P;
+  }
+
+  /* =========================================================
+     SCANLINE-LABOR
+     ========================================================= */
+  var POLY_PRESETS = {
+    d19ss: [[0, 3], [3, 6], [6, 0]],
+    d20ss: [[0, 6], [6, 3], [3, 0]],
+    viereck: [[1, 5], [5, 6], [6, 1], [2, 0]],
+    fuenfeck: [[0, 2], [3, 0], [7, 2], [6, 6], [2, 6]]
+  };
+  var POLY = POLY_PRESETS.d19ss.map(function (p) { return p.slice(); });
+  var SCANY = 2;
+
+  function edgeTable(poly) {
+    var et = [];
+    poly.forEach(function (p, i) {
+      var q = poly[(i + 1) % poly.length];
+      if (p[1] === q[1]) { return; }
+      var lo = p[1] < q[1] ? p : q, hi = p[1] < q[1] ? q : p;
+      et.push({ ylo: lo[1], xlo: lo[0], yup: hi[1], im: (hi[0] - lo[0]) / (hi[1] - lo[1]) });
+    });
+    // dritter Schlüssel y_upper: sonst ist die Reihenfolge bei gleichem
+    // Startpunkt beliebig und weicht vom Klausurblatt ab
+    et.sort(function (a, b) { return a.ylo - b.ylo || a.xlo - b.xlo || a.yup - b.yup; });
+    return et;
+  }
+  function activeAt(et, y) {
+    return et.filter(function (e) { return e.ylo <= y && y < e.yup; })
+      .map(function (e) { return { x: e.xlo + (y - e.ylo) * e.im, yup: e.yup, im: e.im }; })
+      .sort(function (a, b) { return a.x - b.x; });
+  }
+
+  function buildPtable() {
+    var el = document.getElementById("ptable");
+    el.innerHTML = "";
+    ["", "x", "y"].forEach(function (h) {
+      var s = document.createElement("span");
+      s.className = h ? "vh" : "vn"; s.textContent = h; el.appendChild(s);
+    });
+    POLY.forEach(function (p, i) {
+      var lab = document.createElement("span");
+      lab.className = "vn"; lab.textContent = "P" + (i + 1); el.appendChild(lab);
+      [0, 1].forEach(function (c) {
+        var inp = document.createElement("input");
+        inp.type = "text"; inp.inputMode = "numeric"; inp.className = "cell";
+        inp.value = p[c];
+        inp.setAttribute("aria-label", "Ecke " + (i + 1) + " " + (c ? "y" : "x"));
+        inp.addEventListener("input", function () {
+          var v = parseNum(this.value);
+          if (!isNaN(v)) { POLY[i][c] = v; runScan(); }
+        });
+        el.appendChild(inp);
+      });
+    });
+  }
+
+  function runScan() {
+    var svg = document.getElementById("scanplot");
+    clear(svg);
+    var P = Grid(svg, 8, 8, 380, 380);
+    var et = edgeTable(POLY);
+    var aet = activeAt(et, SCANY);
+
+    // Scanline
+    svg.appendChild(make("line", { x1: P.x(0), y1: P.y(SCANY), x2: P.x(8), y2: P.y(SCANY),
+      stroke: "var(--amber)", "stroke-width": 1.4, "stroke-dasharray": "5 4" }));
+    // gefüllte Spannen
+    var i;
+    for (i = 0; i + 1 < aet.length; i += 2) {
+      svg.appendChild(make("line", { x1: P.x(aet[i].x), y1: P.y(SCANY), x2: P.x(aet[i + 1].x), y2: P.y(SCANY),
+        stroke: "var(--blue)", "stroke-width": 6, opacity: 0.35, "stroke-linecap": "round" }));
+    }
+    // Polygon
+    svg.appendChild(make("polygon", {
+      points: POLY.map(function (p) { return P.x(p[0]) + "," + P.y(p[1]); }).join(" "),
+      fill: "var(--blue)", "fill-opacity": 0.08, stroke: "var(--ink)",
+      "stroke-width": 1.8, "stroke-linejoin": "round"
+    }));
+    POLY.forEach(function (p) {
+      svg.appendChild(make("circle", { cx: P.x(p[0]), cy: P.y(p[1]), r: 3.2, fill: "var(--ink)" }));
+    });
+    aet.forEach(function (a) {
+      svg.appendChild(make("circle", { cx: P.x(a.x), cy: P.y(SCANY), r: 4, fill: "var(--amber)" }));
+    });
+
+    var tb = document.getElementById("ettbl");
+    tb.innerHTML = "";
+    et.forEach(function (e) {
+      var tr = document.createElement("tr");
+      if (e.ylo <= SCANY && SCANY < e.yup) { tr.className = "active"; }
+      tr.innerHTML = '<td class="n">' + fmt(e.ylo) + '</td><td class="n">' + fmt(e.xlo) +
+        '</td><td class="n">' + fmt(e.yup) + '</td><td class="n">' + fmt(e.im) + '</td>';
+      tb.appendChild(tr);
+    });
+
+    var ab = document.getElementById("aettbl");
+    ab.innerHTML = "";
+    if (!aet.length) {
+      ab.innerHTML = '<tr><td colspan="3" class="thint">keine aktive Kante bei diesem y</td></tr>';
+    }
+    aet.forEach(function (a) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td class="n">' + fmt(a.x) + '</td><td class="n">' + fmt(a.yup) +
+        '</td><td class="n">' + fmt(a.im) + '</td>';
+      ab.appendChild(tr);
+    });
+    document.getElementById("aety").textContent = SCANY;
+
+    var horiz = 0;
+    POLY.forEach(function (p, k) { if (p[1] === POLY[(k + 1) % POLY.length][1]) { horiz++; } });
+    var note = "Die Edge Table ist nach y" + "ₗ" + "ₒ" + "ᵤ" + " sortiert, die Active Edge Table nach x.";
+    note = "Edge Table nach y_lower sortiert, Active Edge Table nach x_inter. ";
+    note += horiz ? (horiz + " horizontale Kante(n) tauchen nicht in der Edge Table auf.")
+                  : "Dieses Polygon hat keine horizontale Kante.";
+    if (aet.length % 2 === 1) { note += " Ungerade Anzahl Schnittpunkte: die Scanline läuft genau durch eine Ecke."; }
+    document.getElementById("scannote").textContent = note;
+  }
+
+  document.getElementById("ppresets").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-p]");
+    if (!b) { return; }
+    POLY = POLY_PRESETS[b.getAttribute("data-p")].map(function (p) { return p.slice(); });
+    buildPtable(); runScan();
+  });
+  document.getElementById("scany").addEventListener("input", function () {
+    SCANY = parseInt(this.value, 10);
+    document.getElementById("scanyv").textContent = SCANY;
+    runScan();
+  });
+
+  /* =========================================================
+     BRESENHAM-LABOR
+     ========================================================= */
+  // letzter Eintrag muss echt Δy > Δx haben, sonst zeigt er den Effekt nicht
+  var BPRESETS = [[1, 1, 9, 4], [1, 0, 9, 5], [0, 0, 10, 2], [1, 0, 5, 6]];
+  var BL = BPRESETS[0].slice();
+
+  function bresenham(x0, y0, x1, y1) {
+    var dx = x1 - x0, dy = y1 - y0;
+    var D = dx - 2 * dy, dDE = -2 * dy, dDNE = 2 * (dx - dy);
+    var rows = [], x = x0, y = y0, guard = 0;
+    while (x <= x1 && guard++ < 200) {
+      var up = D < 0;
+      rows.push({ x: x, y: y, D: D, up: up });
+      x++;
+      if (D < 0) { y++; D += dDNE; } else { D += dDE; }
+    }
+    return { dx: dx, dy: dy, D0: dx - 2 * dy, dDE: dDE, dDNE: dDNE, rows: rows };
+  }
+
+  function buildBtable() {
+    var el = document.getElementById("btable");
+    el.innerHTML = "";
+    ["", "x", "y"].forEach(function (h) {
+      var s = document.createElement("span");
+      s.className = h ? "vh" : "vn"; s.textContent = h; el.appendChild(s);
+    });
+    [0, 1].forEach(function (pt) {
+      var lab = document.createElement("span");
+      lab.className = "vn"; lab.textContent = pt ? "P₁" : "P₀"; el.appendChild(lab);
+      [0, 1].forEach(function (c) {
+        var idx = pt * 2 + c;
+        var inp = document.createElement("input");
+        inp.type = "text"; inp.inputMode = "numeric"; inp.className = "cell";
+        inp.value = BL[idx];
+        inp.setAttribute("aria-label", (pt ? "Endpunkt" : "Startpunkt") + (c ? " y" : " x"));
+        inp.addEventListener("input", function () {
+          var v = parseNum(this.value);
+          if (!isNaN(v)) { BL[idx] = Math.round(v); runBres(); }
+        });
+        el.appendChild(inp);
+      });
+    });
+  }
+
+  function runBres() {
+    var r = bresenham(BL[0], BL[1], BL[2], BL[3]);
+    var xmax = Math.max(11, BL[2] + 1), ymax = Math.max(7, Math.max(BL[1], BL[3]) + 1);
+    var svg = document.getElementById("bresplot");
+    clear(svg);
+    svg.setAttribute("viewBox", "0 0 420 " + Math.round(300 * ymax / 7));
+    var P = Grid(svg, xmax, ymax, 420, Math.round(300 * ymax / 7));
+
+    r.rows.forEach(function (row) {
+      svg.appendChild(make("rect", {
+        x: P.x(row.x) - P.u / 2, y: P.y(row.y) - P.u / 2, width: P.u, height: P.u,
+        fill: "var(--blue)", "fill-opacity": 0.3, stroke: "var(--blue)", "stroke-width": 1
+      }));
+    });
+    svg.appendChild(make("line", { x1: P.x(BL[0]), y1: P.y(BL[1]), x2: P.x(BL[2]), y2: P.y(BL[3]),
+      stroke: "var(--accent2)", "stroke-width": 1.8 }));
+
+    document.getElementById("bstart").innerHTML =
+      "<div>Δx = " + fmt(r.dx) + " &nbsp;&nbsp; Δy = " + fmt(r.dy) + "</div>" +
+      "<div>D = " + fmt(r.D0) + " &nbsp;&nbsp; ΔDE = " + fmt(r.dDE) + " &nbsp;&nbsp; ΔDNE = " + fmt(r.dDNE) + "</div>";
+
+    var tb = document.getElementById("brestbl");
+    tb.innerHTML = "";
+    r.rows.forEach(function (row) {
+      var tr = document.createElement("tr");
+      tr.className = "step" + (row.up ? " up" : "");
+      tr.innerHTML = '<td class="n">' + row.x + '</td><td class="n">' + row.y +
+        '</td><td class="n d">' + row.D + '</td><td class="n">' + (row.up ? "NO, y++" : "O") + '</td>';
+      tb.appendChild(tr);
+    });
+
+    var note;
+    if (r.dx <= 0) {
+      note = "Für x₁ ≤ x₀ läuft die Schleife gar nicht — der Algorithmus setzt einen Startpunkt links vom Endpunkt voraus.";
+    } else if (r.dy < 0) {
+      note = "Für fallende Linien ist dieser Code nicht gedacht; y wird nur erhöht, nie verringert.";
+    } else if (r.dy > r.dx) {
+      note = "Δy > Δx: ΔDE und ΔDNE sind beide negativ, D bleibt dauerhaft negativ, also wird in jedem Schritt y erhöht. Heraus kommt eine Gerade mit Steigung 1 statt der gewünschten — genau die Beobachtung aus 2021 SS c).";
+    } else {
+      note = "Magenta ist die ideale Gerade, die blauen Kästchen sind die gesetzten Pixel. Jede Spalte zwischen Start und Ende enthält genau eines.";
+    }
+    document.getElementById("bresnote").textContent = note;
+  }
+
+  document.getElementById("bpresets").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-b]");
+    if (!b) { return; }
+    BL = BPRESETS[parseInt(b.getAttribute("data-b"), 10)].slice();
+    buildBtable(); runBres();
+  });
+
+  document.getElementById("labswitch").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-lab]");
+    if (!b) { return; }
+    var which = b.getAttribute("data-lab");
+    Array.prototype.forEach.call(this.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-pressed", x === b ? "true" : "false");
+    });
+    document.getElementById("lab-scan").hidden = which !== "scan";
+    document.getElementById("lab-bres").hidden = which !== "bres";
+    if (which === "bres") { runBres(); }
+  });
+
+  buildPtable(); runScan();
+  buildBtable(); runBres();
+
+  /* =========================================================
+     TABS + KONFETTI
+     ========================================================= */
+  var viewErk = document.getElementById("view-erklaerung");
+  var viewTra = document.getElementById("view-training");
+  var tabs = document.getElementById("tabs");
+  tabs.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-view]");
+    if (!b) { return; }
+    var v = b.getAttribute("data-view");
+    Array.prototype.forEach.call(tabs.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-selected", x === b ? "true" : "false");
+    });
+    viewErk.hidden = (v !== "erklaerung");
+    viewTra.hidden = (v !== "training");
+  });
+
+  function cssVar(n, f) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    return v || f;
+  }
+  function confetti(ox, oy) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
+    var W = window.innerWidth || document.documentElement.clientWidth;
+    var H = window.innerHeight || document.documentElement.clientHeight;
+    if (!W || !H) { return; }
+    var stale = document.getElementById("confetti");
+    if (stale) { stale.remove(); }
+    var colors = [cssVar("--good", "#158A4A"), cssVar("--blue", "#1E3FAE"),
+                  cssVar("--accent2", "#C51E86"), cssVar("--amber", "#B8791C")];
+    var cv = document.createElement("canvas");
+    cv.id = "confetti";
+    document.body.appendChild(cv);
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = W * dpr; cv.height = H * dpr;
+    var ctx = cv.getContext("2d");
+    ctx.scale(dpr, dpr);
+    var bits = [], i;
+    for (i = 0; i < 70; i++) {
+      var ang = (-Math.PI / 2) + (Math.random() - 0.5) * 2.0, spd = 5 + Math.random() * 8;
+      bits.push({ x: ox + (Math.random() - 0.5) * 90, y: oy, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        w: 4 + Math.random() * 5, h: 6 + Math.random() * 6, rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35, col: colors[Math.floor(Math.random() * colors.length)] });
+    }
+    var start = performance.now(), LIFE = 1500;
+    var killer = window.setTimeout(function () { cv.remove(); }, LIFE + 3000);
+    function frame(now) {
+      var t = now - start;
+      if (t > LIFE) { window.clearTimeout(killer); cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      var fade = t > LIFE * 0.6 ? 1 - (t - LIFE * 0.6) / (LIFE * 0.4) : 1;
+      bits.forEach(function (b) {
+        b.vy += 0.32; b.vx *= 0.995; b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+        ctx.save(); ctx.globalAlpha = fade; ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+        ctx.fillStyle = b.col; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); ctx.restore();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* =========================================================
+     TRAINING
+     ========================================================= */
+  var TYPE_LABEL = {
+    et: "Edge-Table-Zeile · wie 3a",
+    aet: "Active Edge Table · wie 3b",
+    etrev: "Edge Table lesen · wie 2020 WS 3a",
+    bstart: "Bresenham-Startwerte · wie 3a",
+    brow: "Bresenham-Tabelle · wie 3a",
+    scanmc: "Scanline-Theorie · wie 3c",
+    bresmc: "Bresenham-Theorie · wie 3b/c"
+  };
+
+  var TPOLYS = [
+    [[0, 3], [3, 6], [6, 0]],
+    [[0, 6], [6, 3], [3, 0]],
+    [[1, 5], [5, 6], [6, 1], [2, 0]],
+    [[0, 2], [3, 0], [7, 2], [6, 6], [2, 6]],
+    [[1, 1], [7, 3], [3, 7]],
+    [[0, 0], [6, 2], [2, 6]],
+    [[2, 0], [6, 4], [0, 4]]
+  ];
+  function quarter(v) { return Math.abs(v * 4 - Math.round(v * 4)) < 1e-9; }
+
+  function buildEtTasks() {
+    var out = [];
+    TPOLYS.forEach(function (poly, pi) {
+      var et = edgeTable(poly);
+      poly.forEach(function (p, i) {
+        var q = poly[(i + 1) % poly.length];
+        if (p[1] === q[1]) { return; }
+        var lo = p[1] < q[1] ? p : q, hi = p[1] < q[1] ? q : p;
+        var im = (hi[0] - lo[0]) / (hi[1] - lo[1]);
+        if (!quarter(im)) { return; }
+        out.push({ type: "et", poly: poly, a: p, b: q,
+          sol: { ylo: lo[1], xlo: lo[0], yup: hi[1], im: im } });
+      });
+    });
+    return out;
+  }
+  function buildAetTasks() {
+    var out = [];
+    TPOLYS.forEach(function (poly) {
+      var et = edgeTable(poly);
+      var ys = [];
+      var i;
+      for (i = 0; i <= 8; i++) { ys.push(i); }
+      ys.forEach(function (y) {
+        var a = activeAt(et, y);
+        if (a.length !== 2) { return; }
+        if (!quarter(a[0].x) || !quarter(a[1].x)) { return; }
+        out.push({ type: "aet", poly: poly, y: y, sol: [a[0].x, a[1].x] });
+      });
+    });
+    // pro Polygon höchstens zwei Scanlines
+    var byPoly = {}, res = [];
+    out.forEach(function (t) {
+      var k = JSON.stringify(t.poly);
+      byPoly[k] = (byPoly[k] || 0) + 1;
+      if (byPoly[k] <= 2) { res.push(t); }
+    });
+    return res;
+  }
+  function buildEtrevTasks() {
+    var out = [];
+    TPOLYS.forEach(function (poly) {
+      edgeTable(poly).forEach(function (e) {
+        if (!quarter(e.im)) { return; }
+        var xup = e.xlo + (e.yup - e.ylo) * e.im;
+        if (!quarter(xup)) { return; }
+        out.push({ type: "etrev", row: e, sol: [xup, e.yup] });
+      });
+    });
+    return out.slice(0, 12);
+  }
+
+  var BLINES = [[1, 1, 9, 4], [1, 0, 9, 5], [0, 0, 8, 3], [1, 1, 7, 4], [0, 1, 10, 6],
+                [2, 0, 9, 4], [0, 0, 6, 2], [1, 2, 8, 6], [0, 0, 10, 4], [1, 1, 6, 5]];
+  function buildBstartTasks() {
+    return BLINES.map(function (l) {
+      var r = bresenham(l[0], l[1], l[2], l[3]);
+      return { type: "bstart", l: l, sol: [r.dx, r.dy, r.D0, r.dDE, r.dDNE] };
+    });
+  }
+  function buildBrowTasks() {
+    var out = [];
+    BLINES.forEach(function (l) {
+      var r = bresenham(l[0], l[1], l[2], l[3]);
+      [2, Math.min(5, r.rows.length), r.rows.length].forEach(function (k) {
+        if (k < 2 || k > r.rows.length) { return; }
+        var row = r.rows[k - 1];
+        out.push({ type: "brow", l: l, k: k, sol: [row.x, row.y, row.D] });
+      });
+    });
+    return out;
+  }
+
+  var SCAN_MC = [
+    { q: "Was passiert mit horizontalen Kanten (m = 0)?",
+      o: ["Sie kommen nicht in die Edge Table und werden separat gezeichnet",
+          "Sie bekommen 1/m = 0 und werden normal mitgeführt",
+          "Sie werden in zwei schräge Kanten zerlegt"],
+      a: 0, w: "Eine horizontale Kante schneidet keine Scanline in einem Punkt, sie fällt aus dem Schema." },
+    { q: "Und mit vertikalen Kanten (m = ∞)?",
+      o: ["Nichts Besonderes, sie stehen mit 1/m = 0 in der Tabelle",
+          "Sie werden weggelassen wie horizontale Kanten",
+          "Sie brauchen eine Division durch null und werden gesondert behandelt"],
+      a: 0, w: "Gespeichert wird 1/m = Δx/Δy. Bei Δx = 0 ist das schlicht 0, kein Sonderfall." },
+    { q: "Warum speichert die Edge Table 1/m statt m?",
+      o: ["Weil pro Scanline y um 1 wächst und man direkt das Δx pro Zeile braucht",
+          "Weil 1/m immer ganzzahlig ist",
+          "Weil m für vertikale Kanten undefiniert wäre und 1/m nicht"],
+      a: 0, w: "x_inter += 1/m pro Zeile — damit ist der Schnittpunkt inkrementell fortschreibbar." },
+    { q: "Wonach wird die Active Edge Table sortiert?",
+      o: ["Nach x_inter", "Nach y_lower", "Nach 1/m"],
+      a: 0, w: "Gefüllt wird paarweise zwischen den Schnittpunkten, dafür müssen sie in x-Reihenfolge stehen." },
+    { q: "Wie baut man Gouraud-Shading in den Scanline-Algorithmus ein?",
+      o: ["Farben an den Ecken berechnen, entlang der Kanten interpolieren, dann zwischen den beiden Schnittpunkten einer Scanline",
+          "Für jedes Pixel die Beleuchtungsformel neu auswerten",
+          "Die Normale interpolieren und pro Pixel beleuchten"],
+      a: 0, w: "Die dritte Antwort beschreibt Phong-Shading, nicht Gouraud." },
+    { q: "Wann darf man Polygone statt per Scanline über Kantengleichungen rastern?",
+      o: ["Nur wenn das Polygon konvex ist",
+          "Immer, der Test ist gleichwertig",
+          "Nur wenn das Polygon achsenparallele Kanten hat"],
+      a: 0, w: "Bei einem konkaven Polygon liefert der Test der Halbebenen kein korrektes Innen." },
+    { q: "Wie zeichnet man mit dem Scanline-Algorithmus nur den Umriss?",
+      o: ["Pro Scanline nur das erste und letzte Pixel setzen, bei 1/m > 1 zusätzlich die Lücken füllen",
+          "Die Edge Table nach dem Zeichnen umdrehen",
+          "Alle Spannen mit halber Deckkraft füllen"],
+      a: 0, w: "Wandert eine Kante pro Zeile um mehr als ein Pixel, reißt der Umriss sonst auf." }
+  ];
+
+  var BRES_MC = [
+    { q: "In einer Pixelmenge gibt es zwischen Start und Ende eine Spalte ganz ohne Pixel. Warum kann das keine Bresenham-Linie sein?",
+      o: ["x wird in jedem Schleifendurchlauf um genau 1 erhöht, also hat jede Spalte genau ein Pixel",
+          "Weil die Linie dann steiler als 45° wäre",
+          "Weil D dann übergelaufen wäre"],
+      a: 0, w: "Der Zähler x läuft lückenlos von x₀ bis x₁, und pro Durchlauf wird genau ein Pixel gesetzt." },
+    { q: "In einer Spalte liegen zwei Pixel übereinander. Warum ist das kein Bresenham-Ergebnis?",
+      o: ["Pro Durchlauf wird genau ein Pixel gesetzt und danach x erhöht",
+          "Weil y nie erhöht wird",
+          "Das ist möglich, wenn ΔDNE groß genug ist"],
+      a: 0, w: "Zwei Pixel in einer Spalte bräuchten zwei Durchläufe mit gleichem x — die gibt es nicht." },
+    { q: "Ein gesetztes Pixel berührt die Gerade zwischen erstem und letztem Pixel überhaupt nicht. Was folgt daraus?",
+      o: ["Es kann keine Bresenham-Linie sein, der Algorithmus weicht nie um mehr als ein halbes Pixel ab",
+          "Nichts, der Algorithmus darf beliebig abweichen",
+          "Die Linie wurde nur in der falschen Richtung gezeichnet"],
+      a: 0, w: "Bresenham wählt in jeder Spalte den nächstgelegenen der beiden Kandidaten." },
+    { q: "Was macht der unveränderte Algorithmus, wenn Δy > Δx ist?",
+      o: ["ΔDE und ΔDNE sind beide negativ, D bleibt negativ, es entsteht immer eine Gerade mit Steigung 1",
+          "Er zeichnet die Linie korrekt, nur langsamer",
+          "Er läuft in eine Endlosschleife"],
+      a: 0, w: "ΔDNE = 2(Δx − Δy) ist bei Δy > Δx negativ, D kann also nie wieder positiv werden." },
+    { q: "Was bedeutet D < 0 im Schleifenrumpf?",
+      o: ["Der Nordost-Schritt wird gewählt, y wird erhöht",
+          "Der Ost-Schritt wird gewählt, y bleibt",
+          "Die Linie ist fertig gezeichnet"],
+      a: 0, w: "D ist die Entscheidungsvariable; negativ heißt, die ideale Gerade liegt näher am oberen Kandidaten." },
+    { q: "Warum arbeitet Bresenham ausschließlich mit ganzen Zahlen?",
+      o: ["Weil D nur inkrementell mit ΔDE und ΔDNE fortgeschrieben wird",
+          "Weil Pixelkoordinaten gerundet werden",
+          "Weil die Steigung immer ganzzahlig ist"],
+      a: 0, w: "Genau darin liegt der Vorteil gegenüber dem naiven Verfahren mit y = m·x + b." }
+  ];
+
+  // Die richtige Antwort steht in den Pools immer zuerst — hier wird
+  // durchgemischt, sonst wäre sie an der Position erkennbar.
+  function shuffleOpts(c) {
+    var idx = c.o.map(function (_, i) { return i; }), i, j, t;
+    for (i = idx.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+    }
+    return { q: c.q, w: c.w, o: idx.map(function (i2) { return c.o[i2]; }), a: idx.indexOf(c.a) };
+  }
+
+  function buildDeck() {
+    var d = [].concat(buildEtTasks(), buildAetTasks(), buildEtrevTasks(),
+                      buildBstartTasks(), buildBrowTasks());
+    SCAN_MC.forEach(function (c) { d.push({ type: "scanmc", c: shuffleOpts(c) }); });
+    BRES_MC.forEach(function (c) { d.push({ type: "bresmc", c: shuffleOpts(c) }); });
+    if (new URLSearchParams(window.location.search).get("exam") === "1") {
+      function one(types) {
+        var candidates=d.filter(function(t){return types.indexOf(t.type)>=0;});
+        return candidates[Math.floor(Math.random()*candidates.length)];
+      }
+      return [one(["et"]),one(["aet","etrev"]),one(["bstart","brow"]),one(["scanmc","bresmc"])];
+    }
+    var i, j, t;
+    for (i = d.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      t = d[i]; d[i] = d[j]; d[j] = t;
+    }
+    return d;
+  }
+
+  /* Zähler */
+  var score = { ok: 0, bad: 0 };
+  try {
+    var raw = window.localStorage.getItem("cg-raster-score");
+    if (raw) { var p = JSON.parse(raw); if (p && typeof p.ok === "number") { score = p; } }
+  } catch (e) { /* egal */ }
+  function saveScore() { try { window.localStorage.setItem("cg-raster-score", JSON.stringify(score)); } catch (e) { /* egal */ } }
+  function paintScore() {
+    document.getElementById("sc_ok").textContent = score.ok;
+    document.getElementById("sc_bad").textContent = score.bad;
+    var t = score.ok + score.bad;
+    document.getElementById("sc_rate").textContent = t ? Math.round(score.ok / t * 100) + " %" : "—";
+  }
+  document.getElementById("sc_reset").addEventListener("click", function () {
+    score = { ok: 0, bad: 0 }; saveScore(); paintScore();
+  });
+
+  /* Karte */
+  var card = document.getElementById("taskcard");
+  var deck = buildDeck(), deckIndex = -1, task = null, isRepeat = false, checker = null;
+
+  function polySVG(poly, y) {
+    var svg = make("svg", { viewBox: "0 0 260 260", role: "img" });
+    var P = Grid(svg, 8, 8, 260, 260);
+    if (y !== undefined && y !== null) {
+      svg.appendChild(make("line", { x1: P.x(0), y1: P.y(y), x2: P.x(8), y2: P.y(y),
+        stroke: "var(--amber)", "stroke-width": 1.4, "stroke-dasharray": "5 4" }));
+    }
+    svg.appendChild(make("polygon", {
+      points: poly.map(function (p) { return P.x(p[0]) + "," + P.y(p[1]); }).join(" "),
+      fill: "var(--blue)", "fill-opacity": 0.08, stroke: "var(--ink)", "stroke-width": 1.6,
+      "stroke-linejoin": "round" }));
+    poly.forEach(function (p) {
+      svg.appendChild(make("circle", { cx: P.x(p[0]), cy: P.y(p[1]), r: 3, fill: "var(--ink)" }));
+      var t = make("text", { x: P.x(p[0]) + 7, y: P.y(p[1]) - 6, fill: "var(--ink-2)",
+        "font-size": 10, "font-family": "IBM Plex Mono, monospace" });
+      t.textContent = "(" + p[0] + "," + p[1] + ")";
+      svg.appendChild(t);
+    });
+    return svg.outerHTML;
+  }
+  function fieldHTML(id, label) {
+    return '<label class="field"><span>' + label + '</span>' +
+      '<input type="text" inputmode="decimal" id="f_' + id + '"></label>';
+  }
+  function radioHTML(name, opts) {
+    return '<div class="choices">' + opts.map(function (o, i) {
+      return '<label><input type="radio" name="' + name + '" value="' + i + '"><span>' + o + '</span></label>';
+    }).join("") + '</div>';
+  }
+  function readF(id) { var n = document.getElementById("f_" + id); return n ? parseNum(n.value) : NaN; }
+  function markF(id, ok) { var n = document.getElementById("f_" + id); if (n) { n.classList.add(ok ? "ok" : "bad"); } }
+  function radioVal(name) {
+    var n = document.querySelector('input[name="' + name + '"]:checked');
+    return n ? parseInt(n.value, 10) : -1;
+  }
+  function checkFields(ids, sol) {
+    var g = ids.map(readF);
+    if (g.some(isNaN)) { return null; }
+    var all = true;
+    ids.forEach(function (id, i) {
+      var good = Math.abs(g[i] - sol[i]) < 1e-6;
+      if (!good) { all = false; }
+      markF(id, good);
+    });
+    return all;
+  }
+
+  function renderTask() {
+    var t = task, body = "";
+    var head = '<div class="task-top"><span class="ttype">' + TYPE_LABEL[t.type] +
+      '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
+      (isRepeat ? " · Wiederholung" : "") + '</span></div>';
+
+    if (t.type === "et") {
+      body = '<p class="tprompt">Fülle die Edge-Table-Zeile für die Kante von (' + t.a[0] + "," + t.a[1] +
+        ') nach (' + t.b[0] + "," + t.b[1] + ') aus.</p>' +
+        '<div class="trow">' + polySVG(t.poly) + '<div class="fields">' +
+        fieldHTML("ylo", "y lower") + fieldHTML("xlo", "x lower") +
+        fieldHTML("yup", "y upper") + fieldHTML("im", "1/m") + '</div></div>' +
+        '<p class="thint">x<sub>lower</sub> ist das x am unteren Endpunkt. 1/m = Δx / Δy.</p>';
+      checker = function () {
+        var r = checkFields(["ylo", "xlo", "yup", "im"], [t.sol.ylo, t.sol.xlo, t.sol.yup, t.sol.im]);
+        if (r === null) { return { incomplete: true }; }
+        return { ok: r, solText: "Richtig wäre " + fmt(t.sol.ylo) + " · " + fmt(t.sol.xlo) + " · " +
+            fmt(t.sol.yup) + " · " + fmt(t.sol.im) + ".",
+          why: "Δx = " + fmt(t.sol.im * (t.sol.yup - t.sol.ylo)) + ", Δy = " + fmt(t.sol.yup - t.sol.ylo) +
+            ", also 1/m = " + fmt(t.sol.im) + "." };
+      };
+    } else if (t.type === "aet") {
+      body = '<p class="tprompt">Welche x-Werte stehen in der Active Edge Table bei der Scanline y = ' +
+        t.y + '? Von links nach rechts.</p>' +
+        '<div class="trow">' + polySVG(t.poly, t.y) + '<div class="fields">' +
+        fieldHTML("x1", "x links") + fieldHTML("x2", "x rechts") + '</div></div>' +
+        '<p class="thint">x<sub>inter</sub> = x<sub>lower</sub> + (y − y<sub>lower</sub>) · 1/m</p>';
+      checker = function () {
+        var r = checkFields(["x1", "x2"], t.sol);
+        if (r === null) { return { incomplete: true }; }
+        return { ok: r, solText: "Richtig wären " + fmt(t.sol[0]) + " und " + fmt(t.sol[1]) + ".",
+          why: "Beide aktiven Kanten bei y = " + t.y + " an dieser Stelle auswerten und nach x sortieren." };
+      };
+    } else if (t.type === "etrev") {
+      var e = t.row;
+      body = '<p class="tprompt">Eine Edge-Table-Zeile lautet: y<sub>lower</sub> = ' + fmt(e.ylo) +
+        ', x<sub>lower</sub> = ' + fmt(e.xlo) + ', y<sub>upper</sub> = ' + fmt(e.yup) +
+        ', 1/m = ' + fmt(e.im) + '. Wo liegt der obere Endpunkt dieser Kante?</p>' +
+        '<div class="fields">' + fieldHTML("ux", "x oben") + fieldHTML("uy", "y oben") + '</div>' +
+        '<p class="thint">Genau diese Rückrichtung war 2020 WS gefragt, um aus der Tabelle das Polygon zu zeichnen.</p>';
+      checker = function () {
+        var r = checkFields(["ux", "uy"], t.sol);
+        if (r === null) { return { incomplete: true }; }
+        return { ok: r, solText: "Der obere Endpunkt ist (" + fmt(t.sol[0]) + " | " + fmt(t.sol[1]) + ").",
+          why: "x = x_lower + (y_upper − y_lower) · 1/m = " + fmt(e.xlo) + " + " +
+            fmt(e.yup - e.ylo) + " · " + fmt(e.im) + "." };
+      };
+    } else if (t.type === "bstart") {
+      body = '<p class="tprompt">Die Linie von (' + t.l[0] + "," + t.l[1] + ') nach (' + t.l[2] + "," + t.l[3] +
+        ') wird mit Bresenham gerastert. Gib die Startwerte an.</p>' +
+        '<div class="fields">' + fieldHTML("dx", "Δx") + fieldHTML("dy", "Δy") +
+        fieldHTML("d", "D") + fieldHTML("de", "ΔDE") + fieldHTML("dne", "ΔDNE") + '</div>' +
+        '<p class="thint">D = Δx − 2Δy, ΔDE = −2Δy, ΔDNE = 2(Δx − Δy)</p>';
+      checker = function () {
+        var r = checkFields(["dx", "dy", "d", "de", "dne"], t.sol);
+        if (r === null) { return { incomplete: true }; }
+        return { ok: r, solText: "Richtig wären Δx = " + t.sol[0] + ", Δy = " + t.sol[1] +
+            ", D = " + t.sol[2] + ", ΔDE = " + t.sol[3] + ", ΔDNE = " + t.sol[4] + ".",
+          why: "Alles folgt direkt aus Δx und Δy — keine Schleife nötig." };
+      };
+    } else if (t.type === "brow") {
+      body = '<p class="tprompt">Die Linie von (' + t.l[0] + "," + t.l[1] + ') nach (' + t.l[2] + "," + t.l[3] +
+        ') wird mit Bresenham gerastert. Welche Werte stehen <strong>am Anfang des ' + t.k +
+        '. Schleifendurchlaufs</strong> in x, y und D?</p>' +
+        '<div class="fields">' + fieldHTML("x", "x") + fieldHTML("y", "y") + fieldHTML("d", "D") + '</div>' +
+        '<p class="thint">Erster Durchlauf: x = x₀, y = y₀, D = Δx − 2Δy. Danach je Durchlauf x++ und D anpassen.</p>';
+      checker = function () {
+        var r = checkFields(["x", "y", "d"], t.sol);
+        if (r === null) { return { incomplete: true }; }
+        var run = bresenham(t.l[0], t.l[1], t.l[2], t.l[3]);
+        var trace = run.rows.slice(0, t.k).map(function (rw) {
+          return "(" + rw.x + "," + rw.y + "," + rw.D + ")";
+        }).join(" → ");
+        return { ok: r, solText: "Richtig wären x = " + t.sol[0] + ", y = " + t.sol[1] + ", D = " + t.sol[2] + ".",
+          why: "Verlauf bis dahin: " + trace };
+      };
+    } else {
+      var c = t.c;
+      body = '<p class="tprompt">' + c.q + '</p>' + radioHTML("mc", c.o);
+      checker = function () {
+        var v = radioVal("mc");
+        if (v < 0) { return { incomplete: true }; }
+        return { ok: v === c.a, solText: "Richtig: " + c.o[c.a], why: c.w };
+      };
+    }
+
+    card.innerHTML = head + '<div class="tbody">' + body + '</div>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
+    document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+  }
+
+  function confirmAnswer() {
+    var res = checker();
+    if (res.incomplete) {
+      var act = card.querySelector(".tactions");
+      var warn = act.querySelector(".repeat-note.warn");
+      if (!warn) {
+        warn = document.createElement("span");
+        warn.className = "repeat-note warn";
+        act.appendChild(warn);
+      }
+      warn.textContent = "Bitte alles ausfüllen.";
+      return;
+    }
+    if (!isRepeat) {
+      if (res.ok) { score.ok++; } else { score.bad++; }
+      saveScore(); paintScore();
+    }
+    Array.prototype.forEach.call(card.querySelectorAll("input"), function (n) { n.disabled = true; });
+    card.querySelector(".tactions").remove();
+
+    var v = document.createElement("div");
+    v.className = "verdict " + (res.ok ? "right" : "wrong");
+    var parts = '<span class="vhead">' + (res.ok ? "Richtig." : "Nicht richtig.") + '</span>';
+    if (!res.ok && res.solText) { parts += '<span class="vsol">' + res.solText + '</span>'; }
+    parts += '<span class="vsol">' + res.why + '</span>';
+    v.innerHTML = parts;
+    card.appendChild(v);
+    if (res.ok) {
+      var vr = v.getBoundingClientRect();
+      confetti(vr.left + vr.width / 2, vr.top + 12);
+    }
+
+    var act2 = document.createElement("div");
+    act2.className = "tactions";
+    act2.innerHTML = (res.ok ? "" : '<button class="btn ghost" id="btn_again">Wiederholen</button>') +
+      '<button class="btn primary" id="btn_next">Nächste Aufgabe</button>';
+    card.appendChild(act2);
+    document.getElementById("btn_next").addEventListener("click", function () { isRepeat = false; nextTask(); });
+    if (!res.ok) {
+      document.getElementById("btn_again").addEventListener("click", function () { isRepeat = true; renderTask(); });
+    }
+  }
+
+  function nextTask() {
+    deckIndex++;
+    if (deckIndex >= deck.length) { renderDone(); return; }
+    task = deck[deckIndex];
+    renderTask();
+  }
+  function renderDone() {
+    card.innerHTML = '<div class="donecard"><h3>Durchlauf geschafft</h3>' +
+      '<p class="note">Alle ' + deck.length + ' Aufgaben einmal gesehen.</p>' +
+      '<button class="btn primary" id="btn_restart">Neuen Durchlauf starten</button></div>';
+    document.getElementById("btn_restart").addEventListener("click", function () {
+      deck = buildDeck(); deckIndex = -1; isRepeat = false; nextTask();
+    });
+  }
+
+  paintScore();
+  nextTask();
+}());
+</script>
+<script src="../scripts/portal-bridge.js?v=4"></script>

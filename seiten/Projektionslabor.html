@@ -1,0 +1,1107 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projektionslabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#FAF9F6; --surface:#FFFFFF; --ink:#16203A; --ink-2:#55607A; --ink-3:#8590A8;
+    --blue:#1E3FAE; --blue-soft:#E8ECFA; --red:#C7362B; --grid:#DCE2EE; --grid-axis:#A9B3C7;
+    --rule:#E4E6EC; --near:#158A4A; --far:#C51E86; --ghost:#B4BDD0; --amber:#B8791C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+      --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+      --rule:#262C3A; --near:#4FD08A; --far:#FF77C4; --ghost:#4A5468; --amber:#E0A93B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F131B; --surface:#161B26; --ink:#E7EBF3; --ink-2:#A2ADC4; --ink-3:#737E95;
+    --blue:#8AA4FF; --blue-soft:#1A2340; --red:#FF8E7E; --grid:#222A3A; --grid-axis:#47526A;
+    --rule:#262C3A; --near:#4FD08A; --far:#FF77C4; --ghost:#4A5468; --amber:#E0A93B;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  img { max-width: 100%; }
+
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif; font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
+    display: flex; flex-direction: column; gap: 2.5rem; }
+
+  h1,h2,h3,.label,.badge,th,button,.sfc { font-family: "Libre Franklin", Arial, sans-serif; }
+  .mono,.val,input,td.n,.formula,.ctest { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+  .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+  h1 { font-size: clamp(1.9rem,5vw,2.6rem); font-weight: 800; letter-spacing: -0.022em;
+    line-height: 1.1; margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--ink-2); max-width: 40rem; font-size: 1.05rem; }
+
+  h2 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  p { margin: 0; }
+  .note { color: var(--ink-2); font-size: 0.97rem; }
+
+  .tabs { display: flex; gap: 0.15rem; border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; z-index: 30; background: var(--paper);
+    margin: 0 -1.5rem -1.2rem; padding: 0.6rem 1.5rem 0; }
+  .tabs button { font-size: 0.9rem; font-weight: 600; padding: 0.5rem 0.95rem;
+    background: transparent; color: var(--ink-3); border: none; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; cursor: pointer; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+  #view-erklaerung, #view-training { display: flex; flex-direction: column; gap: 2.5rem; }
+
+  /* ---- Labor ---- */
+  .lab { display: grid; grid-template-columns: minmax(0,22rem) minmax(0,1fr);
+    gap: 1.5rem; align-items: start; }
+  @media (max-width: 50rem) { .lab { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1.1rem 1.2rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+  .label { font-size: 0.66rem; letter-spacing: 0.13em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); display: block; }
+
+  .m4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.2rem 0.25rem;
+    position: relative; padding: 0.35rem 0.7rem; }
+  .m4::before, .m4::after { content: ""; position: absolute; top: 0; bottom: 0; width: 7px;
+    border: 2px solid var(--ink-3); border-radius: 1px; }
+  .m4::before { left: 0; border-right: none; }
+  .m4::after { right: 0; border-left: none; }
+  .m4 input, .verts input {
+    width: 100%; text-align: center; font-size: 0.92rem; font-variant-numeric: tabular-nums;
+    padding: 0.2rem 0.05rem; color: var(--ink); background: transparent;
+    border: 1px solid transparent; border-bottom: 1px dotted var(--ink-3); border-radius: 2px;
+  }
+  .m4 input:hover, .verts input:hover { background: var(--blue-soft); }
+  .m4 input:focus, .verts input:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+  .m4 .r4 input { color: var(--amber); border-bottom-color: var(--amber); }
+
+  .verts { display: grid; grid-template-columns: 1.4rem repeat(3, 1fr); gap: 0.25rem 0.35rem; align-items: center; }
+  .verts .vn { font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; color: var(--ink-2); }
+  .verts .vh { font-family: "Libre Franklin", sans-serif; font-size: 0.62rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); text-align: center; font-weight: 600; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .presets button { font-size: 0.72rem; font-weight: 500; padding: 0.28rem 0.5rem;
+    background: transparent; color: var(--ink-2); border: 1px solid var(--rule);
+    border-radius: 2px; cursor: pointer; }
+  .presets button:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+
+  .stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 0.9rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .stage svg.imgspace { width: 100%; max-width: 24rem; height: auto; display: block; align-self: center; }
+
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th { text-align: left; font-size: 0.66rem; letter-spacing: 0.09em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); padding: 0 0.6rem 0.5rem 0;
+    border-bottom: 1px solid var(--ink-3); white-space: nowrap; }
+  td { padding: 0.45rem 0.6rem 0.45rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.n { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.n.hom { color: var(--ink-3); }
+  td.n.res { color: var(--ink); font-weight: 500; }
+  td.n.out { color: var(--red); }
+  .vlabel { font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+
+  .formula { font-size: 0.88rem; line-height: 1.85; background: var(--blue-soft); color: var(--ink);
+    border-left: 2px solid var(--blue); padding: 0.7rem 0.9rem; border-radius: 0 2px 2px 0; overflow-x: auto; }
+  .formula em { font-style: normal; color: var(--ink-2); }
+
+  .steps { margin: 0; padding: 0 0 0 1.4rem; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.96rem; }
+  .steps li::marker { color: var(--blue); font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+
+  .traps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .traps li { font-size: 0.94rem; padding-left: 1.15rem; position: relative; }
+  .traps li::before { content: "✗"; position: absolute; left: 0; top: 0.05em; color: var(--red);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem,1fr)); gap: 0;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); overflow: hidden; }
+  .duo > article { padding: 1rem 1.1rem 1.15rem; border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 0.5rem; }
+  .duo > article:last-child { border-right: none; }
+  .duo h3 { margin: 0; font-size: 1.02rem; font-weight: 600; color: var(--blue);
+    font-family: "IBM Plex Mono", monospace; }
+  .duo p { font-size: 0.93rem; }
+  .duo .cnote { font-size: 0.84rem; color: var(--ink-3); margin-top: auto; padding-top: 0.2rem; }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  figure svg { width: 100%; max-width: 34rem; height: auto; align-self: center; }
+  figcaption { font-size: 0.85rem; color: var(--ink-3); text-align: center; }
+  .sfc { font-size: 14px; font-weight: 700; fill: var(--ink); }
+  .sfi { font-family: "IBM Plex Mono", monospace; font-size: 12px; fill: var(--ink-2); }
+
+  /* ---- Training ---- */
+  .score { display: flex; align-items: center; gap: 1.6rem; padding: 0.75rem 1.1rem;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; flex-wrap: wrap; }
+  .score .s { display: flex; align-items: baseline; gap: 0.4rem; }
+  .score .sv { font-family: "IBM Plex Mono", monospace; font-size: 1.35rem; font-weight: 600;
+    font-variant-numeric: tabular-nums; }
+  .score .sv.ok { color: var(--near); }
+  .score .sv.bad { color: var(--red); }
+  .score .sk { font-family: "Libre Franklin", sans-serif; font-size: 0.66rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .linkish { margin-left: auto; background: none; border: none; cursor: pointer;
+    font-family: "Libre Franklin", sans-serif; font-size: 0.76rem; color: var(--ink-3);
+    text-decoration: underline; text-underline-offset: 3px; padding: 0.2rem; }
+  .linkish:hover { color: var(--blue); }
+
+  .taskcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    display: flex; flex-direction: column; }
+  .task-top { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+    padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--rule); }
+  .ttype { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--blue); }
+  .tno { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 0.74rem;
+    color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .tbody { padding: 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .tprompt { font-size: 1rem; }
+  .thint { font-size: 0.88rem; color: var(--ink-3); }
+  .trow { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: center; }
+
+  .fields { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 0.2rem; }
+  .field span { font-family: "Libre Franklin", sans-serif; font-size: 0.64rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .field input { width: 6.5rem; font-family: "IBM Plex Mono", monospace; font-size: 1rem;
+    padding: 0.35rem 0.5rem; color: var(--ink); background: transparent;
+    border: 1px solid var(--rule); border-radius: 2px; text-align: center; }
+  .field input:focus { outline: none; border-color: var(--blue); background: var(--blue-soft); }
+  .field input.ok, .field input.ok:disabled { color: var(--near); border-color: var(--near); }
+  .field input.bad, .field input.bad:disabled { color: var(--red); border-color: var(--red); }
+
+  .choices { display: flex; flex-direction: column; gap: 0.45rem; }
+  .choices .cgroup { display: flex; flex-direction: column; gap: 0.35rem; }
+  .choices label { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.95rem;
+    cursor: pointer; width: fit-content; }
+  .choices input { margin-top: 0.35rem; accent-color: var(--blue); cursor: pointer; }
+
+  .texgrid { display: grid; gap: 2px; }
+  .texcell { display: flex; align-items: center; justify-content: center;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.8rem;
+    width: 2.3rem; height: 2.3rem; border: 1px solid var(--rule); }
+  .texcell input { width: 100%; height: 100%; border: none; background: transparent; text-align: center;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; color: var(--ink); }
+  .texcell input:focus { outline: 2px solid var(--blue); outline-offset: -2px; }
+  .texcell input.ok { color: var(--near); font-weight: 600; }
+  .texcell input.bad { color: var(--red); font-weight: 600; }
+  .texwrap { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .arrowto { font-family: "IBM Plex Mono", monospace; color: var(--ink-3); font-size: 1.2rem; }
+
+  .tactions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+    padding: 0.9rem 1.2rem; border-top: 1px solid var(--rule); }
+  .btn { font-family: "Libre Franklin", sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 0.48rem 0.95rem; border-radius: 2px; cursor: pointer; border: 1px solid transparent; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  :root[data-theme="dark"] .btn.primary, :root:not([data-theme="light"]) .btn.primary { color: #0F131B; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: #fff; } }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--rule); }
+  .btn.ghost:hover { color: var(--blue); border-color: var(--blue); background: var(--blue-soft); }
+
+  .verdict { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.9rem 1.2rem;
+    border-top: 1px solid var(--rule); }
+  .verdict .vhead { font-family: "Libre Franklin", sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .verdict.right .vhead { color: var(--near); }
+  .verdict.wrong .vhead { color: var(--red); }
+  .verdict .vsol { font-size: 0.93rem; color: var(--ink-2); }
+  .verdict .vsol .mono { color: var(--ink); }
+  .repeat-note { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
+  .repeat-note.warn { color: var(--red); }
+  .donecard { text-align: center; padding: 2rem 1.2rem; display: flex; flex-direction: column;
+    gap: 0.8rem; align-items: center; }
+  .donecard h3 { margin: 0; font-family: "Libre Franklin", sans-serif; font-size: 1.2rem; }
+
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+
+  footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
+  a { color: var(--blue); }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Aufgabe 2 · Perspektivische Projektion &amp; Texture Mapping · 12–14 Punkte</div>
+    <h1>Projektionslabor</h1>
+    <p>Punkte durch eine Projektionsmatrix schicken, das Ergebnis im Bildraum sehen, und die Texturfragen üben, die jedes Jahr dranhängen.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Ansicht">
+    <button role="tab" data-view="erklaerung" aria-selected="true">Erklärung</button>
+    <button role="tab" data-view="training" aria-selected="false">Training</button>
+  </nav>
+
+  <div id="view-erklaerung">
+
+    <section>
+      <div class="lab">
+        <div class="panel">
+          <div>
+            <span class="label">Projektionsmatrix M</span>
+            <div class="m4" id="m4"></div>
+          </div>
+          <div class="presets" id="mpresets">
+            <button data-p="ss19">2019 SS</button>
+            <button data-p="ws19">2019 WS</button>
+            <button data-p="ss20">2020 SS</button>
+            <button data-p="ws20">2020 WS</button>
+            <button data-p="ss21">2021 SS</button>
+          </div>
+          <div>
+            <span class="label">Eckpunkte</span>
+            <div class="verts" id="verts"></div>
+          </div>
+          <div class="presets" id="vpresets">
+            <button data-v="rechteck">Rechteck</button>
+            <button data-v="trapez">Trapez</button>
+            <button data-v="quadrat">Quadrat</button>
+          </div>
+        </div>
+
+        <div class="stage">
+          <span class="label">Bildraum, 8×8-Raster</span>
+          <svg class="imgspace" id="plot" viewBox="0 0 340 340" role="img" aria-label="Bildraum mit projizierter Figur"></svg>
+          <div class="scroller">
+            <table>
+              <thead><tr><th>Ecke</th><th>M · P̃</th><th>Bild (x, y)</th><th>Tiefe</th></tr></thead>
+              <tbody id="restbl"></tbody>
+            </table>
+          </div>
+          <p class="thint" id="labnote"></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Die Pipeline</h2>
+      <ol class="steps">
+        <li><strong>Homogenisieren.</strong> An den Punkt (x, y, z) eine 1 anhängen: P̃ = (x, y, z, 1).</li>
+        <li><strong>Matrix anwenden.</strong> M · P̃ ergibt vier Zahlen (X, Y, Z, W). Die letzte ist w.</li>
+        <li><strong>Perspektivische Division.</strong> Alles durch w teilen. Erst jetzt liegen die Bildkoordinaten in [−1, 1] und die Tiefe ist normalisiert.</li>
+        <li><strong>Eintragen.</strong> (X/w, Y/w) ist der Bildpunkt, Z/w die Tiefe.</li>
+      </ol>
+      <div class="formula">
+        <div>M · (x, y, z, 1)ᵀ = (X, Y, Z, W)ᵀ &nbsp;→&nbsp; ( X/W , Y/W , Z/W )</div>
+        <div><em>Beispiel 2019 SS, A = (−1, −1, 8):</em> M·Ã = (−4, −4, −7, 8) → (−0,5 | −0,5 | −0,875)</div>
+      </div>
+      <ul class="traps">
+        <li>Die Division durch w vergessen. Dann stimmt weder Koordinate noch Tiefe.</li>
+        <li>Die Zwischenergebnisse nicht hinschreiben — dafür gibt es in der Korrektur Teilpunkte.</li>
+        <li>Die Tiefe vor statt nach der Normalisierung angeben. In der Aufgabe steht immer, was gemeint ist.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Was die letzte Zeile macht</h2>
+      <p class="note">Die unterste Zeile von M bestimmt, wodurch geteilt wird — und damit die ganze Perspektive. Im Labor oben ist sie orange.</p>
+      <div class="formula">
+        <div>letzte Zeile (p q r s) &nbsp;→&nbsp; w = p·x + q·y + r·z + s</div>
+        <div>Blickrichtung = (p, q, r) &nbsp;<em>die Achse, durch die geteilt wird</em></div>
+        <div>Fluchtpunkt: Richtung mit w = 0 einsetzen, also M · (p, q, r, 0), dann dividieren</div>
+        <div>(0 0 0 1) &nbsp;→&nbsp; w = 1, keine Division &nbsp;<em>das wäre parallel, nicht perspektivisch</em></div>
+      </div>
+      <p class="note">Warum der Fluchtpunkt so herauskommt: ein Punkt unendlich weit in Blickrichtung ist der Richtungsvektor mit vierter Komponente 0. Den kann man direkt durch M schicken.</p>
+    </section>
+
+    <section>
+      <h2>Größe und Tiefe</h2>
+      <div class="formula">
+        <div>Bildgröße ∝ 1 / Tiefe &nbsp;<em>doppelte Entfernung → halbe Größe</em></div>
+        <div>2020 WS: 120 px bei 10 m &nbsp;→&nbsp; 60 px bei 20 m, 40 px bei 30 m, 30 px bei 40 m</div>
+      </div>
+      <p class="note">Dieselbe Beziehung steuert die MIP-Stufe: halbiert sich die Bildgröße, braucht man eine Stufe gröber.</p>
+      <div class="formula">
+        <div>Δ Stufe = log₂( d₁ / d₂ ) &nbsp;<em>gröber = kleinere Stufennummer</em></div>
+        <div>Stufe 8 bei 10 m → 7 bei 20 m → 6 bei 40 m → bei 30 m zwischen 6 und 7</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Zu fein oder zu grob</h2>
+      <div class="duo">
+        <article>
+          <h3>Minification</h3>
+          <p>Die Textur ist feiner als das Pixelraster. Ein Pixel deckt viele Texel ab — am Horizont, bei schräger Sicht, in der Ferne.</p>
+          <p><strong>Artefakt:</strong> Aliasing, Moiré, flimmernde Muster, die es im Original nicht gibt.</p>
+          <p class="cnote">Gegenmittel: über den Pixel-Footprint mitteln, also eine MIP-Map benutzen.</p>
+        </article>
+        <article>
+          <h3>Magnification</h3>
+          <p>Die Textur ist gröber als das Pixelraster. Ein Texel deckt viele Pixel ab — direkt vor der Kamera, im Vordergrund.</p>
+          <p><strong>Artefakt:</strong> sichtbare Texelblöcke, harte Klötzchenkanten.</p>
+          <p class="cnote">Gegenmittel: zwischen den Texeln interpolieren, also bilinear filtern.</p>
+        </article>
+      </div>
+      <div class="formula">
+        <div>MIP-Stufe n+1 = Mittelwert je 2×2 Texel aus Stufe n</div>
+        <div>bilinear = innerhalb einer Stufe &nbsp;|&nbsp; trilinear = zusätzlich zwischen zwei Stufen</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Perspektivisch korrekt texturieren</h2>
+      <p class="note">Der häufigste Denkfehler in Aufgabe 2c. Nach der Projektion bleiben Geraden zwar Geraden — Verhältnisse und Mittelpunkte aber nicht.</p>
+      <figure>
+        <svg viewBox="0 0 520 260" role="img" aria-labelledby="pkTitle pkDesc">
+          <title id="pkTitle">Diagonalenkonstruktion im projizierten Viereck</title>
+          <desc id="pkDesc">Der Bildpunkt der Texturmitte liegt im Schnittpunkt der Diagonalen, näher an der kurzen Kante.</desc>
+          <polygon points="60,220 460,220 360,60 160,60" fill="var(--blue)" fill-opacity="0.09"
+                   stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="60" y1="220" x2="360" y2="60" stroke="var(--blue)" stroke-width="1.2"/>
+          <line x1="460" y1="220" x2="160" y2="60" stroke="var(--blue)" stroke-width="1.2"/>
+          <line x1="60" y1="140" x2="460" y2="140" stroke="var(--ghost)" stroke-width="1.2" stroke-dasharray="5 4"/>
+          <circle cx="260" cy="120" r="6" fill="var(--far)"/>
+          <circle cx="260" cy="140" r="4.5" fill="none" stroke="var(--ghost)" stroke-width="1.6"/>
+          <text x="278" y="116" class="sfi" fill="var(--far)">Bild der Texturmitte</text>
+          <text x="278" y="158" class="sfi">arithmetische Mitte — falsch</text>
+          <text x="255" y="50" class="sfi" text-anchor="middle">kurze Kante, weiter weg</text>
+          <text x="255" y="243" class="sfi" text-anchor="middle">lange Kante, näher dran</text>
+        </svg>
+        <figcaption>Die Diagonalen des Urbilds bleiben Geraden, also treffen sich ihre Bilder im Bild der Mitte.</figcaption>
+      </figure>
+      <ul class="traps">
+        <li>Die Mitte als Mittelwert der vier Ecken bestimmen. Sie liegt in Wahrheit näher an der kurzen Kante.</li>
+        <li>Die Textur gleichmäßig über die Höhe verteilen. Die Streifen werden zur Ferne hin enger.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Klausurgriff</h2>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Gefragt</th><th>Vorgehen</th></tr></thead>
+          <tbody>
+            <tr><td class="n">Tabelle a)</td><td>Für jede Ecke: 1 anhängen, M anwenden, durch w teilen. Zwischenergebnis danebenschreiben.</td></tr>
+            <tr><td class="n">Skizze b)</td><td>Die vier Bildpunkte ins 8×8-Raster, gerade verbinden. Ecken beschriften.</td></tr>
+            <tr><td class="n">Blickrichtung</td><td>Letzte Zeile von M ablesen: (p q r) ist die Achse, durch die geteilt wird.</td></tr>
+            <tr><td class="n">Fluchtpunkt</td><td>M · (p, q, r, 0) rechnen und dividieren. Grafisch: Schnitt der verlängerten Fluchtlinien.</td></tr>
+            <tr><td class="n">Größe</td><td>Umgekehrt proportional zur Tiefe.</td></tr>
+            <tr><td class="n">MIP-Stufe</td><td>Pyramide durch Mitteln von 2×2. Stufenwahl über log₂ des Größenverhältnisses.</td></tr>
+            <tr><td class="n">Textur c)</td><td>Diagonalen schneiden, nicht mitteln. Begründung: Geraden bleiben Geraden.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div id="view-training" hidden>
+    <section>
+      <h2>Training</h2>
+      <p class="note">Aufgaben in den sieben Formaten, in denen Aufgabe 2 über die Jahrgänge gestellt wurde.</p>
+      <div class="score">
+        <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
+        <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
+        <div class="s"><span class="sv" id="sc_rate">—</span><span class="sk">Quote</span></div>
+        <button class="linkish" id="sc_reset">Zähler zurücksetzen</button>
+      </div>
+      <div class="taskcard" id="taskcard"></div>
+    </section>
+  </div>
+
+  <footer>
+    Matrizen, Eckpunkte und Zahlenwerte stammen aus den Klausuren Oktober 2019 bis Oktober 2021 des Lehrstuhls Graphische Datenverarbeitung.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  function make(tag, attrs) {
+    var n = document.createElementNS(SVG_NS, tag);
+    for (var k in attrs) { n.setAttribute(k, attrs[k]); }
+    return n;
+  }
+  function clear(n) { while (n.firstChild) { n.removeChild(n.firstChild); } }
+  function fmt(v) {
+    var r = Math.round(v * 10000) / 10000;
+    if (Object.is(r, -0)) { r = 0; }
+    return String(r).replace(".", ",");
+  }
+  function parseNum(s) {
+    s = String(s).trim().replace(",", ".");
+    if (s === "") { return NaN; }
+    var n = parseFloat(s);
+    return isFinite(n) ? n : NaN;
+  }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+  /* =========================================================
+     LABOR
+     ========================================================= */
+  var MPRESETS = {
+    ss19: [4,0,0,0, 0,4,0,0, 0,0,-1,1, 0,0,1,0],
+    ws19: [2,0,0,0, 0,2,0,0, 0,0,-1,1, 0,0,1,0],
+    ss20: [4,0,0,0, 0,4,0,0, 0,0,-1,1, 0,0,1,0],
+    ws20: [1,0,0,0, 0,0,1,0, 0,1,0,0, 0,1,0,3],
+    ss21: [0,0,1,0, 0,1,0,0, 1,0,0,0, 0,0,1,3]
+  };
+  var VPRESETS = {
+    rechteck: [[-1,-1,8],[-1,1,4],[1,1,4],[1,-1,8]],
+    trapez:   [[-1,-1,4],[-0.5,0.5,2],[0.5,0.5,2],[1,-1,4]],
+    quadrat:  [[-1,-1,-1],[-1,1,-1],[1,-1,-1],[1,1,-1]]
+  };
+  var VN = ["A","B","C","D"];
+
+  var M = MPRESETS.ss19.slice();
+  var V = VPRESETS.rechteck.map(function (p) { return p.slice(); });
+
+  var m4 = document.getElementById("m4");
+  var vertsEl = document.getElementById("verts");
+
+  (function buildInputs() {
+    var i;
+    for (i = 0; i < 16; i++) {
+      var wrapDiv = document.createElement("div");
+      if (i >= 12) { wrapDiv.className = "r4"; }
+      var inp = document.createElement("input");
+      inp.type = "text";
+      inp.inputMode = "decimal";
+      inp.value = fmt(M[i]);
+      inp.setAttribute("aria-label", "Matrix Zeile " + (Math.floor(i / 4) + 1) + " Spalte " + (i % 4 + 1));
+      (function (idx) {
+        inp.addEventListener("input", function () {
+          var v = parseNum(this.value);
+          if (!isNaN(v)) { M[idx] = v; runLab(); }
+        });
+      }(i));
+      wrapDiv.appendChild(inp);
+      m4.appendChild(wrapDiv);
+    }
+
+    ["", "x", "y", "z"].forEach(function (h) {
+      var s = document.createElement("span");
+      s.className = h ? "vh" : "vn";
+      s.textContent = h;
+      vertsEl.appendChild(s);
+    });
+    V.forEach(function (p, vi) {
+      var lab = document.createElement("span");
+      lab.className = "vn";
+      lab.textContent = VN[vi];
+      vertsEl.appendChild(lab);
+      p.forEach(function (val, ci) {
+        var inp = document.createElement("input");
+        inp.type = "text";
+        inp.inputMode = "decimal";
+        inp.value = fmt(val);
+        inp.setAttribute("aria-label", "Ecke " + VN[vi] + " " + ["x","y","z"][ci]);
+        inp.addEventListener("input", function () {
+          var v = parseNum(this.value);
+          if (!isNaN(v)) { V[vi][ci] = v; runLab(); }
+        });
+        vertsEl.appendChild(inp);
+      });
+    });
+  }());
+
+  function syncInputs() {
+    var mi = m4.querySelectorAll("input");
+    for (var i = 0; i < 16; i++) { mi[i].value = fmt(M[i]); }
+    var vi = vertsEl.querySelectorAll("input");
+    for (var j = 0; j < 12; j++) { vi[j].value = fmt(V[Math.floor(j / 3)][j % 3]); }
+  }
+
+  document.getElementById("mpresets").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-p]");
+    if (!b) { return; }
+    M = MPRESETS[b.getAttribute("data-p")].slice();
+    syncInputs(); runLab();
+  });
+  document.getElementById("vpresets").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-v]");
+    if (!b) { return; }
+    V = VPRESETS[b.getAttribute("data-v")].map(function (p) { return p.slice(); });
+    syncInputs(); runLab();
+  });
+
+  function applyM(m, p) {
+    var out = [0, 0, 0, 0], r, c, v;
+    var q = [p[0], p[1], p[2], 1];
+    for (r = 0; r < 4; r++) {
+      v = 0;
+      for (c = 0; c < 4; c++) { v += m[r * 4 + c] * q[c]; }
+      out[r] = v;
+    }
+    return out;
+  }
+  function divide(h) {
+    if (Math.abs(h[3]) < 1e-12) { return null; }
+    return [h[0] / h[3], h[1] / h[3], h[2] / h[3]];
+  }
+
+  var PL = { size: 340, pad: 30 };
+  PL.span = PL.size - 2 * PL.pad;
+  function gx(x) { return PL.pad + (x + 1) / 2 * PL.span; }
+  function gy(y) { return PL.pad + (1 - y) / 2 * PL.span; }
+
+  function runLab() {
+    var svg = document.getElementById("plot");
+    clear(svg);
+    var i;
+    for (i = 0; i <= 8; i++) {
+      var t = -1 + i * 0.25;
+      var strong = (i === 4);
+      svg.appendChild(make("line", { x1: gx(t), y1: gy(-1), x2: gx(t), y2: gy(1),
+        stroke: strong ? "var(--grid-axis)" : "var(--grid)", "stroke-width": strong ? 1.4 : 1 }));
+      svg.appendChild(make("line", { x1: gx(-1), y1: gy(t), x2: gx(1), y2: gy(t),
+        stroke: strong ? "var(--grid-axis)" : "var(--grid)", "stroke-width": strong ? 1.4 : 1 }));
+    }
+    [["1", gx(1), gy(0) + 14, "middle"], ["−1", gx(-1), gy(0) + 14, "middle"],
+     ["1", gx(0) - 12, gy(1) + 4, "middle"], ["−1", gx(0) - 14, gy(-1) + 4, "middle"]]
+      .forEach(function (l) {
+        var tx = make("text", { x: l[1], y: l[2], fill: "var(--ink-3)", "font-size": 10,
+          "font-family": "IBM Plex Mono, monospace", "text-anchor": l[3] });
+        tx.textContent = l[0];
+        svg.appendChild(tx);
+      });
+
+    var tbody = document.getElementById("restbl");
+    tbody.innerHTML = "";
+    var pts = [], anyOut = false, anyBad = false;
+
+    V.forEach(function (p, vi) {
+      var h = applyM(M, p);
+      var d = divide(h);
+      var tr = document.createElement("tr");
+      var cells = '<td class="vlabel">' + VN[vi] + '</td>' +
+        '<td class="n hom">(' + h.map(fmt).join(" | ") + ')</td>';
+      if (!d) {
+        anyBad = true;
+        cells += '<td class="n out">w = 0</td><td class="n out">—</td>';
+      } else {
+        var outside = Math.abs(d[0]) > 1 || Math.abs(d[1]) > 1;
+        if (outside) { anyOut = true; }
+        cells += '<td class="n res' + (outside ? " out" : "") + '">(' + fmt(d[0]) + " | " + fmt(d[1]) + ')</td>' +
+          '<td class="n res">' + fmt(d[2]) + '</td>';
+        pts.push({ x: d[0], y: d[1], name: VN[vi] });
+      }
+      tr.innerHTML = cells;
+      tbody.appendChild(tr);
+    });
+
+    if (pts.length >= 3) {
+      svg.appendChild(make("polygon", {
+        points: pts.map(function (q) { return gx(q.x) + "," + gy(q.y); }).join(" "),
+        fill: "var(--blue)", "fill-opacity": 0.13, stroke: "var(--blue)",
+        "stroke-width": 2, "stroke-linejoin": "round"
+      }));
+      if (pts.length === 4) {
+        // Schnittpunkt der Diagonalen = Bild der Flächenmitte
+        var s = segIntersect(pts[0], pts[2], pts[1], pts[3]);
+        if (s) {
+          svg.appendChild(make("line", { x1: gx(pts[0].x), y1: gy(pts[0].y),
+            x2: gx(pts[2].x), y2: gy(pts[2].y), stroke: "var(--blue)", "stroke-width": 0.9, opacity: 0.55 }));
+          svg.appendChild(make("line", { x1: gx(pts[1].x), y1: gy(pts[1].y),
+            x2: gx(pts[3].x), y2: gy(pts[3].y), stroke: "var(--blue)", "stroke-width": 0.9, opacity: 0.55 }));
+          svg.appendChild(make("circle", { cx: gx(s.x), cy: gy(s.y), r: 4, fill: "var(--far)" }));
+        }
+      }
+    }
+    pts.forEach(function (q) {
+      svg.appendChild(make("circle", { cx: gx(q.x), cy: gy(q.y), r: 3.5, fill: "var(--blue)" }));
+      var tx = make("text", { x: gx(q.x) + 8, y: gy(q.y) - 6, fill: "var(--ink)",
+        "font-size": 12, "font-family": "IBM Plex Mono, monospace" });
+      tx.textContent = q.name;
+      svg.appendChild(tx);
+    });
+
+    var row = M.slice(12);
+    var dir = (Math.abs(row[0]) > 1e-9 ? "x" : "") + (Math.abs(row[1]) > 1e-9 ? "y" : "") +
+              (Math.abs(row[2]) > 1e-9 ? "z" : "");
+    var note = dir
+      ? "Geteilt wird durch " + dir + " — das ist die Blickrichtung. Der magenta Punkt ist das Bild der Flächenmitte, also der Schnitt der Diagonalen."
+      : "Die letzte Zeile hat keinen Ortsanteil: w ist konstant, es findet keine perspektivische Verkürzung statt.";
+    if (anyOut) { note += " Rot markierte Ecken liegen außerhalb von [−1, 1] und würden abgeschnitten."; }
+    if (anyBad) { note += " Bei w = 0 liegt der Punkt in der Projektionsebene und hat kein Bild."; }
+    document.getElementById("labnote").textContent = note;
+  }
+
+  function segIntersect(p1, p2, p3, p4) {
+    var d = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
+    if (Math.abs(d) < 1e-12) { return null; }
+    var a = p1.x * p2.y - p1.y * p2.x, b = p3.x * p4.y - p3.y * p4.x;
+    return { x: (a * (p3.x - p4.x) - (p1.x - p2.x) * b) / d,
+             y: (a * (p3.y - p4.y) - (p1.y - p2.y) * b) / d };
+  }
+
+  runLab();
+
+  /* =========================================================
+     TABS
+     ========================================================= */
+  var viewErk = document.getElementById("view-erklaerung");
+  var viewTra = document.getElementById("view-training");
+  var tabs = document.getElementById("tabs");
+  tabs.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-view]");
+    if (!b) { return; }
+    var v = b.getAttribute("data-view");
+    Array.prototype.forEach.call(tabs.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-selected", x === b ? "true" : "false");
+    });
+    viewErk.hidden = (v !== "erklaerung");
+    viewTra.hidden = (v !== "training");
+  });
+
+  /* =========================================================
+     KONFETTI
+     ========================================================= */
+  function cssVar(n, f) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    return v || f;
+  }
+  function confetti(ox, oy) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
+    var W = window.innerWidth || document.documentElement.clientWidth;
+    var H = window.innerHeight || document.documentElement.clientHeight;
+    if (!W || !H) { return; }
+    var stale = document.getElementById("confetti");
+    if (stale) { stale.remove(); }
+    var colors = [cssVar("--near", "#158A4A"), cssVar("--blue", "#1E3FAE"),
+                  cssVar("--far", "#C51E86"), cssVar("--amber", "#B8791C")];
+    var cv = document.createElement("canvas");
+    cv.id = "confetti";
+    document.body.appendChild(cv);
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = W * dpr; cv.height = H * dpr;
+    var ctx = cv.getContext("2d");
+    ctx.scale(dpr, dpr);
+    var bits = [], i;
+    for (i = 0; i < 70; i++) {
+      var ang = (-Math.PI / 2) + (Math.random() - 0.5) * 2.0;
+      var spd = 5 + Math.random() * 8;
+      bits.push({ x: ox + (Math.random() - 0.5) * 90, y: oy,
+        vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        w: 4 + Math.random() * 5, h: 6 + Math.random() * 6,
+        rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.35,
+        col: colors[Math.floor(Math.random() * colors.length)] });
+    }
+    var start = performance.now(), LIFE = 1500;
+    var killer = window.setTimeout(function () { cv.remove(); }, LIFE + 3000);
+    function frame(now) {
+      var t = now - start;
+      if (t > LIFE) { window.clearTimeout(killer); cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      var fade = t > LIFE * 0.6 ? 1 - (t - LIFE * 0.6) / (LIFE * 0.4) : 1;
+      bits.forEach(function (b) {
+        b.vy += 0.32; b.vx *= 0.995; b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+        ctx.save(); ctx.globalAlpha = fade; ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+        ctx.fillStyle = b.col; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); ctx.restore();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* =========================================================
+     TRAINING
+     ========================================================= */
+  var TYPE_LABEL = {
+    proj: "Punkt projizieren · wie 2a",
+    vanish: "Fluchtpunkt · wie 2c/d",
+    size: "Größe über Distanz · wie 2e",
+    mip: "MIP-Stufe mitteln · wie 2d",
+    miplevel: "MIP-Stufe wählen · wie 2e/f",
+    filter: "Minification oder Magnification · wie 2c/d",
+    texmid: "Perspektivisch korrekt · wie 2c"
+  };
+
+  function nice(v) { return Math.abs(v) <= 2.5 && Math.abs(v * 8 - Math.round(v * 8)) < 1e-9; }
+
+  function buildProjTasks() {
+    var out = [], keys = Object.keys(MPRESETS), seen = {};
+    keys.forEach(function (k) {
+      var m = MPRESETS[k], made = 0;
+      [-1, 1].forEach(function (x) {
+        [-1, 1].forEach(function (y) {
+          [-1, 1, 2, 4, 8].forEach(function (z) {
+            if (made >= 5) { return; }
+            var d = divide(applyM(m, [x, y, z]));
+            if (!d || !nice(d[0]) || !nice(d[1]) || !nice(d[2])) { return; }
+            var sig = k + "|" + d.map(fmt).join(",");
+            if (seen[sig]) { return; }
+            seen[sig] = 1; made++;
+            out.push({ type: "proj", m: m, p: [x, y, z], sol: d, jahr: k });
+          });
+        });
+      });
+    });
+    return out;
+  }
+
+  function buildVanishTasks() {
+    return Object.keys(MPRESETS).map(function (k) {
+      var m = MPRESETS[k], row = m.slice(12);
+      var dirIdx = Math.abs(row[0]) > 1e-9 ? 0 : (Math.abs(row[1]) > 1e-9 ? 1 : 2);
+      var h = [0, 0, 0, 0], r, c, q = [row[0], row[1], row[2], 0];
+      for (r = 0; r < 4; r++) { var v = 0; for (c = 0; c < 4; c++) { v += m[r * 4 + c] * q[c]; } h[r] = v; }
+      var d = divide(h);
+      return { type: "vanish", m: m, dirIdx: dirIdx, sol: d, jahr: k };
+    }).filter(function (t) { return t.sol !== null; });
+  }
+
+  function buildSizeTasks() {
+    var out = [];
+    [[10, 120], [10, 240], [20, 120], [5, 100], [10, 180], [20, 200], [15, 120]].forEach(function (base) {
+      [2, 3, 4, 0.5].forEach(function (f) {
+        var d2 = base[0] * f, h2 = base[1] / f;
+        if (h2 === Math.round(h2) && d2 === Math.round(d2) && h2 >= 10) {
+          out.push({ type: "size", d1: base[0], h1: base[1], d2: d2, sol: h2 });
+        }
+      });
+    });
+    return out;
+  }
+
+  function buildMipTasks() {
+    var out = [], n;
+    for (n = 0; n < 8; n++) {
+      var g = [], i;
+      for (i = 0; i < 16; i++) { g.push(Math.random() < 0.5 ? 0 : 1); }
+      var sol = [];
+      [[0, 1, 4, 5], [2, 3, 6, 7], [8, 9, 12, 13], [10, 11, 14, 15]].forEach(function (q) {
+        sol.push((g[q[0]] + g[q[1]] + g[q[2]] + g[q[3]]) / 4);
+      });
+      out.push({ type: "mip", grid: g, sol: sol });
+    }
+    return out;
+  }
+
+  function buildMipLevelTasks() {
+    var out = [];
+    [[10, 8], [10, 6], [20, 9], [5, 7], [8, 10], [12, 8]].forEach(function (b) {
+      [2, 4, 0.5, 8].forEach(function (f) {
+        out.push({ type: "miplevel", d1: b[0], l1: b[1], d2: b[0] * f,
+          sol: b[1] - Math.log(f) / Math.log(2) });
+      });
+    });
+    return out.filter(function (t) { return t.sol >= 0 && t.sol <= 14; });
+  }
+
+  var FILTER_CASES = [
+    { s: "Eine texturierte Ebene läuft zum Horizont, ganz hinten flimmern Muster, die in der Textur gar nicht vorkommen.", a: 0 },
+    { s: "Die Kamera steht dicht vor einer Wand, man erkennt einzelne Texel als Klötzchen.", a: 1 },
+    { s: "Ein Bildpixel deckt etwa 16 Texel ab.", a: 0 },
+    { s: "Ein Texel deckt etwa 20 Bildpixel ab.", a: 1 },
+    { s: "Auf einem weit entfernten Schachbrettboden entstehen Moiré-Muster.", a: 0 },
+    { s: "Ein Plakat füllt formatfüllend den Bildschirm, die Kanten der Schrift werden treppig und weich.", a: 1 },
+    { s: "Beim Zurückfahren der Kamera fängt eine feine Ziegeltextur an zu rauschen.", a: 0 },
+    { s: "Eine 64×64-Textur wird auf eine 800 Pixel breite Fläche gelegt.", a: 1 }
+  ];
+
+  var TEXMID_CASES = [
+    { q: "Wo landet der Mittelpunkt der Textur im projizierten Viereck?",
+      opts: ["Näher an der kurzen, weiter entfernten Kante", "Genau auf halber Höhe zwischen beiden Kanten", "Näher an der langen, näheren Kante"],
+      a: 0, why: "Die Projektion erhält Geraden, aber keine Teilverhältnisse. Der Mittelpunkt rutscht zur Ferne hin." },
+    { q: "Wie konstruiert man diesen Punkt in der Klausur?",
+      opts: ["Schnittpunkt der beiden Diagonalen des Vierecks", "Mittelwert der vier Eckkoordinaten", "Mittelpunkt der beiden Seitenkanten verbinden"],
+      a: 0, why: "Die Diagonalen des Urbilds sind Geraden und bleiben Geraden, ihr Schnittpunkt ist also das Bild der Mitte." },
+    { q: "Warum funktioniert die Diagonalenkonstruktion überhaupt?",
+      opts: ["Weil eine projektive Abbildung Geraden auf Geraden abbildet", "Weil das Viereck achsensymmetrisch ist", "Weil die Tiefe linear interpoliert wird"],
+      a: 0, why: "Geradentreue ist die Eigenschaft, die auch nach der perspektivischen Division bleibt — Längenverhältnisse dagegen nicht." },
+    { q: "Ein Schachbrett wird auf die Fläche gelegt. Wie ändern sich die Streifenbreiten zur kurzen Kante hin?",
+      opts: ["Sie werden schmaler", "Sie bleiben gleich", "Sie werden breiter"],
+      a: 0, why: "Gleiche Abstände im Texturraum werden mit wachsender Tiefe im Bild immer kleiner." }
+  ];
+
+  function buildDeck() {
+    var d = [];
+    d = d.concat(buildProjTasks(), buildVanishTasks(), buildSizeTasks(),
+                 buildMipTasks(), buildMipLevelTasks());
+    FILTER_CASES.forEach(function (f) { d.push({ type: "filter", c: f }); });
+    // richtige Antwort steht im Pool immer zuerst, also mischen
+    TEXMID_CASES.forEach(function (t) {
+      var idx = t.opts.map(function (_, i) { return i; }), i, j, tmp2;
+      for (i = idx.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        tmp2 = idx[i]; idx[i] = idx[j]; idx[j] = tmp2;
+      }
+      d.push({ type: "texmid", c: { q: t.q, why: t.why,
+        opts: idx.map(function (k) { return t.opts[k]; }), a: idx.indexOf(t.a) } });
+    });
+    if (new URLSearchParams(window.location.search).get("exam") === "1") {
+      function one(types) {
+        var candidates=d.filter(function(t){return types.indexOf(t.type)>=0;});
+        return candidates[Math.floor(Math.random()*candidates.length)];
+      }
+      return [one(["proj"]),one(["vanish","size"]),one(["mip","miplevel"]),one(["filter","texmid"])];
+    }
+    var i, j, tmp;
+    for (i = d.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      tmp = d[i]; d[i] = d[j]; d[j] = tmp;
+    }
+    return d;
+  }
+
+  /* ---- Zähler ---- */
+  var score = { ok: 0, bad: 0 };
+  try {
+    var raw = window.localStorage.getItem("cg-proj-score");
+    if (raw) {
+      var pr = JSON.parse(raw);
+      if (pr && typeof pr.ok === "number" && typeof pr.bad === "number") { score = pr; }
+    }
+  } catch (e) { /* egal */ }
+  function saveScore() {
+    try { window.localStorage.setItem("cg-proj-score", JSON.stringify(score)); } catch (e) { /* egal */ }
+  }
+  function paintScore() {
+    document.getElementById("sc_ok").textContent = score.ok;
+    document.getElementById("sc_bad").textContent = score.bad;
+    var t = score.ok + score.bad;
+    document.getElementById("sc_rate").textContent = t ? Math.round(score.ok / t * 100) + " %" : "—";
+  }
+  document.getElementById("sc_reset").addEventListener("click", function () {
+    score = { ok: 0, bad: 0 }; saveScore(); paintScore();
+  });
+
+  /* ---- Karte ---- */
+  var card = document.getElementById("taskcard");
+  var deck = buildDeck(), deckIndex = -1, task = null, isRepeat = false, checker = null;
+
+  function matHTML(m) {
+    var h = '<div class="m4" style="max-width:15rem">';
+    for (var i = 0; i < 16; i++) {
+      h += '<div' + (i >= 12 ? ' class="r4"' : '') + '><span style="display:block;text-align:center;' +
+        'font-family:IBM Plex Mono,monospace;font-size:0.92rem;padding:0.2rem 0' +
+        (i >= 12 ? ';color:var(--amber)' : '') + '">' + fmt(m[i]) + '</span></div>';
+    }
+    return h + '</div>';
+  }
+  function fieldHTML(id, label, unit) {
+    return '<label class="field"><span>' + label + '</span>' +
+      '<input type="text" inputmode="decimal" id="f_' + id + '"' +
+      (unit ? ' aria-label="' + label + ' in ' + unit + '"' : '') + '></label>';
+  }
+  function radioHTML(name, opts) {
+    return '<div class="cgroup">' + opts.map(function (o, i) {
+      return '<label><input type="radio" name="' + name + '" value="' + i + '"><span>' + o + '</span></label>';
+    }).join("") + '</div>';
+  }
+  function readF(id) { return parseNum((document.getElementById("f_" + id) || {}).value || ""); }
+  function radioVal(name) {
+    var n = document.querySelector('input[name="' + name + '"]:checked');
+    return n ? parseInt(n.value, 10) : -1;
+  }
+  function markF(id, ok) {
+    var n = document.getElementById("f_" + id);
+    if (n) { n.classList.add(ok ? "ok" : "bad"); }
+  }
+  var EPS = 1e-6;
+
+  function renderTask() {
+    var t = task, body = "";
+    var head = '<div class="task-top"><span class="ttype">' + TYPE_LABEL[t.type] +
+      '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
+      (isRepeat ? " · Wiederholung" : "") + '</span></div>';
+
+    if (t.type === "proj") {
+      body = '<p class="tprompt">Projiziere den Punkt P = (' + t.p.map(fmt).join(" | ") +
+        ') mit dieser Matrix. Gib Bildkoordinaten und Tiefe <strong>nach</strong> der Division an.</p>' +
+        '<div class="trow">' + matHTML(t.m) + '<div class="fields">' +
+        fieldHTML("x", "Bild x") + fieldHTML("y", "Bild y") + fieldHTML("z", "Tiefe") +
+        '</div></div>' +
+        '<p class="thint">Erst 1 anhängen, dann M anwenden, dann durch w teilen.</p>';
+      checker = function () {
+        var g = [readF("x"), readF("y"), readF("z")];
+        if (g.some(isNaN)) { return { incomplete: true }; }
+        var okAll = true;
+        ["x", "y", "z"].forEach(function (k, i) {
+          var good = Math.abs(g[i] - t.sol[i]) < EPS;
+          if (!good) { okAll = false; }
+          markF(k, good);
+        });
+        var h = applyM(t.m, t.p);
+        return { ok: okAll,
+          solText: "Richtig wäre (" + fmt(t.sol[0]) + " | " + fmt(t.sol[1]) + ") mit Tiefe " + fmt(t.sol[2]) + ".",
+          why: "M · P̃ = (" + h.map(fmt).join(" | ") + "), also w = " + fmt(h[3]) + ". Danach jede Komponente durch w." };
+      };
+    } else if (t.type === "vanish") {
+      body = '<p class="tprompt">Bestimme aus der Matrix die Blickrichtung und den Fluchtpunkt der Geraden, die parallel dazu verlaufen.</p>' +
+        '<div class="trow">' + matHTML(t.m) +
+        '<div class="choices"><span class="thint">Blickrichtung</span>' +
+        radioHTML("dir", ["x-Achse", "y-Achse", "z-Achse"]) + '</div>' +
+        '<div class="fields">' + fieldHTML("vx", "Fluchtpunkt x") + fieldHTML("vy", "Fluchtpunkt y") + '</div></div>' +
+        '<p class="thint">Die orange letzte Zeile sagt, wodurch geteilt wird. Den Richtungsvektor mit vierter Komponente 0 durch M schicken.</p>';
+      checker = function () {
+        var dv = radioVal("dir"), gx2 = readF("vx"), gy2 = readF("vy");
+        if (dv < 0 || isNaN(gx2) || isNaN(gy2)) { return { incomplete: true }; }
+        var okd = dv === t.dirIdx;
+        var okx = Math.abs(gx2 - t.sol[0]) < EPS, oky = Math.abs(gy2 - t.sol[1]) < EPS;
+        markF("vx", okx); markF("vy", oky);
+        return { ok: okd && okx && oky,
+          solText: "Blickrichtung " + ["x", "y", "z"][t.dirIdx] + "-Achse, Fluchtpunkt (" +
+            fmt(t.sol[0]) + " | " + fmt(t.sol[1]) + ").",
+          why: "Die letzte Zeile ist (" + t.m.slice(12).map(fmt).join(" ") +
+            "), geteilt wird also durch " + ["x", "y", "z"][t.dirIdx] + "." };
+      };
+    } else if (t.type === "size") {
+      body = '<p class="tprompt">Ein Objekt ist in ' + fmt(t.d1) + ' m Entfernung ' + fmt(t.h1) +
+        ' Pixel hoch. Wie hoch erscheint dasselbe Objekt in ' + fmt(t.d2) + ' m Entfernung?</p>' +
+        '<div class="fields">' + fieldHTML("h", "Höhe in Pixel", "Pixel") + '</div>' +
+        '<p class="thint">Die Bildgröße ist umgekehrt proportional zur Tiefe.</p>';
+      checker = function () {
+        var g = readF("h");
+        if (isNaN(g)) { return { incomplete: true }; }
+        var ok = Math.abs(g - t.sol) < 1e-6;
+        markF("h", ok);
+        return { ok: ok, solText: "Richtig wären " + fmt(t.sol) + " Pixel.",
+          why: fmt(t.h1) + " px · " + fmt(t.d1) + " m / " + fmt(t.d2) + " m = " + fmt(t.sol) + " px." };
+      };
+    } else if (t.type === "mip") {
+      var g4 = '<div class="texgrid" style="grid-template-columns:repeat(4,auto)">' +
+        t.grid.map(function (v) {
+          return '<div class="texcell" style="background:' +
+            (v ? "var(--surface)" : "var(--ink-3)") + ';color:' +
+            (v ? "var(--ink)" : "var(--surface)") + '">' + v + '</div>';
+        }).join("") + '</div>';
+      var g2 = '<div class="texgrid" style="grid-template-columns:repeat(2,auto)">' +
+        [0, 1, 2, 3].map(function (i) {
+          return '<div class="texcell"><input type="text" inputmode="decimal" id="f_c' + i +
+            '" aria-label="Feld ' + (i + 1) + '"></div>';
+        }).join("") + '</div>';
+      body = '<p class="tprompt">Berechne die nächstgröbere MIP-Stufe aus dieser 4×4-Textur.</p>' +
+        '<div class="texwrap">' + g4 + '<span class="arrowto">→</span>' + g2 + '</div>' +
+        '<p class="thint">Jedes neue Texel ist der Mittelwert eines 2×2-Blocks. Werte zwischen 0 und 1, Komma erlaubt.</p>';
+      checker = function () {
+        var g = [readF("c0"), readF("c1"), readF("c2"), readF("c3")];
+        if (g.some(isNaN)) { return { incomplete: true }; }
+        var all = true;
+        g.forEach(function (v, i) {
+          var good = Math.abs(v - t.sol[i]) < 1e-6;
+          if (!good) { all = false; }
+          var n = document.getElementById("f_c" + i);
+          if (n) { n.classList.add(good ? "ok" : "bad"); }
+        });
+        return { ok: all, solText: "Richtig wären " + t.sol.map(fmt).join(" · ") + ".",
+          why: "Jeweils die vier Werte eines Quadranten addieren und durch 4 teilen." };
+      };
+    } else if (t.type === "miplevel") {
+      body = '<p class="tprompt">Bei ' + fmt(t.d1) + ' m Entfernung ist MIP-Stufe ' + fmt(t.l1) +
+        ' optimal. Welche Stufe ist bei ' + fmt(t.d2) + ' m optimal?</p>' +
+        '<div class="fields">' + fieldHTML("l", "Stufe") + '</div>' +
+        '<p class="thint">Kleinere Stufennummer heißt gröbere Textur. Δ Stufe = log₂(d₁ / d₂).</p>';
+      checker = function () {
+        var g = readF("l");
+        if (isNaN(g)) { return { incomplete: true }; }
+        var ok = Math.abs(g - t.sol) < 1e-6;
+        markF("l", ok);
+        return { ok: ok, solText: "Richtig wäre Stufe " + fmt(t.sol) + ".",
+          why: "log₂(" + fmt(t.d1) + " / " + fmt(t.d2) + ") = " + fmt(Math.log(t.d1 / t.d2) / Math.log(2)) +
+            ", also " + fmt(t.l1) + " " + (t.sol < t.l1 ? "−" : "+") + " " +
+            fmt(Math.abs(t.sol - t.l1)) + "." };
+      };
+    } else if (t.type === "filter") {
+      body = '<p class="tprompt">' + t.c.s + '</p>' +
+        '<div class="choices"><span class="thint">Welcher Fall liegt vor?</span>' +
+        radioHTML("fil", ["Minification", "Magnification"]) +
+        '<span class="thint" style="margin-top:0.5rem">Was hilft dagegen?</span>' +
+        radioHTML("rem", ["MIP-Map, also über den Pixel-Footprint mitteln", "Bilineare Interpolation zwischen den Texeln"]) +
+        '</div>';
+      checker = function () {
+        var f = radioVal("fil"), r = radioVal("rem");
+        if (f < 0 || r < 0) { return { incomplete: true }; }
+        var names = ["Minification", "Magnification"];
+        var rem = ["MIP-Map", "bilineare Interpolation"];
+        return { ok: f === t.c.a && r === t.c.a,
+          solText: "Richtig: " + names[t.c.a] + ", Gegenmittel " + rem[t.c.a] + ".",
+          why: t.c.a === 0
+            ? "Ein Pixel deckt mehrere Texel ab, es muss gemittelt werden."
+            : "Ein Texel deckt mehrere Pixel ab, es muss zwischen den Texeln interpoliert werden." };
+      };
+    } else {
+      body = '<p class="tprompt">' + t.c.q + '</p>' +
+        '<div class="choices">' + radioHTML("tm", t.c.opts) + '</div>';
+      checker = function () {
+        var v = radioVal("tm");
+        if (v < 0) { return { incomplete: true }; }
+        return { ok: v === t.c.a, solText: "Richtig: " + t.c.opts[t.c.a], why: t.c.why };
+      };
+    }
+
+    card.innerHTML = head + '<div class="tbody">' + body + '</div>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
+    document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+  }
+
+  function confirmAnswer() {
+    var res = checker();
+    if (res.incomplete) {
+      var act = card.querySelector(".tactions");
+      var warn = act.querySelector(".repeat-note.warn");
+      if (!warn) {
+        warn = document.createElement("span");
+        warn.className = "repeat-note warn";
+        act.appendChild(warn);
+      }
+      warn.textContent = "Bitte alles ausfüllen.";
+      return;
+    }
+    if (!isRepeat) {
+      if (res.ok) { score.ok++; } else { score.bad++; }
+      saveScore(); paintScore();
+    }
+    Array.prototype.forEach.call(card.querySelectorAll("input"), function (n) { n.disabled = true; });
+    card.querySelector(".tactions").remove();
+
+    var v = document.createElement("div");
+    v.className = "verdict " + (res.ok ? "right" : "wrong");
+    var parts = '<span class="vhead">' + (res.ok ? "Richtig." : "Nicht richtig.") + '</span>';
+    if (!res.ok && res.solText) { parts += '<span class="vsol">' + res.solText + '</span>'; }
+    parts += '<span class="vsol">' + res.why + '</span>';
+    v.innerHTML = parts;
+    card.appendChild(v);
+
+    if (res.ok) {
+      var vr = v.getBoundingClientRect();
+      confetti(vr.left + vr.width / 2, vr.top + 12);
+    }
+
+    var act2 = document.createElement("div");
+    act2.className = "tactions";
+    act2.innerHTML = (res.ok ? "" : '<button class="btn ghost" id="btn_again">Wiederholen</button>') +
+      '<button class="btn primary" id="btn_next">Nächste Aufgabe</button>';
+    card.appendChild(act2);
+    document.getElementById("btn_next").addEventListener("click", function () {
+      isRepeat = false; nextTask();
+    });
+    if (!res.ok) {
+      document.getElementById("btn_again").addEventListener("click", function () {
+        isRepeat = true; renderTask();
+      });
+    }
+  }
+
+  function nextTask() {
+    deckIndex++;
+    if (deckIndex >= deck.length) { renderDone(); return; }
+    task = deck[deckIndex];
+    renderTask();
+  }
+  function renderDone() {
+    card.innerHTML = '<div class="donecard"><h3>Durchlauf geschafft</h3>' +
+      '<p class="note">Alle ' + deck.length + ' Aufgaben einmal gesehen. Ein neuer Durchlauf mischt neu ' +
+      'und würfelt die MIP-Texturen neu aus.</p>' +
+      '<button class="btn primary" id="btn_restart">Neuen Durchlauf starten</button></div>';
+    document.getElementById("btn_restart").addEventListener("click", function () {
+      deck = buildDeck(); deckIndex = -1; isRepeat = false; nextTask();
+    });
+  }
+
+  paintScore();
+  nextTask();
+}());
+</script>
+<script src="../scripts/portal-bridge.js?v=4"></script>
