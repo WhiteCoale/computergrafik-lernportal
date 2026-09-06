@@ -29,12 +29,12 @@ Das gesamte Repository herunterladen oder klonen:
 git clone https://github.com/WhiteCoale/computergrafik-lernportal.git
 ```
 
-Danach `Computergrafik-Lernportal.html` per Doppelklick im Browser öffnen. Es ist kein Build-Schritt und kein lokaler Server erforderlich. Fortschritte werden im lokalen Speicher des Browsers abgelegt.
+Danach `index.html` per Doppelklick im Browser öffnen. Es ist kein Build-Schritt und kein lokaler Server erforderlich. Fortschritte werden im lokalen Speicher des Browsers abgelegt.
 
 ## Ordnerstruktur
 
 ```text
-Computergrafik-Lernportal.html  Hauptseite
+index.html                       Hauptseite
 assets/                         Hintergrundbilder
 seiten/                         Erklärungs- und Trainingsseiten
 scripts/                        Gemeinsame Portal-Logik
@@ -43,7 +43,7 @@ material/                       Klausurauswertung und Altklausuren
 
 ## Mit GitHub Pages veröffentlichen
 
-GitHub Pages kann diese statische Seite direkt hosten. Dafür muss die Hauptseite als `index.html` im Repository liegen. Anschließend im Repository unter **Settings → Pages** als Quelle **Deploy from a branch**, den Branch **main** und den Ordner **/(root)** auswählen.
+Das Portal wird über GitHub Pages direkt aus dem Branch `main` und dem Repository-Stamm veröffentlicht.
 
 Nach der Veröffentlichung ist das Portal normalerweise unter folgender Adresse erreichbar:
 
