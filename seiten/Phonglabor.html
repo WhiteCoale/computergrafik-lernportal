@@ -196,6 +196,13 @@
   #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
   footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
   :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  #plot { touch-action: none; }
+  .grab, [data-h] {
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .grab:active { cursor: grabbing; }
 </style>
 
 <div class="wrap">
@@ -489,12 +496,12 @@
         arrow([bx, by], [bx + d[0] * 2, by + d[1] * 2], "var(--vl)", 1.1);
       }
     } else {
-      svg.appendChild(make("circle", { cx: px(SC.light[0]), cy: py(SC.light[1]), r: 8,
-        fill: "var(--vl)", "fill-opacity": 0.3, stroke: "var(--vl)", "stroke-width": 2,
+      svg.appendChild(make("circle", { cx: px(SC.light[0]), cy: py(SC.light[1]), r: 10,
+        fill: "var(--vl)", "fill-opacity": 0.35, stroke: "var(--vl)", "stroke-width": 2.5,
         "class": "grab", "data-h": "light" }));
     }
-    svg.appendChild(make("rect", { x: px(SC.cam[0]) - 9, y: py(SC.cam[1]) - 7, width: 18, height: 14, rx: 2,
-      fill: "var(--vv)", "fill-opacity": 0.3, stroke: "var(--vv)", "stroke-width": 2,
+    svg.appendChild(make("rect", { x: px(SC.cam[0]) - 10, y: py(SC.cam[1]) - 8, width: 20, height: 16, rx: 3,
+      fill: "var(--vv)", "fill-opacity": 0.35, stroke: "var(--vv)", "stroke-width": 2.5,
       "class": "grab", "data-h": "cam" }));
     svg.appendChild(make("circle", { cx: px(SC.P[0]), cy: py(SC.P[1]), r: 4, fill: "var(--ink)" }));
 

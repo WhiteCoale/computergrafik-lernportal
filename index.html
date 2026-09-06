@@ -24,29 +24,30 @@
   * { box-sizing:border-box; }
   [hidden] { display:none !important; }
   html { scroll-behavior:smooth; }
+  html, body { overflow-x:hidden; width:100%; max-width:100vw; }
   body { margin:0; background:var(--paper); color:var(--ink); font-family:"Source Serif 4",Georgia,serif;
     font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased; }
   button { font:inherit; }
   .mono { font-family:"IBM Plex Mono",ui-monospace,monospace; }
 
-  .topbar { position:sticky; top:0; z-index:50; background:color-mix(in srgb,var(--paper) 94%,transparent);
-    backdrop-filter:blur(14px); border-bottom:1px solid var(--rule); }
-  .toprow { max-width:78rem; margin:0 auto; padding:.7rem 1.25rem .55rem; display:flex; align-items:center; gap:1rem; }
+  .topbar { position:sticky; top:0; z-index:50; width:100%; max-width:100vw; background:color-mix(in srgb,var(--paper) 94%,transparent);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-bottom:1px solid var(--rule); }
+  .toprow { max-width:78rem; margin:0 auto; padding:.7rem 1.25rem .55rem; display:flex; align-items:center; gap:1rem; width:100%; box-sizing:border-box; }
   .brand { display:flex; align-items:center; gap:.7rem; min-width:max-content; }
   .brandtext { display:block; line-height:1; }
   .brandtext span { color:var(--ink-3); font:700 1.05rem "Libre Franklin",Arial,sans-serif; letter-spacing:-.015em; white-space:nowrap; }
-  .navscroll { overflow-x:auto; scrollbar-width:none; margin-left:auto; }
+  .navscroll { overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; margin-left:auto; max-width:100%; }
   .navscroll::-webkit-scrollbar { display:none; }
   .nav { display:flex; gap:.25rem; min-width:max-content; }
   .nav button { border:1px solid transparent; background:transparent; color:var(--ink-2); border-radius:6px;
-    padding:.48rem .68rem; cursor:pointer; font:600 .76rem "Libre Franklin",Arial,sans-serif; white-space:nowrap; }
+    padding:.48rem .68rem; cursor:pointer; font:600 .76rem "Libre Franklin",Arial,sans-serif; white-space:nowrap; touch-action:manipulation; }
   .nav button:hover { background:var(--blue-soft); color:var(--blue); }
   .nav button[aria-current="page"] { color:var(--blue); border-color:color-mix(in srgb,var(--blue) 35%,var(--rule)); background:var(--blue-soft); }
   .nav .examnav { color:var(--amber); }
   .floating-controls { position:fixed; top:3.75rem; left:1rem; z-index:45; display:flex; align-items:center; gap:.3rem; }
   .floating-control { width:3.3rem; height:3.3rem; display:grid; place-items:center; padding:0; border:0;
     color:#fff; background:transparent; cursor:pointer; font:700 1.86rem/1 "Libre Franklin",Arial,sans-serif;
-    text-shadow:0 2px 10px rgba(7,37,57,.55); transition:transform .15s,color .15s; }
+    text-shadow:0 2px 10px rgba(7,37,57,.55); transition:transform .15s,color .15s; touch-action:manipulation; }
   .floating-control:hover { color:#e2f5ff; transform:scale(1.12); }
   .floating-control:focus-visible { border-radius:999px; }
 
@@ -188,33 +189,9 @@
   .probes iframe { width:1px; height:1px; border:0; }
 
   @media (max-width:58rem) {
-    .toprow { align-items:flex-start; flex-direction:column; gap:.5rem; }
-    .navscroll { width:100%; margin-left:0; }
     .intro { grid-template-columns:1fr; }
-    .cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .lessonframe { height:calc(100vh - 13rem); }
     .examstart { grid-template-columns:1fr; }
     .statsgrid { grid-template-columns:1fr; }
-    .statsfacts { grid-template-columns:repeat(3,1fr); }
-    .statsfact { border-bottom:1px solid rgba(255,255,255,.2); }
-    .floating-controls { top:6.35rem; left:.55rem; }
-  }
-  @media (max-width:38rem) {
-    main { padding:1.25rem .75rem 3rem; }
-    .toprow { padding:.6rem .75rem .45rem; }
-    .cards { grid-template-columns:1fr; }
-    .introcopy { padding:1.2rem; }
-    .viewhead { align-items:flex-start; flex-direction:column; }
-    .viewactions { width:100%; }
-    .viewactions .btn { flex:1; }
-    .lessonframe { min-height:34rem; height:calc(100vh - 14rem); }
-    .examtop { grid-template-columns:1fr auto; }
-    .examsteps { grid-column:1/-1; grid-row:2; }
-    .examframe { height:calc(100vh - 17rem); }
-    .resultgrid { grid-template-columns:repeat(2,1fr); }
-    .statshero { padding:1.1rem; }
-    .statsfacts { grid-template-columns:repeat(2,1fr); }
-    .freqrow { grid-template-columns:minmax(8rem,1fr) 5rem 3.6rem; gap:.45rem; }
   }
 
   /* Himmel-Design, inspiriert von der bereitgestellten Referenz */
@@ -464,6 +441,397 @@
   .topiccard .cardreset { margin-top:-.12rem; }
   .topiccard .reset-topic { font-size:.66rem; }
   html[data-theme="dark"] .topiccard { border-color:rgba(157,196,222,.16); border-top-color:var(--blue); box-shadow:0 10px 28px rgba(0,0,0,.25); }
+
+  /* ==========================================================================
+     Mobile & Tablet Optimierungen (<= 58rem / <= 48rem / <= 38rem)
+     ========================================================================== */
+  @media (max-width: 58rem) {
+    .topbar { width: 100%; max-width: 100vw; overflow-x: clip; }
+    .toprow {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: .4rem;
+      padding: .45rem .75rem .45rem;
+      width: 100%;
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+    .brand {
+      padding-right: 5.8rem; /* Platz für fixierte Buttons oben rechts */
+      max-width: 100%;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+    .brandtext span {
+      font-size: .88rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+    .navscroll {
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+      mask-image: linear-gradient(to right, black 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+    }
+    .nav { min-width: max-content; gap: .3rem; }
+    .nav button {
+      min-height: 40px;
+      padding: .46rem .75rem;
+      font-size: .78rem;
+    }
+
+    /* Auf mobilen Displays docken Theme- und Zurück-Buttons in der Header-Leiste rechts */
+    .floating-controls {
+      position: fixed !important;
+      top: .32rem !important;
+      right: .65rem !important;
+      left: auto !important;
+      z-index: 60 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: .35rem !important;
+    }
+    .floating-control {
+      width: 2.35rem !important;
+      height: 2.35rem !important;
+      min-width: 42px !important;
+      min-height: 42px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      border: 1px solid rgba(255,255,255,.32) !important;
+      border-radius: 999px !important;
+      color: #fff !important;
+      background: rgba(255,255,255,.2) !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      cursor: pointer !important;
+      font: 700 1.25rem/1 "Libre Franklin",Arial,sans-serif !important;
+      text-shadow: none !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15) !important;
+      touch-action: manipulation !important;
+    }
+    .floating-control:hover { transform: scale(1.05) !important; }
+    .floating-control:active { transform: scale(0.92) !important; }
+    .floating-control[hidden] { display: none !important; }
+    html[data-theme="dark"] .floating-control {
+      color: #edf5fc !important;
+      background: rgba(14, 30, 50, 0.75) !important;
+      border-color: rgba(160, 200, 230, 0.3) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35) !important;
+    }
+  }
+
+  @media (max-width: 48rem) {
+    main {
+      padding: .75rem .65rem 2.5rem;
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+    .intro {
+      grid-template-columns: 1fr;
+      gap: .85rem;
+      min-height: 0;
+    }
+    .introcopy {
+      padding: 1.6rem .75rem 1.4rem;
+      align-items: center;
+      text-align: center;
+      min-height: 0;
+    }
+    .introcopy h1 {
+      font-size: clamp(2rem, 8.5vw, 3.2rem);
+      line-height: 1;
+      word-break: break-word;
+      margin: .25rem 0 .5rem;
+    }
+    .introcopy p {
+      font-size: .95rem;
+      max-width: 100%;
+    }
+    .introactions {
+      width: 100%;
+      flex-direction: column;
+      gap: .5rem;
+      margin-top: 1rem;
+    }
+    .introactions .btn {
+      width: 100%;
+      min-height: 46px;
+      padding: .75rem 1.25rem;
+      font-size: .95rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    .overall {
+      width: 100%;
+      margin-top: 0;
+      padding: 1.1rem;
+      border-radius: 16px;
+      box-sizing: border-box;
+    }
+    .overallnum {
+      font-size: 2.6rem;
+    }
+    .overallrow {
+      gap: .6rem;
+    }
+    .metric strong {
+      font-size: 1.1rem;
+    }
+    .metric span {
+      font-size: .62rem;
+    }
+    .sectionhead {
+      margin: 1.25rem 0 .65rem;
+    }
+    .sectionhead > div {
+      width: 100%;
+    }
+    .cards {
+      grid-template-columns: 1fr !important;
+      gap: .75rem;
+    }
+    .topiccard {
+      min-height: auto;
+      padding: 1rem;
+      border-radius: 14px;
+      gap: .65rem;
+    }
+    .topiccard .cardtop {
+      grid-template-columns: 2.8rem minmax(0, 1fr);
+      gap: .65rem;
+    }
+    .topiccard .cardindex {
+      font-size: 1.85rem;
+    }
+    .topiccard .cardtitle h3 {
+      font-size: 1.02rem;
+    }
+    .topiccard .cardtitle p {
+      font-size: .74rem;
+    }
+    .topiccard .cardstats strong {
+      font-size: 1.2rem;
+    }
+    .topiccard .cardstats span {
+      font-size: .62rem;
+    }
+    .topiccard .cardactions {
+      gap: .5rem;
+      margin-top: .4rem;
+    }
+    .topiccard .cardactions .btn {
+      min-height: 44px;
+      padding: .6rem .8rem;
+      font-size: .84rem;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    .topiccard .cardreset {
+      margin-top: .2rem;
+    }
+    .topiccard .reset-topic {
+      font-size: .72rem;
+      padding: .35rem .5rem;
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* Lektionsansicht */
+    #lesson, #exam {
+      padding-top: .4rem;
+    }
+    .viewhead {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      padding: .9rem 1rem !important;
+      gap: .75rem !important;
+      border-radius: 16px !important;
+    }
+    .viewtitle {
+      gap: .65rem;
+      align-items: center;
+    }
+    .viewhead .tasknum {
+      font-size: 2.1rem;
+      min-width: 2.2rem;
+    }
+    .viewhead h2 {
+      font-size: 1.15rem;
+      word-break: break-word;
+      margin: 0;
+    }
+    .viewactions {
+      width: 100%;
+      display: flex;
+      gap: .5rem;
+    }
+    .viewactions .btn {
+      flex: 1;
+      min-height: 44px;
+      padding: .65rem .8rem;
+      font-size: .88rem;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    .lessonframe, .examframe {
+      border-radius: 14px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Klausuransicht */
+    .examstart {
+      grid-template-columns: 1fr;
+      gap: .85rem;
+      padding-top: .4rem;
+    }
+    .exampanel {
+      padding: 1.1rem;
+      border-radius: 16px;
+    }
+    .examstart h1 {
+      font-size: 1.85rem;
+    }
+    .examtopics {
+      grid-template-columns: 1fr;
+      gap: .35rem;
+    }
+    .examtop {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: .4rem .6rem;
+      align-items: center;
+      padding: .75rem .85rem;
+      border-radius: 14px;
+    }
+    .examlabel {
+      grid-column: 1;
+      grid-row: 1;
+      white-space: normal;
+      word-break: break-word;
+      font-size: .78rem;
+    }
+    .timer {
+      grid-column: 2;
+      grid-row: 1;
+      font-size: 1.15rem;
+      text-align: right;
+    }
+    .examsteps {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      margin-top: .2rem;
+    }
+    .examfooter {
+      flex-direction: column;
+      align-items: stretch;
+      gap: .75rem;
+      padding: .85rem;
+      border-radius: 14px;
+    }
+    .examfeedback {
+      font-size: .84rem;
+      text-align: center;
+      line-height: 1.35;
+    }
+    .examfooter > div {
+      display: flex;
+      gap: .5rem;
+      width: 100%;
+    }
+    .examfooter .btn {
+      flex: 1;
+      min-height: 44px;
+      padding: .65rem .8rem;
+      font-size: .86rem;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    .resultgrid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: .45rem;
+    }
+
+    /* Statistikansicht */
+    .statshero {
+      padding: 1.15rem;
+      border-radius: 16px;
+    }
+    .statshero h1 {
+      font-size: 1.85rem;
+    }
+    .statsfacts {
+      grid-template-columns: repeat(2, 1fr);
+      border-radius: 10px;
+      margin-top: .9rem;
+    }
+    .statsfact {
+      padding: .65rem .75rem;
+    }
+    .statsgrid {
+      grid-template-columns: 1fr;
+      gap: .75rem;
+    }
+    .statpanel {
+      padding: .95rem;
+      border-radius: 14px;
+    }
+    .freqrow {
+      grid-template-columns: minmax(6.5rem, 1.2fr) minmax(3.5rem, 1fr) 2.8rem;
+      gap: .4rem;
+    }
+    .freqlabel strong {
+      font-size: .78rem;
+      word-break: break-word;
+    }
+    .freqlabel span {
+      font-size: .6rem;
+    }
+    .freqvalue {
+      font-size: .7rem;
+    }
+    .personalstats {
+      grid-template-columns: repeat(2, 1fr);
+      gap: .45rem;
+    }
+    .statstablewrap {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  @media (max-width: 38rem) {
+    body {
+      background-attachment: scroll;
+      background-size: auto 100vh;
+    }
+    .statsfacts {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
 </style>
 </head>
 <body>

@@ -446,9 +446,14 @@
   .plot-sm.interactive { border-color: var(--blue); }
   .arrowto { font-family: "IBM Plex Mono", monospace; color: var(--ink-3); font-size: 1.1rem; }
 
-  .handle { cursor: grab; }
+  .handle {
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
   .handle:active { cursor: grabbing; }
   .handle:focus-visible { outline: none; }
+  .stage svg, .plot-sm svg { touch-action: none; }
 
   /* Matrix in Aufgaben */
   .mbox {
@@ -1195,8 +1200,8 @@
       { k: "e2", x: m.tx + m.b, y: m.ty + m.d, c: "var(--e2)" }
     ].forEach(function (h) {
       var node = make("circle", {
-        cx: P.px(h.x), cy: P.py(h.y), r: 8, fill: h.c, "fill-opacity": 0.25,
-        stroke: h.c, "stroke-width": 1.8, class: "handle", tabindex: "0"
+        cx: P.px(h.x), cy: P.py(h.y), r: 10, fill: h.c, "fill-opacity": 0.28,
+        stroke: h.c, "stroke-width": 2.2, class: "handle", tabindex: "0"
       });
       node.setAttribute("aria-label", HANDLE_LABEL[h.k]);
       node.addEventListener("pointerdown", function (ev) {

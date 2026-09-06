@@ -60,7 +60,7 @@
     heightFrame = window.requestAnimationFrame(function () {
       heightFrame = 0;
       var wrap = document.querySelector("body > .wrap");
-      var height = wrap ? wrap.offsetTop + wrap.offsetHeight : document.body.offsetHeight;
+      var height = wrap ? Math.max(wrap.offsetTop + wrap.offsetHeight, wrap.scrollHeight) : Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
       send("content-height",{height:Math.ceil(height)});
     });
   }
@@ -76,11 +76,23 @@
       "body.cg-embedded > .wrap { max-width: 68rem; padding-top: 1rem; }",
       "body.cg-embedded > .wrap > header, body.cg-embedded > .wrap > footer { display:none; }",
       "body.cg-embedded .panel, body.cg-embedded .stage, body.cg-embedded .taskcard, body.cg-embedded .score, body.cg-embedded .duo, body.cg-embedded .classgrid { border-radius:14px; box-shadow:0 12px 32px rgba(24,87,119,.08); }",
-      "body.cg-embedded button, body.cg-embedded .btn { border-radius:999px; }",
+      "body.cg-embedded button, body.cg-embedded .btn { border-radius:999px; touch-action:manipulation; }",
       "body.cg-embedded > .wrap > .tabs { display:none; }",
       "body.cg-exam #view-training > section > h2, body.cg-exam #view-training > section > .note, body.cg-exam #view-training .score { display:none; }",
       "body.cg-exam #view-training { gap:0; }",
-      "body.cg-exam .verdict + .tactions { display:none; }"
+      "body.cg-exam .verdict + .tactions { display:none; }",
+      "@media (max-width: 48rem) {",
+      "  body.cg-embedded { font-size: 15px; }",
+      "  body.cg-embedded > .wrap { padding: 0.5rem 0.5rem 1.5rem !important; gap: 1rem !important; max-width: 100% !important; }",
+      "  body.cg-embedded .panel, body.cg-embedded .stage, body.cg-embedded .taskcard, body.cg-embedded .score, body.cg-embedded .duo, body.cg-embedded .classgrid { padding: 0.8rem !important; border-radius: 12px !important; }",
+      "  body.cg-embedded input, body.cg-embedded select, body.cg-embedded textarea { font-size: 16px !important; min-height: 40px; }",
+      "  body.cg-embedded button, body.cg-embedded .btn { min-height: 44px; padding: 0.55rem 0.9rem !important; font-size: 0.88rem !important; }",
+      "  body.cg-embedded .handle, body.cg-embedded [data-h], body.cg-embedded .grab, body.cg-embedded svg { touch-action: none !important; -webkit-tap-highlight-color: transparent; }",
+      "  body.cg-embedded .tactions { flex-wrap: wrap !important; gap: 0.5rem !important; }",
+      "  body.cg-embedded .tmatrix, body.cg-embedded .tgrid { flex-wrap: wrap !important; max-width: 100% !important; overflow-x: auto; }",
+      "  body.cg-embedded table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }",
+      "  body.cg-embedded svg { max-width: 100%; height: auto; }",
+      "}"
     ].join("\n");
     document.head.appendChild(style);
   }
@@ -117,6 +129,8 @@
   send("ready", { exam: exam });
   reportHeight();
   window.addEventListener("load",reportHeight);
+  window.addEventListener("resize", reportHeight);
+  window.addEventListener("orientationchange", reportHeight);
   if (window.ResizeObserver) {
     var resizeObserver = new ResizeObserver(reportHeight);
     resizeObserver.observe(document.body);
