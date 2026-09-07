@@ -343,49 +343,51 @@
 
   html[data-theme="dark"] {
     color-scheme:dark;
-    --paper:#07111f; --surface:#101c2c; --ink:#edf5fc; --ink-2:#b2c2d2; --ink-3:#8295a9;
-    --blue:#68bce8; --blue-2:#8ed2f3; --blue-soft:#162c42; --rule:rgba(167,202,226,.15);
-    --good:#65d49a; --good-soft:#153629; --red:#ff958b; --red-soft:#40201f; --amber:#f3bd63;
+    --paper:#111111; --surface:#1c1b1a; --ink:#f1eeea; --ink-2:#c3bdb5; --ink-3:#9b9389;
+    --blue:#e6bc60; --blue-2:#f3d38a; --blue-soft:#30291d; --rule:rgba(196,183,163,.15);
+    --good:#65d49a; --good-soft:#153629; --red:#ee8275; --red-soft:#3a211f; --amber:#e6bc60;
     --shadow:0 24px 64px rgba(0,0,0,.36);
   }
   html[data-theme="dark"] body {
-    background-color:#071426;
-    background-image:linear-gradient(rgba(3,12,27,.12),rgba(5,16,31,.2)),url("assets/background-night.png");
+    background-color:#111111;
+    background-image:linear-gradient(rgba(14,12,11,.12),rgba(20,17,14,.2)),url("assets/background-night.png");
   }
-  html[data-theme="dark"] .topbar { background:rgba(6,20,39,.68); border-bottom-color:rgba(151,192,222,.18); }
-  html[data-theme="dark"] .nav button { color:rgba(224,239,249,.78); }
-  html[data-theme="dark"] .nav button:hover { color:#fff; background:rgba(118,187,228,.14); }
-  html[data-theme="dark"] .nav button[aria-current="page"] { color:#071522; background:#dceff9; border-color:#dceff9; }
+  html[data-theme="dark"] .topbar { background:rgba(20,19,18,.68); border-bottom-color:rgba(196,183,163,.18); }
+  html[data-theme="dark"] .nav button { color:rgba(239,233,223,.78); }
+  html[data-theme="dark"] .nav button:hover { color:#fff; background:rgba(230,188,96,.14); }
+  html[data-theme="dark"] .nav button[aria-current="page"] { color:#171511; background:#e6bc60; border-color:#e6bc60; }
   html[data-theme="dark"] .theme-toggle { color:#f4d98b; }
-  html[data-theme="dark"] .introcopy .btn.primary { color:#edf7fd; background:#176f9e; }
-  html[data-theme="dark"] .introcopy .btn.primary:hover { background:#2188bb; }
-  html[data-theme="dark"] .introcopy .btn.secondary { color:#edf7fd; background:rgba(7,18,34,.34); border-color:rgba(210,234,247,.28); }
+  html[data-theme="dark"] .btn.primary { color:#171511; }
+  html[data-theme="dark"] .freqbar i { background:linear-gradient(90deg,#b95a4c,var(--blue)); }
+  html[data-theme="dark"] .introcopy .btn.primary { color:#f1eeea; background:#a84439; }
+  html[data-theme="dark"] .introcopy .btn.primary:hover { background:#b14b40; }
+  html[data-theme="dark"] .introcopy .btn.secondary { color:#f1eeea; background:rgba(22,20,18,.34); border-color:rgba(215,201,180,.28); }
   html[data-theme="dark"] .overall,
   html[data-theme="dark"] .topiccard,
   html[data-theme="dark"] .statpanel,
   html[data-theme="dark"] .exampanel,
   html[data-theme="dark"] .examfooter {
-    color:var(--ink); background:rgba(10,22,37,.84); border-color:rgba(157,196,222,.16); box-shadow:var(--shadow);
+    color:var(--ink); background:rgba(25,24,23,.84); border-color:rgba(196,183,163,.16); box-shadow:var(--shadow);
   }
   html[data-theme="dark"] .lessonframe,
   html[data-theme="dark"] .examframe {
-    color:var(--ink); background:rgba(8,20,36,.88); border-color:rgba(157,196,222,.16); box-shadow:var(--shadow);
+    color:var(--ink); background:rgba(22,21,20,.88); border-color:rgba(196,183,163,.16); box-shadow:var(--shadow);
     backdrop-filter:blur(18px) saturate(115%);
   }
-  html[data-theme="dark"] .overall { background:linear-gradient(145deg,rgba(19,47,70,.88),rgba(10,22,37,.84)); }
+  html[data-theme="dark"] .overall { background:linear-gradient(145deg,rgba(46,38,29,.88),rgba(25,24,23,.84)); }
   html[data-theme="dark"] .sectionhead > div,
   html[data-theme="dark"] .viewhead,
-  html[data-theme="dark"] .examtop { color:var(--ink); background:rgba(9,21,36,.9); border-color:rgba(157,196,222,.15); }
-  html[data-theme="dark"] .statshero { background:rgba(8,25,45,.68); border:0; }
-  html[data-theme="dark"] .statsfacts { background:rgba(2,10,22,.3); border-color:rgba(165,205,232,.16); }
+  html[data-theme="dark"] .examtop { color:var(--ink); background:rgba(25,24,23,.9); border-color:rgba(196,183,163,.15); }
+  html[data-theme="dark"] .statshero { background:rgba(25,23,21,.68); border:0; }
+  html[data-theme="dark"] .statsfacts { background:rgba(12,11,10,.3); border-color:rgba(205,189,165,.16); }
   html[data-theme="dark"] .personalmetric,
-  html[data-theme="dark"] .insight { background:#142b40; }
+  html[data-theme="dark"] .insight { background:#302a22; }
   html[data-theme="dark"] .bar,
-  html[data-theme="dark"] .freqbar { background:rgba(169,207,231,.13); }
-  html[data-theme="dark"] .btn.secondary { color:var(--ink); background:#142337; border-color:rgba(161,199,224,.18); }
+  html[data-theme="dark"] .freqbar { background:rgba(205,189,165,.13); }
+  html[data-theme="dark"] .btn.secondary { color:var(--ink); background:#292623; border-color:rgba(196,183,163,.18); }
   html[data-theme="dark"] .btn.secondary:hover { color:var(--blue-2); border-color:var(--blue); }
   html[data-theme="dark"] .statstable th,
-  html[data-theme="dark"] .statstable td { border-bottom-color:rgba(161,199,224,.13); }
+  html[data-theme="dark"] .statstable td { border-bottom-color:rgba(196,183,163,.13); }
 
   .viewhead {
     padding:1.1rem 1.35rem;
@@ -412,8 +414,8 @@
   .viewhead .btn.secondary:hover { color:#fff; background:rgba(255,255,255,.17); border-color:rgba(255,255,255,.55); }
   .viewhead .btn.primary { color:#0b6698; background:#fff; }
   .viewhead .btn.primary:hover { color:#084f79; background:#eaf7fd; }
-  html[data-theme="dark"] .viewhead { border:1px solid rgba(165,205,232,.2); background:rgba(8,25,45,.68); }
-  html[data-theme="dark"] .viewhead .btn.primary { color:#081624; background:#dceff9; }
+  html[data-theme="dark"] .viewhead { border:1px solid rgba(205,189,165,.2); background:rgba(25,23,21,.68); }
+  html[data-theme="dark"] .viewhead .btn.primary { color:#171511; background:#e6bc60; }
   .lessonframe,.examframe { display:block; height:20rem; min-height:0; transition:height .18s ease; }
 
   .topiccard {
@@ -449,7 +451,7 @@
   .topiccard .cardactions .btn { padding:.46rem .65rem; border-radius:8px; font-size:.72rem; }
   .topiccard .cardreset { margin-top:-.12rem; }
   .topiccard .reset-topic { font-size:.66rem; }
-  html[data-theme="dark"] .topiccard { border-color:rgba(157,196,222,.16); border-top-color:var(--blue); box-shadow:0 10px 28px rgba(0,0,0,.25); }
+  html[data-theme="dark"] .topiccard { border-color:rgba(196,183,163,.16); border-top-color:var(--blue); box-shadow:0 10px 28px rgba(0,0,0,.25); }
 
   /* ==========================================================================
      Mobile & Tablet Optimierungen (<= 58rem / <= 48rem / <= 38rem)
@@ -532,9 +534,9 @@
     .floating-control:active { transform: scale(0.92) !important; }
     .floating-control[hidden] { display: none !important; }
     html[data-theme="dark"] .floating-control {
-      color: #edf5fc !important;
-      background: rgba(14, 30, 50, 0.75) !important;
-      border-color: rgba(160, 200, 230, 0.3) !important;
+      color: #f1eeea !important;
+      background: rgba(28, 26, 24, 0.75) !important;
+      border-color: rgba(205, 189, 165, 0.3) !important;
       box-shadow: 0 2px 8px rgba(0,0,0,.35) !important;
     }
   }
@@ -852,6 +854,31 @@
       <i></i><i></i><i></i><i></i><i></i>
     </div>
     <div class="landscape-grass"></div>
+  </div>
+  <div class="landscape-insect" data-flying="false">
+    <div class="landscape-insect-facing">
+      <svg class="landscape-bee" viewBox="0 0 32 28" width="24" height="21">
+        <g class="insect-wings" fill="#eef8fb" fill-opacity=".8" stroke="#a8cbd0" stroke-width=".7">
+          <ellipse cx="13" cy="9" rx="4" ry="6" transform="rotate(-30 13 9)"/>
+          <ellipse cx="19" cy="9" rx="3.5" ry="5.5" transform="rotate(25 19 9)"/>
+        </g>
+        <path d="M10 20l-2 3m8-2v3m5-4l2 3" fill="none" stroke="#403b29" stroke-width="1.2" stroke-linecap="round"/>
+        <ellipse cx="15" cy="16" rx="9" ry="6" fill="#e8b94d"/>
+        <path d="M11 11q-2 5 0 10m5-11q-2 6 0 12" fill="none" stroke="#51432e" stroke-width="3"/>
+        <circle cx="24" cy="15" r="4" fill="#51432e"/>
+        <circle cx="25.5" cy="14" r=".8" fill="#fff5cc"/>
+        <path d="M24 11l1-3" stroke="#51432e" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      <svg class="landscape-firefly" viewBox="0 0 32 28" width="19" height="17">
+        <g class="insect-wings" fill="#c5dbc2" fill-opacity=".35">
+          <ellipse cx="15" cy="10" rx="3" ry="6" transform="rotate(-32 15 10)"/>
+          <ellipse cx="20" cy="10" rx="3" ry="5" transform="rotate(28 20 10)"/>
+        </g>
+        <ellipse class="firefly-lantern" cx="12" cy="17" rx="5" ry="4" fill="#e3ef9a"/>
+        <ellipse cx="18" cy="16" rx="5" ry="3.5" fill="#798765"/>
+        <circle cx="23" cy="15" r="2.5" fill="#a4af80"/>
+      </svg>
+    </div>
   </div>
 </div>
 
@@ -1280,5 +1307,6 @@
   window.setInterval(updateExamCountdown,60000);
 }());
 </script>
+<script src="scripts/landscape-insect.js"></script>
 </body>
 </html>

@@ -72,16 +72,17 @@ body {
 
 html[data-theme="dark"] .landscape {
   --landscape-image: url("background-night.png");
-  background: #071426;
+  background: #111111;
 }
 
 html[data-theme="dark"] .landscape-scene {
   width: max(100vw, 144.019139vh);
   height: max(100vh, 69.435216vw);
+  filter: grayscale(1) sepia(.16) brightness(.88);
 }
 
 html[data-theme="dark"] .landscape::after {
-  background: linear-gradient(rgba(3,12,27,.12), rgba(5,16,31,.2));
+  background: linear-gradient(rgba(27,17,15,.12), rgba(41,31,17,.08));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -89,4 +90,57 @@ html[data-theme="dark"] .landscape::after {
     animation: none;
     will-change: auto;
   }
+}
+
+.landscape-insect {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  visibility: hidden;
+  will-change: transform;
+}
+
+.landscape-insect-facing {
+  width: 24px;
+  height: 21px;
+  transform: translate(-50%, -85%) scaleX(var(--insect-direction, 1));
+}
+
+.landscape-insect svg {
+  position: absolute;
+  overflow: visible;
+}
+
+.landscape-firefly { display: none; }
+html[data-theme="dark"] .landscape-bee { display: none; }
+html[data-theme="dark"] .landscape-firefly { display: block; }
+html[data-theme="dark"] .firefly-lantern { fill: #ffe6a0; }
+
+.insect-wings {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+.landscape-insect[data-flying="true"] .insect-wings {
+  animation: insect-wingbeat .14s ease-in-out infinite alternate;
+}
+
+.firefly-lantern {
+  animation: firefly-glow 7s ease-in-out infinite;
+}
+
+@keyframes insect-wingbeat {
+  from { transform: scaleY(.45); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes firefly-glow {
+  0%, 100% { opacity: .6; filter: drop-shadow(0 0 2px #f0c869); }
+  50% { opacity: 1; filter: drop-shadow(0 0 5px #f0c869); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landscape-insect { will-change: auto; }
+  .landscape-insect .insect-wings, .firefly-lantern { animation: none; }
 }

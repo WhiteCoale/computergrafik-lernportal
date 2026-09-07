@@ -24,17 +24,17 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --paper: #0F131B; --surface: #161B26; --ink: #E7EBF3; --ink-2: #A2ADC4;
-      --ink-3: #737E95; --blue: #8AA4FF; --blue-soft: #1A2340; --red: #FF8E7E;
-      --grid: #222A3A; --grid-axis: #47526A; --rule: #262C3A;
-      --e1: #4FD08A; --e2: #4FC7E8; --origin: #FF77C4; --ghost: #4A5468;
+      --paper: #111111; --surface: #1c1b1a; --ink: #f1eeea; --ink-2: #c3bdb5;
+      --ink-3: #9b9389; --blue: #e6bc60; --blue-soft: #30291d; --red: #ee8275;
+      --grid: #34312d; --grid-axis: #776e61; --rule: #3b3630;
+      --e1: #4FD08A; --e2: #4FC7E8; --origin: #FF77C4; --ghost: #756d63;
     }
   }
   :root[data-theme="dark"] {
-    --paper: #0F131B; --surface: #161B26; --ink: #E7EBF3; --ink-2: #A2ADC4;
-    --ink-3: #737E95; --blue: #8AA4FF; --blue-soft: #1A2340; --red: #FF8E7E;
-    --grid: #222A3A; --grid-axis: #47526A; --rule: #262C3A;
-    --e1: #4FD08A; --e2: #4FC7E8; --origin: #FF77C4; --ghost: #4A5468;
+    --paper: #111111; --surface: #1c1b1a; --ink: #f1eeea; --ink-2: #c3bdb5;
+    --ink-3: #9b9389; --blue: #e6bc60; --blue-soft: #30291d; --red: #ee8275;
+    --grid: #34312d; --grid-axis: #776e61; --rule: #3b3630;
+    --e1: #4FD08A; --e2: #4FC7E8; --origin: #FF77C4; --ghost: #756d63;
   }
 
   * { box-sizing: border-box; }
@@ -433,6 +433,7 @@
     display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
     flex: 1 1 16rem; min-width: 0; max-width: 20rem;
   }
+  .tcol > div { width: 100%; min-width: 0; }
   .tcap {
     font-family: "Libre Franklin", sans-serif; font-size: 0.64rem;
     letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600;
