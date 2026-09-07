@@ -71,11 +71,12 @@
     if (exam) { document.body.classList.add("cg-exam"); }
     var style = document.createElement("style");
     style.textContent = [
-      "body.cg-embedded { --paper:#f5fbfe; --surface:#fff; --blue:#167eb8; --blue-soft:#e4f4fc; --rule:#dceaf1; }",
-      "body.cg-embedded.cg-dark { --paper:#081321; --surface:#101d2d; --ink:#edf5fc; --ink-2:#b3c2d2; --ink-3:#8395a8; --blue:#70c3ec; --blue-soft:#162d43; --rule:#26384a; --red:#ff958b; --grid:#203247; --grid-axis:#526b82; --e1:#65d49a; --e2:#65cbe8; --origin:#ff83c8; --ghost:#53667b; background:#081321; color:#edf5fc; }",
+      "html, body.cg-embedded { background: transparent !important; }",
+      "body.cg-embedded { --paper:transparent; --surface:rgba(255,255,255,.92); --blue:#167eb8; --blue-soft:#e4f4fc; --rule:rgba(26,92,126,.14); }",
+      "body.cg-embedded.cg-dark { --paper:transparent; --surface:rgba(16,29,45,.92); --ink:#edf5fc; --ink-2:#b3c2d2; --ink-3:#8395a8; --blue:#70c3ec; --blue-soft:#162d43; --rule:#26384a; --red:#ff958b; --grid:#203247; --grid-axis:#526b82; --e1:#65d49a; --e2:#65cbe8; --origin:#ff83c8; --ghost:#53667b; background: transparent !important; color:#edf5fc; }",
       "body.cg-embedded > .wrap { max-width: 68rem; padding-top: 1rem; }",
       "body.cg-embedded > .wrap > header, body.cg-embedded > .wrap > footer { display:none; }",
-      "body.cg-embedded .panel, body.cg-embedded .stage, body.cg-embedded .taskcard, body.cg-embedded .score, body.cg-embedded .duo, body.cg-embedded .classgrid { border-radius:14px; box-shadow:0 12px 32px rgba(24,87,119,.08); }",
+      "body.cg-embedded .panel, body.cg-embedded .stage, body.cg-embedded .taskcard, body.cg-embedded .score, body.cg-embedded .duo, body.cg-embedded .classgrid { border-radius:14px; box-shadow:0 12px 32px rgba(24,87,119,.08); background:var(--surface); }",
       "body.cg-embedded button, body.cg-embedded .btn { border-radius:999px; touch-action:manipulation; }",
       "body.cg-embedded > .wrap > .tabs { display:none; }",
       "body.cg-exam #view-training > section > h2, body.cg-exam #view-training > section > .note, body.cg-exam #view-training .score { display:none; }",

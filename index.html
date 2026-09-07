@@ -117,7 +117,7 @@
   .statsfact strong { display:block; margin-top:.2rem; font:700 1rem "IBM Plex Mono",monospace; }
   .statsgrid { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(18rem,.8fr); gap:.8rem; margin-top:.8rem; }
   .statpanel { padding:1.05rem 1.15rem; border:1px solid rgba(255,255,255,.72); border-radius:18px;
-    background:rgba(255,255,255,.94); backdrop-filter:blur(14px); box-shadow:var(--shadow); }
+    background:rgba(255,255,255,.82); backdrop-filter:blur(14px); box-shadow:var(--shadow); }
   .statpanel h2 { margin-bottom:.25rem; }
   .statpanel > p { margin-bottom:.85rem; }
   .freqlist { display:flex; flex-direction:column; gap:.57rem; }
@@ -249,15 +249,21 @@
     padding:1.3rem 1.45rem;
     border:1px solid rgba(255,255,255,.72);
     border-radius:22px;
-    background:rgba(255,255,255,.94);
-    backdrop-filter:blur(14px);
+    background:rgba(255,255,255,.82);
+    backdrop-filter:blur(16px);
     box-shadow:0 26px 70px rgba(15,72,104,.22);
   }
   .overallnum { font-weight:650; }
-  .topiccard,.exampanel,.lessonframe,.examframe,.examfooter {
+  .topiccard,.exampanel,.examfooter {
     border-color:rgba(255,255,255,.7);
-    background:rgba(255,255,255,.94);
+    background:rgba(255,255,255,.82);
     backdrop-filter:blur(14px);
+    box-shadow:var(--shadow);
+  }
+  .lessonframe,.examframe {
+    border-color:rgba(255,255,255,.68);
+    background:rgba(255,255,255,.68);
+    backdrop-filter:blur(18px) saturate(115%);
     box-shadow:var(--shadow);
   }
   .topiccard { border-radius:18px; padding:1.15rem; }
@@ -358,12 +364,15 @@
   html[data-theme="dark"] .topiccard,
   html[data-theme="dark"] .statpanel,
   html[data-theme="dark"] .exampanel,
-  html[data-theme="dark"] .lessonframe,
-  html[data-theme="dark"] .examframe,
   html[data-theme="dark"] .examfooter {
-    color:var(--ink); background:rgba(10,22,37,.93); border-color:rgba(157,196,222,.16); box-shadow:var(--shadow);
+    color:var(--ink); background:rgba(10,22,37,.84); border-color:rgba(157,196,222,.16); box-shadow:var(--shadow);
   }
-  html[data-theme="dark"] .overall { background:linear-gradient(145deg,rgba(19,47,70,.96),rgba(10,22,37,.94)); }
+  html[data-theme="dark"] .lessonframe,
+  html[data-theme="dark"] .examframe {
+    color:var(--ink); background:rgba(10,22,37,.70); border-color:rgba(157,196,222,.16); box-shadow:var(--shadow);
+    backdrop-filter:blur(18px) saturate(115%);
+  }
+  html[data-theme="dark"] .overall { background:linear-gradient(145deg,rgba(19,47,70,.88),rgba(10,22,37,.84)); }
   html[data-theme="dark"] .sectionhead > div,
   html[data-theme="dark"] .viewhead,
   html[data-theme="dark"] .examtop { color:var(--ink); background:rgba(9,21,36,.9); border-color:rgba(157,196,222,.15); }
