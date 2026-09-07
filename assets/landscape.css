@@ -1,0 +1,92 @@
+body {
+  isolation: isolate;
+}
+
+.landscape {
+  --landscape-image: url("background.jpg");
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: #54afe0;
+}
+
+.landscape::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(17,116,174,.08), rgba(29,133,188,.02));
+}
+
+/* Keep every layer aligned to the original image's bottom-centered cover crop. */
+.landscape-scene {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: max(100vw, 143.865741vh);
+  height: max(100vh, 69.509252vw);
+  transform: translateX(-50%);
+}
+
+.landscape-clouds {
+  position: absolute;
+  inset: 0 auto 0 -200%;
+  width: 500%;
+  display: flex;
+  animation: clouds-drift 1800s linear infinite;
+  will-change: transform;
+}
+
+.landscape-clouds i {
+  flex: 0 0 20%;
+  height: 100%;
+  background: var(--landscape-image) center / 100% 100% no-repeat;
+}
+
+/* Mirrored neighbors meet at the same edge; two tiles form a seamless loop. */
+.landscape-clouds i:nth-child(even) {
+  transform: scaleX(-1);
+}
+
+.landscape-grass {
+  position: absolute;
+  inset: 0;
+  background: var(--landscape-image) center / 100% 100% no-repeat;
+  -webkit-mask-image: linear-gradient(transparent 78.5%, #000 83%);
+  mask-image: linear-gradient(transparent 78.5%, #000 83%);
+  transform-origin: center bottom;
+  animation: grass-sway 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes clouds-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(40%); }
+}
+
+@keyframes grass-sway {
+  0%, 100% { transform: scaleX(1.015) skewX(-.65deg); }
+  50% { transform: scaleX(1.015) skewX(.65deg); }
+}
+
+html[data-theme="dark"] .landscape {
+  --landscape-image: url("background-night.png");
+  background: #071426;
+}
+
+html[data-theme="dark"] .landscape-scene {
+  width: max(100vw, 144.019139vh);
+  height: max(100vh, 69.435216vw);
+}
+
+html[data-theme="dark"] .landscape::after {
+  background: linear-gradient(rgba(3,12,27,.12), rgba(5,16,31,.2));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landscape-clouds, .landscape-grass {
+    animation: none;
+    will-change: auto;
+  }
+}
