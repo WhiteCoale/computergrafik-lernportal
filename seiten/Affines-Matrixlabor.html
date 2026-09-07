@@ -531,6 +531,148 @@
   .repeat-note { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
   .repeat-note.warn { color: var(--red); }
 
+  /* Touch & Handy-Optimierungen für Graphen */
+  svg.interactive, svg.plot-sm.interactive, #plot, .handle, .handle-hit, .grab {
+    touch-action: none !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .handle, .grab {
+    cursor: grab;
+    transition: transform 0.15s ease, stroke-width 0.15s ease;
+  }
+  .handle:hover, .handle:focus-visible, .grab:hover {
+    cursor: grabbing;
+    stroke-width: 3.5px;
+    filter: drop-shadow(0 0 4px var(--blue));
+  }
+  .handle.active, .grab.active {
+    stroke-width: 4px;
+    filter: drop-shadow(0 0 6px var(--blue));
+  }
+
+  .touch-controls-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    padding: 0.65rem 0.8rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .touch-controls-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .touch-label {
+    font-family: "Libre Franklin", sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .touch-tabs {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .touch-tab {
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  .touch-tab:hover {
+    border-color: var(--blue);
+  }
+  .touch-tab.active {
+    background: var(--blue-soft);
+    border-color: var(--blue);
+    color: var(--blue);
+    font-weight: 700;
+  }
+  .touch-tab[data-hk="t"].active {
+    background: rgba(224, 60, 160, 0.15);
+    border-color: var(--origin);
+    color: var(--origin);
+  }
+  .touch-tab[data-hk="e1"].active {
+    background: rgba(22, 168, 80, 0.15);
+    border-color: var(--e1);
+    color: var(--e1);
+  }
+  .touch-tab[data-hk="e2"].active {
+    background: rgba(20, 160, 210, 0.15);
+    border-color: var(--e2);
+    color: var(--e2);
+  }
+  .touch-tab[data-hk="light"].active {
+    background: rgba(230, 160, 20, 0.15);
+    border-color: var(--vl);
+    color: var(--vl);
+  }
+  .touch-tab[data-hk="cam"].active {
+    background: rgba(70, 100, 230, 0.15);
+    border-color: var(--vv);
+    color: var(--vv);
+  }
+
+  .touch-dpad-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .dbtn {
+    width: 2.5rem;
+    height: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 6px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: background 0.1s, transform 0.05s, border-color 0.1s;
+  }
+  .dbtn:hover, .dbtn:active {
+    background: var(--blue-soft);
+    border-color: var(--blue);
+    color: var(--blue);
+    transform: scale(0.96);
+  }
+  .touch-coord-badge {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    padding: 0.25rem 0.55rem;
+    background: var(--paper);
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    min-width: 5.5rem;
+    text-align: center;
+  }
   footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
   a { color: var(--blue); }
   :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
@@ -1179,8 +1321,10 @@
     }
   }
 
-  /* ---- Ziehbare Griffe ---- */
+  /* ---- Ziehbare Griffe & Handy-Steuerung ---- */
   var drag = null;
+  var activeHandleKey = "t";
+
   function snap(v) { return Math.round(v * 4) / 4; }
   function clampC(v) { return Math.max(-4, Math.min(4, v)); }
   function applyHandle(m, key, x, y) {
@@ -1192,23 +1336,124 @@
     t: "Ursprung verschieben", e1: "Spitze von e₁ verschieben", e2: "Spitze von e₂ verschieben"
   };
 
+  function updateTouchBar(bar, m, key) {
+    if (!bar) return;
+    var tabs = bar.querySelectorAll(".touch-tab");
+    tabs.forEach(function(t) {
+      t.classList.toggle("active", t.getAttribute("data-hk") === key);
+    });
+    var curX = (key === "t") ? m.tx : (key === "e1" ? m.tx + m.a : m.tx + m.b);
+    var curY = (key === "t") ? m.ty : (key === "e1" ? m.ty + m.c : m.ty + m.d);
+    var badge = bar.querySelector(".touch-coord-badge");
+    if (badge) {
+      var name = (key === "t") ? "t" : (key === "e1" ? "e₁" : "e₂");
+      badge.textContent = name + ": (" + fmt(curX) + ", " + fmt(curY) + ")";
+    }
+  }
+
   function addHandles(P, m, onChange) {
     clear(P.L.handles);
+
+    // Mobil-Steuerung (Handy-Leiste) unter dem SVG platzieren
+    var container = P.el.parentElement;
+    var bar = container ? container.querySelector(".touch-controls-bar") : null;
+    if (container && !bar) {
+      bar = document.createElement("div");
+      bar.className = "touch-controls-bar";
+      bar.innerHTML =
+        '<div class="touch-controls-top">' +
+          '<span class="touch-label">📱 Handy-Steuerung</span>' +
+          '<div class="touch-tabs">' +
+            '<button type="button" class="touch-tab active" data-hk="t">Ursprung t</button>' +
+            '<button type="button" class="touch-tab" data-hk="e1">Spitze e₁</button>' +
+            '<button type="button" class="touch-tab" data-hk="e2">Spitze e₂</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="touch-dpad-row">' +
+          '<button type="button" class="dbtn" data-dir="left" aria-label="Nach links">←</button>' +
+          '<button type="button" class="dbtn" data-dir="down" aria-label="Nach unten">↓</button>' +
+          '<button type="button" class="dbtn" data-dir="up" aria-label="Nach oben">↑</button>' +
+          '<button type="button" class="dbtn" data-dir="right" aria-label="Nach rechts">→</button>' +
+          '<span class="touch-coord-badge">(0, 0)</span>' +
+        '</div>';
+      container.appendChild(bar);
+
+      bar.querySelector(".touch-tabs").addEventListener("click", function(e) {
+        var btn = e.target.closest(".touch-tab");
+        if (!btn) return;
+        activeHandleKey = btn.getAttribute("data-hk");
+        updateTouchBar(bar, m, activeHandleKey);
+        addHandles(P, m, onChange);
+      });
+
+      bar.querySelector(".touch-dpad-row").addEventListener("click", function(e) {
+        var btn = e.target.closest(".dbtn");
+        if (!btn) return;
+        var dir = btn.getAttribute("data-dir");
+        var curX = (activeHandleKey === "t") ? m.tx : (activeHandleKey === "e1" ? m.tx + m.a : m.tx + m.b);
+        var curY = (activeHandleKey === "t") ? m.ty : (activeHandleKey === "e1" ? m.ty + m.c : m.ty + m.d);
+        var dx = 0, dy = 0;
+        if (dir === "left") dx = -0.25;
+        if (dir === "right") dx = 0.25;
+        if (dir === "up") dy = 0.25;
+        if (dir === "down") dy = -0.25;
+        applyHandle(m, activeHandleKey, clampC(snap(curX + dx)), clampC(snap(curY + dy)));
+        onChange();
+      });
+    }
+
+    if (bar) {
+      updateTouchBar(bar, m, activeHandleKey);
+    }
+
+    // Direktes Tippen auf das Koordinatensystem verschiebt den aktiven Griff
+    if (!P.el._tapBound) {
+      P.el._tapBound = true;
+      P.el.style.touchAction = "none";
+      P.el.addEventListener("pointerdown", function(ev) {
+        if (ev.target.classList.contains("handle-hit") || ev.target.classList.contains("handle")) return;
+        var r = P.el.getBoundingClientRect();
+        if (!r.width) return;
+        var s = P.size / r.width;
+        var mx = ((ev.clientX - r.left) * s - P.cx) / P.unit;
+        var my = (P.cy - (ev.clientY - r.top) * s) / P.unit;
+        applyHandle(m, activeHandleKey, snap(clampC(mx)), snap(clampC(my)));
+        onChange();
+      });
+    }
+
     [
       { k: "t",  x: m.tx,       y: m.ty,       c: "var(--origin)" },
       { k: "e1", x: m.tx + m.a, y: m.ty + m.c, c: "var(--e1)" },
       { k: "e2", x: m.tx + m.b, y: m.ty + m.d, c: "var(--e2)" }
     ].forEach(function (h) {
+      var isAct = (h.k === activeHandleKey);
+
+      // Große unsichtbare Trefferfläche (26px Radius) für Touch
+      var hitTarget = make("circle", {
+        cx: P.px(h.x), cy: P.py(h.y), r: 26, fill: "transparent",
+        class: "handle-hit", style: "touch-action: none; cursor: grab;"
+      });
+      hitTarget.setAttribute("aria-label", HANDLE_LABEL[h.k]);
+
+      // Sichtbarer Griffpunkt
       var node = make("circle", {
-        cx: P.px(h.x), cy: P.py(h.y), r: 10, fill: h.c, "fill-opacity": 0.28,
-        stroke: h.c, "stroke-width": 2.2, class: "handle", tabindex: "0"
+        cx: P.px(h.x), cy: P.py(h.y), r: isAct ? 12 : 10, fill: h.c, "fill-opacity": isAct ? 0.45 : 0.28,
+        stroke: h.c, "stroke-width": isAct ? 3.5 : 2.2, class: "handle" + (isAct ? " active" : ""), tabindex: "0",
+        style: "touch-action: none;"
       });
-      node.setAttribute("aria-label", HANDLE_LABEL[h.k]);
-      node.addEventListener("pointerdown", function (ev) {
+
+      function startDrag(ev) {
         ev.preventDefault();
-        try { node.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
+        activeHandleKey = h.k;
+        try { hitTarget.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
         drag = { P: P, k: h.k, m: m, cb: onChange };
-      });
+        onChange();
+      }
+
+      hitTarget.addEventListener("pointerdown", startDrag);
+      node.addEventListener("pointerdown", startDrag);
+
       node.addEventListener("keydown", function (ev) {
         var dx = 0, dy = 0;
         if (ev.key === "ArrowLeft") { dx = -0.25; }
@@ -1217,9 +1462,11 @@
         else if (ev.key === "ArrowDown") { dy = -0.25; }
         else { return; }
         ev.preventDefault();
+        activeHandleKey = h.k;
         applyHandle(m, h.k, clampC(h.x + dx), clampC(h.y + dy));
         onChange();
       });
+      P.L.handles.appendChild(hitTarget);
       P.L.handles.appendChild(node);
     });
   }

@@ -197,12 +197,125 @@
   footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
   :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
   #plot { touch-action: none; }
-  .grab, [data-h] {
+  .grab, [data-h], .handle-hit {
     cursor: grab;
-    touch-action: none;
+    touch-action: none !important;
     -webkit-tap-highlight-color: transparent;
   }
   .grab:active { cursor: grabbing; }
+  .grab.active {
+    stroke-width: 4px;
+    filter: drop-shadow(0 0 6px var(--blue));
+  }
+
+  .touch-controls-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    padding: 0.65rem 0.8rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .touch-controls-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .touch-label {
+    font-family: "Libre Franklin", sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .touch-tabs {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .touch-tab {
+    font-family: "Libre Franklin", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  .touch-tab:hover {
+    border-color: var(--blue);
+  }
+  .touch-tab.active {
+    background: var(--blue-soft);
+    border-color: var(--blue);
+    color: var(--blue);
+    font-weight: 700;
+  }
+  .touch-tab[data-hk="light"].active {
+    background: rgba(230, 160, 20, 0.15);
+    border-color: var(--vl);
+    color: var(--vl);
+  }
+  .touch-tab[data-hk="cam"].active {
+    background: rgba(70, 100, 230, 0.15);
+    border-color: var(--vv);
+    color: var(--vv);
+  }
+
+  .touch-dpad-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .dbtn {
+    width: 2.5rem;
+    height: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 6px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: background 0.1s, transform 0.05s, border-color 0.1s;
+  }
+  .dbtn:hover, .dbtn:active {
+    background: var(--blue-soft);
+    border-color: var(--blue);
+    color: var(--blue);
+    transform: scale(0.96);
+  }
+  .touch-coord-badge {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    padding: 0.25rem 0.55rem;
+    background: var(--paper);
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    min-width: 5.5rem;
+    text-align: center;
+  }
 </style>
 
 <div class="wrap">
@@ -443,9 +556,78 @@
   }
 
   var drag = null;
+  var activePhongTarget = "light";
+
+  function updatePhongTouchBar(bar) {
+    if (!bar) return;
+    var tabs = bar.querySelectorAll(".touch-tab");
+    tabs.forEach(function(t) {
+      t.classList.toggle("active", t.getAttribute("data-hk") === activePhongTarget);
+    });
+    var badge = bar.querySelector(".touch-coord-badge");
+    if (badge) {
+      var cur = (activePhongTarget === "light") ? SC.light : SC.cam;
+      var name = (activePhongTarget === "light") ? "Licht" : "Kamera";
+      badge.textContent = name + ": (" + fmt(cur[0]) + ", " + fmt(cur[1]) + ")";
+    }
+  }
+
+  function setupPhongTouchControls(svg) {
+    var container = svg.parentElement;
+    var bar = container ? container.querySelector(".touch-controls-bar") : null;
+    if (container && !bar) {
+      bar = document.createElement("div");
+      bar.className = "touch-controls-bar";
+      bar.innerHTML =
+        '<div class="touch-controls-top">' +
+          '<span class="touch-label">📱 Handy-Steuerung</span>' +
+          '<div class="touch-tabs">' +
+            '<button type="button" class="touch-tab active" data-hk="light">💡 Lichtquelle</button>' +
+            '<button type="button" class="touch-tab" data-hk="cam">📷 Kamera</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="touch-dpad-row">' +
+          '<button type="button" class="dbtn" data-dir="left" aria-label="Nach links">←</button>' +
+          '<button type="button" class="dbtn" data-dir="down" aria-label="Nach unten">↓</button>' +
+          '<button type="button" class="dbtn" data-dir="up" aria-label="Nach oben">↑</button>' +
+          '<button type="button" class="dbtn" data-dir="right" aria-label="Nach rechts">→</button>' +
+          '<span class="touch-coord-badge">(0, 0)</span>' +
+        '</div>';
+      container.appendChild(bar);
+
+      bar.querySelector(".touch-tabs").addEventListener("click", function(e) {
+        var btn = e.target.closest(".touch-tab");
+        if (!btn) return;
+        activePhongTarget = btn.getAttribute("data-hk");
+        updatePhongTouchBar(bar);
+        runLab();
+      });
+
+      bar.querySelector(".touch-dpad-row").addEventListener("click", function(e) {
+        var btn = e.target.closest(".dbtn");
+        if (!btn) return;
+        var dir = btn.getAttribute("data-dir");
+        var target = SC[activePhongTarget];
+        var dx = 0, dy = 0;
+        if (dir === "left") dx = -0.5;
+        if (dir === "right") dx = 0.5;
+        if (dir === "up") dy = 0.5;
+        if (dir === "down") dy = -0.5;
+        var nx = Math.round((target[0] + dx) * 2) / 2;
+        var ny = Math.max(0.5, Math.round((target[1] + dy) * 2) / 2);
+        SC[activePhongTarget] = [nx, ny];
+        runLab();
+      });
+    }
+    if (bar) {
+      updatePhongTouchBar(bar);
+    }
+  }
+
   function runLab() {
     var res = phong(SC, MAT);
     var svg = document.getElementById("plot");
+    svg.style.touchAction = "none";
     clear(svg);
 
     // Boden
@@ -496,13 +678,30 @@
         arrow([bx, by], [bx + d[0] * 2, by + d[1] * 2], "var(--vl)", 1.1);
       }
     } else {
-      svg.appendChild(make("circle", { cx: px(SC.light[0]), cy: py(SC.light[1]), r: 10,
-        fill: "var(--vl)", "fill-opacity": 0.35, stroke: "var(--vl)", "stroke-width": 2.5,
-        "class": "grab", "data-h": "light" }));
+      var isLAct = (activePhongTarget === "light");
+      // Unsichtbare große Hitbox für Licht (r=26)
+      svg.appendChild(make("circle", {
+        cx: px(SC.light[0]), cy: py(SC.light[1]), r: 26, fill: "transparent",
+        "class": "handle-hit", "data-h": "light", style: "touch-action:none; cursor:grab;"
+      }));
+      svg.appendChild(make("circle", {
+        cx: px(SC.light[0]), cy: py(SC.light[1]), r: isLAct ? 12 : 10,
+        fill: "var(--vl)", "fill-opacity": isLAct ? 0.55 : 0.35, stroke: "var(--vl)",
+        "stroke-width": isLAct ? 3.5 : 2.5, "class": "grab" + (isLAct ? " active" : ""), "data-h": "light"
+      }));
     }
-    svg.appendChild(make("rect", { x: px(SC.cam[0]) - 10, y: py(SC.cam[1]) - 8, width: 20, height: 16, rx: 3,
-      fill: "var(--vv)", "fill-opacity": 0.35, stroke: "var(--vv)", "stroke-width": 2.5,
-      "class": "grab", "data-h": "cam" }));
+
+    var isCAct = (activePhongTarget === "cam");
+    // Unsichtbare große Hitbox für Kamera (44x40)
+    svg.appendChild(make("rect", {
+      x: px(SC.cam[0]) - 22, y: py(SC.cam[1]) - 20, width: 44, height: 40, rx: 5,
+      fill: "transparent", "class": "handle-hit", "data-h": "cam", style: "touch-action:none; cursor:grab;"
+    }));
+    svg.appendChild(make("rect", {
+      x: px(SC.cam[0]) - 10, y: py(SC.cam[1]) - 8, width: 20, height: 16, rx: 3,
+      fill: "var(--vv)", "fill-opacity": isCAct ? 0.55 : 0.35, stroke: "var(--vv)",
+      "stroke-width": isCAct ? 3.5 : 2.5, "class": "grab" + (isCAct ? " active" : ""), "data-h": "cam"
+    }));
     svg.appendChild(make("circle", { cx: px(SC.P[0]), cy: py(SC.P[1]), r: 4, fill: "var(--ink)" }));
 
     document.getElementById("r_l").textContent = vtxt(res.l);
@@ -526,6 +725,8 @@
     var over = res.L.some(function (c) { return c > 1 || c < 0; });
     document.getElementById("clipnote").textContent = over
       ? "Für die Anzeige auf 0…1 begrenzt" : "";
+
+    setupPhongTouchControls(svg);
   }
 
   function svgPoint(ev) {
@@ -537,9 +738,21 @@
   }
   document.getElementById("plot").addEventListener("pointerdown", function (ev) {
     var t = ev.target.getAttribute && ev.target.getAttribute("data-h");
-    if (!t) { return; }
-    ev.preventDefault();
-    drag = t;
+    if (t) {
+      ev.preventDefault();
+      activePhongTarget = t;
+      drag = t;
+      try { ev.target.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
+      runLab();
+      return;
+    }
+    var p = svgPoint(ev);
+    if (p) {
+      ev.preventDefault();
+      var x = Math.round(p.x * 2) / 2, y = Math.max(0.5, Math.round(p.y * 2) / 2);
+      SC[activePhongTarget] = [x, y];
+      runLab();
+    }
   });
   window.addEventListener("pointermove", function (ev) {
     if (!drag) { return; }
