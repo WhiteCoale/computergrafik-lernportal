@@ -442,7 +442,7 @@
   .plot-sm {
     width: 100%; max-width: 20rem; height: auto; display: block;
     background: var(--surface); border: 1px solid var(--rule); border-radius: 2px;
-    touch-action: none;
+    touch-action: pan-y pinch-zoom;
   }
   .plot-sm.interactive { border-color: var(--blue); }
   .arrowto { font-family: "IBM Plex Mono", monospace; color: var(--ink-3); font-size: 1.1rem; }
@@ -454,7 +454,7 @@
   }
   .handle:active { cursor: grabbing; }
   .handle:focus-visible { outline: none; }
-  .stage svg, .plot-sm svg { touch-action: none; }
+  .stage svg, .plot-sm svg { touch-action: pan-y pinch-zoom; }
 
   /* Matrix in Aufgaben */
   .mbox {
@@ -533,7 +533,8 @@
   .repeat-note.warn { color: var(--red); }
 
   /* Touch & Handy-Optimierungen für Graphen */
-  svg.interactive, svg.plot-sm.interactive, #plot, .handle, .handle-hit, .grab {
+  svg.interactive, svg.plot-sm.interactive, #plot { touch-action: pan-y pinch-zoom; }
+  .handle, .handle-hit, .grab {
     touch-action: none !important;
     -webkit-tap-highlight-color: transparent;
   }
@@ -1407,11 +1408,11 @@
       updateTouchBar(bar, m, activeHandleKey);
     }
 
-    // Direktes Tippen auf das Koordinatensystem verschiebt den aktiven Griff
+    // Freie Flächen bleiben für Touch-Scrollen verfügbar; Maus und Stift setzen den Griff.
     if (!P.el._tapBound) {
       P.el._tapBound = true;
-      P.el.style.touchAction = "none";
       P.el.addEventListener("pointerdown", function(ev) {
+        if (ev.pointerType === "touch") return;
         if (ev.target.classList.contains("handle-hit") || ev.target.classList.contains("handle")) return;
         var r = P.el.getBoundingClientRect();
         if (!r.width) return;
@@ -1447,8 +1448,8 @@
       function startDrag(ev) {
         ev.preventDefault();
         activeHandleKey = h.k;
-        try { hitTarget.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
-        drag = { P: P, k: h.k, m: m, cb: onChange };
+        try { P.el.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
+        drag = { P: P, k: h.k, m: m, cb: onChange, pointerId: ev.pointerId };
         onChange();
       }
 
@@ -1473,7 +1474,7 @@
   }
 
   window.addEventListener("pointermove", function (ev) {
-    if (!drag) { return; }
+    if (!drag || drag.pointerId !== ev.pointerId) { return; }
     var P = drag.P;
     var r = P.el.getBoundingClientRect();
     if (!r.width) { return; }
@@ -1483,8 +1484,11 @@
     applyHandle(drag.m, drag.k, snap(clampC(mx)), snap(clampC(my)));
     drag.cb();
   });
-  window.addEventListener("pointerup", function () { drag = null; });
-  window.addEventListener("pointercancel", function () { drag = null; });
+  function endDrag(ev) {
+    if (drag && drag.pointerId === ev.pointerId) { drag = null; }
+  }
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
 
   /* =========================================================
      AUFGABEN

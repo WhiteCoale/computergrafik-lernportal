@@ -64,7 +64,7 @@
     padding: 1.1rem 1.2rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
   .stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
     padding: 0.9rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
-  .stage svg { width: 100%; height: auto; display: block; touch-action: none; }
+  .stage svg { width: 100%; height: auto; display: block; touch-action: pan-y pinch-zoom; }
 
   .krow { display: grid; grid-template-columns: 3.6rem repeat(3, 1fr); gap: 0.25rem 0.35rem; align-items: center; }
   .krow .kn { font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; color: var(--ink-2); }
@@ -196,7 +196,7 @@
   #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
   footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
   :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-  #plot { touch-action: none; }
+  #plot { touch-action: pan-y pinch-zoom; }
   .grab, [data-h], .handle-hit {
     cursor: grab;
     touch-action: none !important;
@@ -627,7 +627,6 @@
   function runLab() {
     var res = phong(SC, MAT);
     var svg = document.getElementById("plot");
-    svg.style.touchAction = "none";
     clear(svg);
 
     // Boden
@@ -741,11 +740,12 @@
     if (t) {
       ev.preventDefault();
       activePhongTarget = t;
-      drag = t;
-      try { ev.target.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
+      drag = { target: t, pointerId: ev.pointerId };
+      try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (err) { /* egal */ }
       runLab();
       return;
     }
+    if (ev.pointerType === "touch") { return; }
     var p = svgPoint(ev);
     if (p) {
       ev.preventDefault();
@@ -755,14 +755,18 @@
     }
   });
   window.addEventListener("pointermove", function (ev) {
-    if (!drag) { return; }
+    if (!drag || drag.pointerId !== ev.pointerId) { return; }
     var p = svgPoint(ev);
     if (!p) { return; }
     var x = Math.round(p.x * 2) / 2, y = Math.max(0.5, Math.round(p.y * 2) / 2);
-    if (drag === "light") { SC.light = [x, y]; } else { SC.cam = [x, y]; }
+    if (drag.target === "light") { SC.light = [x, y]; } else { SC.cam = [x, y]; }
     runLab();
   });
-  window.addEventListener("pointerup", function () { drag = null; });
+  function endDrag(ev) {
+    if (drag && drag.pointerId === ev.pointerId) { drag = null; }
+  }
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
 
   document.getElementById("lighttype").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-lt]");
