@@ -20,6 +20,7 @@
   function applyTheme(theme) {
     var dark = theme === "dark";
     document.documentElement.setAttribute("data-theme",dark ? "dark" : "light");
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
     document.body.classList.toggle("cg-dark",dark);
   }
 
@@ -67,13 +68,15 @@
 
   function installEmbedding() {
     if (!embedded) { return; }
+    document.documentElement.classList.add("cg-embedded");
     document.body.classList.add("cg-embedded");
     if (exam) { document.body.classList.add("cg-exam"); }
     var style = document.createElement("style");
     style.textContent = [
-      "html, body.cg-embedded { background: transparent !important; }",
-      "body.cg-embedded { --paper:transparent; --surface:rgba(255,255,255,.92); --blue:#167eb8; --blue-soft:#e4f4fc; --rule:rgba(26,92,126,.14); }",
-      "body.cg-embedded.cg-dark { --paper:transparent; --surface:rgba(16,29,45,.92); --ink:#edf5fc; --ink-2:#b3c2d2; --ink-3:#8395a8; --blue:#70c3ec; --blue-soft:#162d43; --rule:#26384a; --red:#ff958b; --grid:#203247; --grid-axis:#526b82; --e1:#65d49a; --e2:#65cbe8; --origin:#ff83c8; --ghost:#53667b; background: transparent !important; color:#edf5fc; }",
+      "html.cg-embedded, body.cg-embedded { background: rgba(255,255,255,.72) !important; color:#172331 !important; color-scheme:light; }",
+      "html.cg-embedded[data-theme='dark'], body.cg-embedded.cg-dark { background: rgba(8,20,36,.88) !important; color:#edf5fc !important; color-scheme:dark; }",
+      "body.cg-embedded { --paper:rgba(255,255,255,.72); --surface:rgba(255,255,255,.94); --blue:#167eb8; --blue-soft:#e4f4fc; --rule:rgba(26,92,126,.14); }",
+      "body.cg-embedded.cg-dark { --paper:rgba(8,20,36,.88); --surface:#161b26; --ink:#edf5fc; --ink-2:#b3c2d2; --ink-3:#8395a8; --blue:#70c3ec; --blue-soft:#162d43; --rule:#26384a; --red:#ff958b; --grid:#203247; --grid-axis:#526b82; --e1:#65d49a; --e2:#65cbe8; --origin:#ff83c8; --ghost:#53667b; }",
       "body.cg-embedded > .wrap { max-width: 68rem; padding-top: 1rem; }",
       "body.cg-embedded > .wrap > header, body.cg-embedded > .wrap > footer { display:none; }",
       "body.cg-embedded .panel, body.cg-embedded .stage, body.cg-embedded .taskcard, body.cg-embedded .score, body.cg-embedded .duo, body.cg-embedded .classgrid { border-radius:14px; box-shadow:0 12px 32px rgba(24,87,119,.08); background:var(--surface); }",
