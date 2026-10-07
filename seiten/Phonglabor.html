@@ -483,7 +483,7 @@
   </footer>
 </div>
 
-<script src="../scripts/exam-extras.js?v=6"></script>
+<script src="../scripts/exam-extras.js?v=7"></script>
 <script>
 (function () {
   var NS = "http://www.w3.org/2000/svg";
@@ -1115,9 +1115,22 @@
     }
 
     card.innerHTML = head + '<div class="tbody">' + body + '</div>' +
-      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' + CGX.extraButtons() +
       (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
     document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+    wireGiveUp();
+  }
+
+  function wireGiveUp() {
+    CGX.wireButtons(card, {
+      reveal: function () { return CGX.reveal(card, checker); },
+      confirm: function (res) {
+        var real = checker;
+        checker = function () { return res; };
+        try { confirmAnswer(); } finally { checker = real; }
+      },
+      skip: function () { isRepeat = false; nextTask(); }
+    });
   }
 
   function confirmAnswer() {
@@ -1168,4 +1181,4 @@
   nextTask();
 }());
 </script>
-<script src="../scripts/portal-bridge.js?v=6"></script>
+<script src="../scripts/portal-bridge.js?v=7"></script>

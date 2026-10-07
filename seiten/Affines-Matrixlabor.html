@@ -911,7 +911,7 @@
   </footer>
 </div>
 
-<script src="../scripts/exam-extras.js?v=6"></script>
+<script src="../scripts/exam-extras.js?v=7"></script>
 <script>
 (function () {
   var SVG_NS = "http://www.w3.org/2000/svg";
@@ -1689,10 +1689,11 @@
     if (t.cgx) {
       var xr = CGX.render(t);
       card.innerHTML = head + '<div class="tbody">' + xr.html + '</div>' +
-        '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+        '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' + CGX.extraButtons() +
         (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
       checker = xr.check;
       document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+      wireGiveUp();
       return;
     }
 
@@ -1733,7 +1734,7 @@
     }
 
     card.innerHTML = head + '<div class="tbody">' + body + '</div>' +
-      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' + CGX.extraButtons() +
       (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') +
       '</div>';
 
@@ -1820,9 +1821,18 @@
           why: "Deine Matrix ist " + (Math.abs(det) < 1e-9 ? "entartet, det = 0"
             : (lin ? "linear" : "nicht linear") + " und " + (rig ? "rigid" : "nicht rigid")) + "." };
       };
+      checker.reveal = function () {
+        if (tpl2.impossible) {
+          return { ok: false, solText: "Richtig wäre: „unmöglich“ ankreuzen.",
+            why: "Die feste Zeile (0 0 1) macht jede Matrix aus diesem Template affin — projektiv oder nicht-affin geht damit nie." };
+        }
+        return { ok: false, solM: toM(tpl2.example), solLead: "Möglich wäre zum Beispiel",
+          why: "Die freien Felder so wählen, dass die verlangten Eigenschaften gelten und det ≠ 0 bleibt." };
+      };
     }
 
     document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+    wireGiveUp();
   }
 
   var TYPE_LABEL = {
@@ -1834,6 +1844,18 @@
   };
   Object.assign(TYPE_LABEL, CGX.labels("affin"));
   CGX.mountExplain("affin");
+
+  function wireGiveUp() {
+    CGX.wireButtons(card, {
+      reveal: function () { return CGX.reveal(card, checker); },
+      confirm: function (res) {
+        var real = checker;
+        checker = function () { return res; };
+        try { confirmAnswer(); } finally { checker = real; }
+      },
+      skip: function () { isRepeat = false; nextTask(); }
+    });
+  }
 
   function confirmAnswer() {
     var res = checker();
@@ -2009,4 +2031,4 @@
   nextTask();
 }());
 </script>
-<script src="../scripts/portal-bridge.js?v=6"></script>
+<script src="../scripts/portal-bridge.js?v=7"></script>

@@ -1117,7 +1117,7 @@
     document.getElementById("lessonnum").textContent = topic.n;
     document.getElementById("lessontitle").textContent = topic.title;
     document.getElementById("lessonsub").textContent = topic.short;
-    document.getElementById("lessonframe").src = topic.file + "?embed=1&view=" + (view || "erklaerung") + "&v=6" + themeParam();
+    document.getElementById("lessonframe").src = topic.file + "?embed=1&view=" + (view || "erklaerung") + "&v=7" + themeParam();
     location.hash = id;
   }
 
@@ -1196,7 +1196,7 @@
     var topic=TOPICS[examState.topicIndex];
     document.getElementById("exam").innerHTML = '<div class="examtop"><span class="examlabel">' + esc(examPartLabel()) + '</span>' +
       '<div class="examsteps">' + renderSteps() + '</div><span class="timer" id="timer">' + timeText(examState.remaining) + '</span></div>' +
-      '<iframe class="examframe" id="examframe" title="Klausuraufgabe ' + topic.n + '" allowtransparency="true" src="' + topic.file + '?embed=1&view=training&exam=1&run=' + Date.now() + '&v=6' + themeParam() + '"></iframe>' +
+      '<iframe class="examframe" id="examframe" title="Klausuraufgabe ' + topic.n + '" allowtransparency="true" src="' + topic.file + '?embed=1&view=training&exam=1&run=' + Date.now() + '&v=7' + themeParam() + '"></iframe>' +
       '<div class="examfooter"><span class="examfeedback" id="examfeedback">Beantworte die Aufgabe und drücke in der Aufgabe auf Bestätigen.</span>' +
       '<div><button class="btn danger" id="stopExam">Beenden</button> <button class="btn primary" id="nextExam" disabled>' + nextExamLabel() + '</button></div></div>';
     document.getElementById("stopExam").addEventListener("click", function(){ finishExam(false); });
@@ -1300,7 +1300,7 @@
 
   function loadScoreProbes() {
     document.getElementById("probes").innerHTML=TOPICS.map(function(t){
-      return '<iframe title="" data-topic="' + t.id + '" allowtransparency="true" src="' + t.file + '?embed=1&scoreprobe=1&v=6' + themeParam() + '"></iframe>';
+      return '<iframe title="" data-topic="' + t.id + '" allowtransparency="true" src="' + t.file + '?embed=1&scoreprobe=1&v=7' + themeParam() + '"></iframe>';
     }).join('');
   }
 

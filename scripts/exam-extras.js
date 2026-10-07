@@ -1400,7 +1400,69 @@
   };
   var GEN = { affin: affinTasks, projektion: projektionTasks, raster: rasterTasks, phong: phongTasks, farbe: farbeTasks, strahlen: strahlenTasks, szene: szeneTasks };
 
+  /* ================= „Weiß ich nicht“ und „Weiter“ ================= */
+  var PLACEHOLDER = "987654";
+  // Lässt den Prüfer der Seite mit absichtlich falschen Platzhaltern laufen,
+  // damit er seine Lösung herausgibt, und räumt die Platzhalter danach wieder weg.
+  function reveal(card, checker) {
+    if (checker && typeof checker.reveal === "function") { return checker.reveal(); }
+    if (typeof checker !== "function") { return { ok: false, solText: "", why: "" }; }
+    var filled = [], picked = [], groups = {};
+    Array.prototype.forEach.call(card.querySelectorAll('input[type="text"]'), function (n) {
+      if (!n.disabled && n.value.trim() === "") { n.value = PLACEHOLDER; filled.push(n); }
+    });
+    Array.prototype.forEach.call(card.querySelectorAll("select"), function (n) {
+      if (!n.disabled && n.value === "" && n.options.length > 1) { n.value = n.options[n.options.length - 1].value; filled.push(n); }
+    });
+    Array.prototype.forEach.call(card.querySelectorAll('input[type="radio"]'), function (n) {
+      (groups[n.name] = groups[n.name] || []).push(n);
+    });
+    Object.keys(groups).forEach(function (k) {
+      var g = groups[k];
+      if (!g.some(function (n) { return n.checked; })) { g[0].checked = true; picked.push(g); }
+    });
+    var res = checker();
+    if (!res.incomplete && res.ok) {
+      // zufällig richtig geraten: eine Auswahl umstellen, bis es falsch ist
+      var tries = [];
+      picked.forEach(function (g) { g.forEach(function (n, i) { if (i > 0) { tries.push(function () { n.checked = true; }); } }); });
+      Array.prototype.forEach.call(card.querySelectorAll('input[type="checkbox"]'), function (n) {
+        if (!n.disabled) { tries.push(function () { n.checked = !n.checked; }); }
+      });
+      for (var i = 0; i < tries.length && res.ok; i++) { tries[i](); res = checker(); }
+    }
+    filled.forEach(function (n) { n.value = ""; });
+    picked.forEach(function (g) { g.forEach(function (n) { n.checked = false; }); });
+    Array.prototype.forEach.call(card.querySelectorAll('input[type="checkbox"]'), function (n) { n.checked = false; });
+    Array.prototype.forEach.call(card.querySelectorAll(".ok, .bad, .cgx-ok, .cgx-bad, .cgx-wrong"), function (n) {
+      n.classList.remove("ok", "bad", "cgx-ok", "cgx-bad", "cgx-wrong");
+    });
+    if (res.incomplete) { return { ok: false, solText: "", why: "" }; }
+    delete res.marks;
+    res.ok = false;
+    return res;
+  }
+  function extraButtons() {
+    return '<button class="btn ghost" id="btn_idk" type="button">Weiß ich nicht</button>' +
+      '<button class="btn ghost cgx-skip" id="btn_skip" type="button">Weiter</button>';
+  }
+  // opts: reveal() liefert das Ergebnis, confirm(res) zeigt es über den Ablauf der Seite an, skip() springt weiter
+  function wireButtons(card, opts) {
+    var idk = document.getElementById("btn_idk"), skip = document.getElementById("btn_skip");
+    if (idk) {
+      idk.addEventListener("click", function () {
+        opts.confirm(opts.reveal());
+        var head = card.querySelector(".verdict .vhead");
+        if (head) { head.textContent = "Aufgelöst. So wäre es richtig:"; }
+      });
+    }
+    if (skip) { skip.addEventListener("click", function () { opts.skip(); }); }
+  }
+
   window.CGX = {
+    reveal: reveal,
+    extraButtons: extraButtons,
+    wireButtons: wireButtons,
     tasks: function (topic) { return GEN[topic] ? GEN[topic]() : []; },
     labels: function (topic) { return LABELS[topic] || {}; },
     render: function (task) { injectStyle(); return render(task); },

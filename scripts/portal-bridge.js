@@ -86,6 +86,7 @@
       "body.cg-exam #view-training > section > h2, body.cg-exam #view-training > section > .note, body.cg-exam #view-training .score { display:none; }",
       "body.cg-exam #view-training { gap:0; }",
       "body.cg-exam .verdict + .tactions { display:none; }",
+      "body.cg-exam #btn_skip { display:none; }",
       "@media (max-width: 48rem) {",
       "  body.cg-embedded { font-size: 15px; }",
       "  body.cg-embedded > .wrap { padding: 0.5rem 0.5rem 1.5rem !important; gap: 1rem !important; max-width: 100% !important; }",
