@@ -1,12 +1,12 @@
 # Computergrafik-Lernportal
 
-Ein lokales Lernportal zur Vorbereitung auf die Computergrafik-Klausur. Die Übungen orientieren sich an fünf Altklausuren aus den Jahren 2019 bis 2021.
+Ein lokales Lernportal zur Vorbereitung auf die Computergrafik-Klausur. Die Übungen orientieren sich an elf Altklausuren aus den Jahren 2019 bis April 2026.
 
 ## Funktionen
 
-- Erklärungen und interaktive Übungen für sechs Aufgabenbereiche
+- Erklärungen und interaktive Übungen für sieben Aufgabenbereiche, inklusive aller neuen Formate aus den Klausuren 2023–2026
 - Training mit direkter Auswertung, Wiederholung und Fortschrittszähler
-- Klausurmodus mit 22 Teilaufgaben und 60 Minuten Bearbeitungszeit
+- Klausurmodus mit 24 Teilaufgaben und 60 Minuten Bearbeitungszeit
 - Statistiken zu Häufigkeit und Punktegewicht der Klausurthemen
 - Persönlicher Lernstand und gespeicherte Klausurergebnisse
 - Heller und dunkler Darstellungsmodus
@@ -14,12 +14,13 @@ Ein lokales Lernportal zur Vorbereitung auf die Computergrafik-Klausur. Die Übu
 
 ## Aufgabenbereiche
 
-1. Affine Abbildungen in 2D
-2. Perspektivische Projektion und Texture Mapping
-3. Rasterisierung mit Scanline und Bresenham
-4. Phong-Beleuchtung und Shading
-5. Farbmodelle
-6. Raytracing und VR/HMD
+1. Affine Abbildungen in 2D (inkl. Produktklassen, Eigenschaften, projektive Abbildungen)
+2. Perspektivische Projektion, Kamera und Texture Mapping (inkl. MIP-Distanzen, perspektivisch korrekte Interpolation)
+3. Rasterisierung mit Scanline, Bresenham, direktem Linienalgorithmus, Kantentest und Kreisen
+4. Phong- und Blinn-Phong-Beleuchtung, Abschwächung und Shading
+5. Farbmodelle, Spektren und Alpha-Blending
+6. Raytracing, Laufzeitkomplexität und VR/HMD
+7. Szenengraphen, Matrixstapel und Rotationen
 
 ## Lokal verwenden
 
@@ -37,7 +38,7 @@ Danach `index.html` per Doppelklick im Browser öffnen. Es ist kein Build-Schrit
 index.html                       Hauptseite
 assets/                         Hintergrundbilder
 seiten/                         Erklärungs- und Trainingsseiten
-scripts/                        Gemeinsame Portal-Logik
+scripts/                        Gemeinsame Portal-Logik und Zusatzaufgaben (exam-extras.js)
 material/                       Klausurauswertung und Altklausuren
 ```
 

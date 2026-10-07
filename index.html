@@ -84,6 +84,7 @@
 
   .sectionhead { margin:2rem 0 .9rem; display:flex; align-items:end; justify-content:space-between; gap:1rem; }
   .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.85rem; }
+  @media (min-width: 52rem) { .cards > :last-child:nth-child(3n+1) { grid-column:1 / -1; } }
   .topiccard { background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:1rem;
     display:flex; flex-direction:column; gap:.8rem; min-height:13rem; transition:transform .15s,border-color .15s,box-shadow .15s; }
   .topiccard:hover { transform:translateY(-2px); border-color:color-mix(in srgb,var(--blue) 40%,var(--rule)); box-shadow:var(--shadow); }
@@ -921,14 +922,15 @@
   "use strict";
 
   var TOPICS = [
-    { id:"affin", n:1, title:"Affine Abbildungen", short:"2D-Matrizen", file:"seiten/Affines-Matrixlabor.html", total:128 },
-    { id:"projektion", n:2, title:"Perspektivische Projektion", short:"Projektion und Texturen", file:"seiten/Projektionslabor.html", total:98 },
-    { id:"raster", n:3, title:"Rasterisierung", short:"Scanline und Bresenham", file:"seiten/Rasterlabor.html", total:97 },
-    { id:"phong", n:4, title:"Beleuchtung", short:"Phong und Shading", file:"seiten/Phonglabor.html", total:63 },
-    { id:"farbe", n:5, title:"Farbmodelle", short:"RGB, CMY, CMYK und HSV", file:"seiten/Farblabor.html", total:68 },
-    { id:"strahlen", n:6, title:"Raytracing und VR", short:"Zusatzaufgaben", file:"seiten/Strahlenlabor.html", total:21 }
+    { id:"affin", n:1, title:"Affine Abbildungen", short:"2D-Matrizen", file:"seiten/Affines-Matrixlabor.html", total:211 },
+    { id:"projektion", n:2, title:"Perspektivische Projektion", short:"Projektion, Kamera und Texturen", file:"seiten/Projektionslabor.html", total:201 },
+    { id:"raster", n:3, title:"Rasterisierung", short:"Scanline, Linien, Kantentest", file:"seiten/Rasterlabor.html", total:142 },
+    { id:"phong", n:4, title:"Beleuchtung", short:"Phong, Blinn-Phong, Shading", file:"seiten/Phonglabor.html", total:99 },
+    { id:"farbe", n:5, title:"Farbmodelle", short:"Modelle, Spektren, Alpha", file:"seiten/Farblabor.html", total:102 },
+    { id:"strahlen", n:6, title:"Raytracing und Laufzeit", short:"Strahlbäume, Komplexität, VR", file:"seiten/Strahlenlabor.html", total:37 },
+    { id:"szene", n:7, title:"Szenengraphen", short:"Instanzen, Matrixstapel, Rotationen", file:"seiten/Szenenlabor.html", total:35 }
   ];
-  var EXAM_PARTS = { affin:4, projektion:4, raster:4, phong:4, farbe:4, strahlen:2 };
+  var EXAM_PARTS = { affin:4, projektion:4, raster:4, phong:4, farbe:4, strahlen:2, szene:2 };
   var EXAM_TOTAL = TOPICS.reduce(function(sum,topic){return sum+EXAM_PARTS[topic.id];},0);
   var scores = {};
   var activeTopic = null;
@@ -1037,7 +1039,7 @@
       '<div class="metric"><strong>' + (attempts ? accuracy + '%' : '—') + '</strong><span>Trefferquote</span></div>' +
       '<div class="metric"><strong>' + attempts + '</strong><span>Antworten</span></div>' +
       '<div class="metric"><strong>' + (examStats.runs ? examStats.best + ' / ' + EXAM_TOTAL : '—') + '</strong><span>Beste Klausur</span></div></div></aside></div>' +
-      '<div class="sectionhead"><div><h2>Aufgabentyp wählen</h2><p class="muted small">Dein Stand wird aus den sechs Trainingsseiten übernommen.</p></div></div>' +
+      '<div class="sectionhead"><div><h2>Aufgabentyp wählen</h2><p class="muted small">Dein Stand wird aus den sieben Trainingsseiten übernommen.</p></div></div>' +
       '<div class="cards">' + cards + '</div>';
 
     document.getElementById("startExamTop").addEventListener("click", function () { navigate("klausur"); });
@@ -1060,41 +1062,45 @@
 
   function renderStatistics() {
     var all=totals(), attempts=all.ok+all.bad, accuracy=attempts?percent(all.ok,attempts):0;
+    var EXAMS=11;
     var frequencies=[
-      {name:"Affine Abbildungen 2D",detail:"Ø 12 Punkte",count:5},
-      {name:"Perspektivische Projektion",detail:"Ø 12,8 Punkte",count:5},
-      {name:"Rasterisierung",detail:"Ø 11,2 Punkte",count:5},
-      {name:"Phong Lighting & Shading",detail:"Ø 11,6 Punkte",count:5},
-      {name:"Farbmodelle",detail:"Ø 9 Punkte",count:5},
-      {name:"Texture Mapping",detail:"seit 19 WS",count:4},
-      {name:"Raytracing",detail:"Ø 5,5 Punkte, wenn enthalten",count:2},
+      {name:"Affine Abbildungen 2D",detail:"Ø 12,1 Punkte",count:11},
+      {name:"Perspektivische Projektion",detail:"Ø 11,9 Punkte",count:11},
+      {name:"Rasterisierung",detail:"Ø 10,8 Punkte",count:11},
+      {name:"Phong Lighting & Shading",detail:"Ø 11 Punkte",count:11},
+      {name:"Texture Mapping",detail:"als Teil von A2 oder eigene Aufgabe",count:9},
+      {name:"Farbmodelle",detail:"Ø 8,1 Punkte",count:8},
+      {name:"Laufzeit / Raytracing",detail:"Ø 7,5 Punkte, wenn enthalten",count:4},
+      {name:"Szenengraphen",detail:"Ø 11 Punkte, Okt 23 und Apr 26",count:2},
       {name:"VR / HMD",detail:"6 Punkte",count:1}
     ];
     var frequencyRows=frequencies.map(function(item){
       return '<div class="freqrow"><div class="freqlabel"><strong>'+esc(item.name)+'</strong><span>'+esc(item.detail)+'</span></div>'+
-        '<div class="freqbar"><i style="width:'+(item.count/5*100)+'%"></i></div><div class="freqvalue">'+item.count+' / 5</div></div>';
+        '<div class="freqbar"><i style="width:'+(item.count/EXAMS*100)+'%"></i></div><div class="freqvalue">'+item.count+' / '+EXAMS+'</div></div>';
     }).join('');
     document.getElementById("stats").innerHTML=
-      '<header class="statshero"><span class="eyebrow" style="color:rgba(255,255,255,.76)">Auswertung von fünf Altklausuren</span>'+
-      '<h1>Klausurstatistiken</h1><p>Die Klausuren von 2019 SS bis 2021 SS folgen einem sehr stabilen Muster. Hier siehst du Häufigkeit, Punktegewicht und deinen eigenen Lernstand.</p>'+
+      '<header class="statshero"><span class="eyebrow" style="color:rgba(255,255,255,.76)">Auswertung von elf Altklausuren</span>'+
+      '<h1>Klausurstatistiken</h1><p>Die Klausuren von 2019 bis April 2026 folgen einem stabilen Kern aus vier Pflichtthemen; die übrigen Plätze wechseln zwischen Farben, Texturen, Laufzeit und Szenengraphen. Hier siehst du Häufigkeit, Punktegewicht und deinen eigenen Lernstand.</p>'+
       '<div class="statsfacts"><div class="statsfact"><span>Dauer</span><strong>60 min</strong></div><div class="statsfact"><span>Punkte</span><strong>60 P</strong></div>'+
       '<div class="statsfact"><span>Zeitbudget</span><strong>1 min/P</strong></div><div class="statsfact"><span>Aufgaben</span><strong>5–6</strong></div><div class="statsfact"><span>Hilfsmittel</span><strong>keine</strong></div></div></header>'+
       '<div class="statsgrid"><section class="statpanel"><h2>Wie oft kam was dran?</h2><p class="muted small">Anzahl der Klausuren mit diesem Thema.</p><div class="freqlist">'+frequencyRows+'</div></section>'+
       '<aside class="statpanel"><h2>Dein Stand</h2><p class="muted small">Live aus deinen Trainings und Klausurdurchläufen.</p><div class="personalstats">'+
       '<div class="personalmetric"><strong>'+attempts+'</strong><span>Antworten</span></div><div class="personalmetric"><strong>'+(attempts?accuracy+'%':'—')+'</strong><span>Trefferquote</span></div>'+
       '<div class="personalmetric"><strong>'+examStats.runs+'</strong><span>Klausuren</span></div><div class="personalmetric"><strong>'+(examStats.runs?examStats.best+' / '+EXAM_TOTAL:'—')+'</strong><span>Bestwert</span></div></div>'+
-      '<div class="insightlist"><div class="insight"><strong>Sehr sicher:</strong> A1 bis A5 kamen in allen fünf Klausuren vor.</div>'+
-      '<div class="insight"><strong>54–60 Punkte</strong> entfielen allein auf diese fünf Pflichtbereiche.</div><div class="insight"><strong>Rasterisierung:</strong> dreimal Scanline, zweimal Bresenham.</div>'+
-      '<div class="insight"><strong>Wechselthema:</strong> zweimal Raytracing, einmal VR/HMD, zweimal keines von beiden.</div></div></aside></div>'+
+      '<div class="insightlist"><div class="insight"><strong>Sehr sicher:</strong> Affin, Perspektive, Rasterisierung und Phong kamen in allen elf Klausuren vor.</div>'+
+      '<div class="insight"><strong>Farben:</strong> 8 von 11, zuletzt zweimal in Folge (Okt 25 und Apr 26, je 6 P).</div><div class="insight"><strong>Rasterisierung:</strong> achtmal Scanline, dreimal Linien (Bresenham), Okt 25 zusätzlich der direkte Algorithmus.</div>'+
+      '<div class="insight"><strong>Wechselplätze seit 2023:</strong> Texturen (3×), Laufzeit (2×), Szenengraphen (2×, zuletzt Apr 26).</div></div></aside></div>'+
       '<section class="statpanel historypanel"><h2>Punkte nach Jahrgang</h2><p class="muted small">Punktzahl je Aufgabe; ein Strich bedeutet, dass das Thema nicht vorkam.</p><div class="statstablewrap"><table class="statstable">'+
-      '<thead><tr><th>Aufgabentyp</th><th>19 SS</th><th>19 WS</th><th>20 SS</th><th>20 WS</th><th>21 SS</th><th>Ø bei Auftreten</th></tr></thead><tbody>'+
-      '<tr class="always"><td>Affine Abbildungen 2D</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12,0</td></tr>'+
-      '<tr class="always"><td>Perspektivische Projektion</td><td>12</td><td>12</td><td>12</td><td>14</td><td>14</td><td>12,8</td></tr>'+
-      '<tr class="always"><td>Rasterisierung</td><td>12 · Scan</td><td>10 · Bres</td><td>14 · Scan</td><td>10 · Scan</td><td>10 · Bres</td><td>11,2</td></tr>'+
-      '<tr class="always"><td>Phong Lighting & Shading</td><td>10</td><td>16</td><td>10</td><td>12</td><td>10</td><td>11,6</td></tr>'+
-      '<tr class="always"><td>Farbmodelle</td><td>8</td><td>10</td><td>12</td><td>6</td><td>9</td><td>9,0</td></tr>'+
-      '<tr><td>Raytracing</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>6</td><td>5</td><td>5,5</td></tr>'+
-      '<tr><td>VR / HMD</td><td>6</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>6,0</td></tr></tbody></table></div></section>';
+      '<thead><tr><th>Aufgabentyp</th><th>19 SS</th><th>19 WS</th><th>20 SS</th><th>20 WS</th><th>21 SS</th><th>Okt 23</th><th>Apr 24</th><th>Okt 24</th><th>Apr 25</th><th>Okt 25</th><th>Apr 26</th><th>Ø bei Auftreten</th></tr></thead><tbody>'+
+      '<tr class="always"><td>Affine Abbildungen 2D</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>13</td><td>12</td><td>11</td><td>13</td><td>12</td><td>12</td><td>12,1</td></tr>'+
+      '<tr class="always"><td>Perspektivische Projektion</td><td>12</td><td>12</td><td>12</td><td>14</td><td>14</td><td>10</td><td>12</td><td>16</td><td>11</td><td>9</td><td>9</td><td>11,9</td></tr>'+
+      '<tr class="always"><td>Rasterisierung</td><td>12 · Scan</td><td>10 · Bres</td><td>14 · Scan</td><td>10 · Scan</td><td>10 · Bres</td><td>9 · Scan</td><td>8 · Scan</td><td>12 · Scan</td><td>15 · Scan</td><td>10 · Linie</td><td>9 · Scan</td><td>10,8</td></tr>'+
+      '<tr class="always"><td>Phong Lighting & Shading</td><td>10</td><td>16</td><td>10</td><td>12</td><td>10</td><td>8</td><td>12</td><td>10</td><td>10</td><td>11</td><td>12</td><td>11,0</td></tr>'+
+      '<tr><td>Farbmodelle</td><td>8</td><td>10</td><td>12</td><td>6</td><td>9</td><td class="miss">—</td><td>8</td><td class="miss">—</td><td class="miss">—</td><td>6</td><td>6</td><td>8,1</td></tr>'+
+      '<tr><td>Texture Mapping (eigene Aufgabe)</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>10</td><td class="miss">—</td><td class="miss">—</td><td>11</td><td>12</td><td class="miss">—</td><td>11,0</td></tr>'+
+      '<tr><td>Laufzeit / Raytracing</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>6</td><td>5</td><td class="miss">—</td><td>8</td><td>11</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>7,5</td></tr>'+
+      '<tr><td>Szenengraphen</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>10</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>12</td><td>11,0</td></tr>'+
+      '<tr><td>VR / HMD</td><td>6</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td class="miss">—</td><td>6,0</td></tr></tbody></table></div></section>';
     updateExamCountdown();
   }
 
@@ -1111,7 +1117,7 @@
     document.getElementById("lessonnum").textContent = topic.n;
     document.getElementById("lessontitle").textContent = topic.title;
     document.getElementById("lessonsub").textContent = topic.short;
-    document.getElementById("lessonframe").src = topic.file + "?embed=1&view=" + (view || "erklaerung") + "&v=5" + themeParam();
+    document.getElementById("lessonframe").src = topic.file + "?embed=1&view=" + (view || "erklaerung") + "&v=6" + themeParam();
     location.hash = id;
   }
 
@@ -1136,13 +1142,13 @@
     clearTimer(); examState = null;
     document.getElementById("exam").innerHTML = '<div class="examstart">' +
       '<div class="exampanel"><span class="eyebrow">Prüfungssimulation</span><h1>Klausurmodus</h1>' +
-      '<p class="muted">Die sechs Aufgabenblöcke kommen in Klausurreihenfolge. Aufgabe 1 bis 5 enthalten jeweils vier zufällige Teilaufgaben, Aufgabe 6 enthält zwei. Wiederholen ist während der Klausur ausgeschaltet.</p>' +
+      '<p class="muted">Die sieben Aufgabenblöcke kommen in Klausurreihenfolge. Aufgabe 1 bis 5 enthalten jeweils vier zufällige Teilaufgaben aus allen Formaten von 2019 bis 2026, Aufgabe 6 und 7 je zwei. Wiederholen ist während der Klausur ausgeschaltet.</p>' +
       '<div class="examtopics">' + TOPICS.map(function(t){return '<span><strong>' + t.n + '.</strong> ' + esc(t.title) + ' · ' + EXAM_PARTS[t.id] + ' Teile</span>';}).join('') + '</div>' +
       '<button class="btn primary" id="beginExam">60-Minuten-Klausur starten</button></div>' +
-      '<aside class="exampanel examfacts"><div class="examfact"><span>Aufgabenblöcke</span><strong>6</strong></div>' +
+      '<aside class="exampanel examfacts"><div class="examfact"><span>Aufgabenblöcke</span><strong>7</strong></div>' +
       '<div class="examfact"><span>Teilaufgaben</span><strong>' + EXAM_TOTAL + '</strong></div>' +
       '<div class="examfact"><span>Zeit</span><strong>60:00 min</strong></div>' +
-      '<div class="examfact"><span>Reihenfolge</span><strong>Aufgabe 1–6</strong></div>' +
+      '<div class="examfact"><span>Reihenfolge</span><strong>Aufgabe 1–7</strong></div>' +
       '<div class="examfact"><span>Wertung</span><strong>1 Punkt je Teilaufgabe</strong></div>' +
       '<div class="examfact"><span>Bisher</span><strong>' + examStats.runs + ' Durchläufe</strong></div>' +
       '<div class="examfact"><span>Bestwert</span><strong>' + (examStats.runs ? examStats.best + ' / ' + EXAM_TOTAL : '—') + '</strong></div></aside></div>';
@@ -1190,7 +1196,7 @@
     var topic=TOPICS[examState.topicIndex];
     document.getElementById("exam").innerHTML = '<div class="examtop"><span class="examlabel">' + esc(examPartLabel()) + '</span>' +
       '<div class="examsteps">' + renderSteps() + '</div><span class="timer" id="timer">' + timeText(examState.remaining) + '</span></div>' +
-      '<iframe class="examframe" id="examframe" title="Klausuraufgabe ' + topic.n + '" allowtransparency="true" src="' + topic.file + '?embed=1&view=training&exam=1&run=' + Date.now() + '&v=5' + themeParam() + '"></iframe>' +
+      '<iframe class="examframe" id="examframe" title="Klausuraufgabe ' + topic.n + '" allowtransparency="true" src="' + topic.file + '?embed=1&view=training&exam=1&run=' + Date.now() + '&v=6' + themeParam() + '"></iframe>' +
       '<div class="examfooter"><span class="examfeedback" id="examfeedback">Beantworte die Aufgabe und drücke in der Aufgabe auf Bestätigen.</span>' +
       '<div><button class="btn danger" id="stopExam">Beenden</button> <button class="btn primary" id="nextExam" disabled>' + nextExamLabel() + '</button></div></div>';
     document.getElementById("stopExam").addEventListener("click", function(){ finishExam(false); });
@@ -1294,7 +1300,7 @@
 
   function loadScoreProbes() {
     document.getElementById("probes").innerHTML=TOPICS.map(function(t){
-      return '<iframe title="" data-topic="' + t.id + '" allowtransparency="true" src="' + t.file + '?embed=1&scoreprobe=1&v=5' + themeParam() + '"></iframe>';
+      return '<iframe title="" data-topic="' + t.id + '" allowtransparency="true" src="' + t.file + '?embed=1&scoreprobe=1&v=6' + themeParam() + '"></iframe>';
     }).join('');
   }
 

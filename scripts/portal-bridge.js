@@ -3,12 +3,13 @@
 
   var file = decodeURIComponent(window.location.pathname.split("/").pop() || "").toLowerCase();
   var topics = {
-    "affines-matrixlabor.html": { id: "affin", scoreKey: "cg-affin-score", total: 128 },
-    "projektionslabor.html": { id: "projektion", scoreKey: "cg-proj-score", total: 98 },
-    "rasterlabor.html": { id: "raster", scoreKey: "cg-raster-score", total: 97 },
-    "phonglabor.html": { id: "phong", scoreKey: "cg-phong-score", total: 63 },
-    "farblabor.html": { id: "farbe", scoreKey: "cg-farb-score", total: 68 },
-    "strahlenlabor.html": { id: "strahlen", scoreKey: "cg-ray-score", total: 21 }
+    "affines-matrixlabor.html": { id: "affin", scoreKey: "cg-affin-score", total: 211 },
+    "projektionslabor.html": { id: "projektion", scoreKey: "cg-proj-score", total: 201 },
+    "rasterlabor.html": { id: "raster", scoreKey: "cg-raster-score", total: 142 },
+    "phonglabor.html": { id: "phong", scoreKey: "cg-phong-score", total: 99 },
+    "farblabor.html": { id: "farbe", scoreKey: "cg-farb-score", total: 102 },
+    "strahlenlabor.html": { id: "strahlen", scoreKey: "cg-ray-score", total: 37 },
+    "szenenlabor.html": { id: "szene", scoreKey: "cg-scene-score", total: 35 }
   };
   var topic = topics[file];
   if (!topic) { return; }

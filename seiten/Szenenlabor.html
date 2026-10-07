@@ -1,0 +1,412 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Szenenlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#FAF9F6; --surface:#FFFFFF; --ink:#16203A; --ink-2:#55607A; --ink-3:#8590A8;
+    --blue:#1E3FAE; --blue-soft:#E8ECFA; --red:#C7362B; --grid:#DCE2EE; --grid-axis:#A9B3C7;
+    --rule:#E4E6EC; --good:#158A4A; --accent2:#C51E86; --ghost:#B4BDD0; --amber:#B8791C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#111111; --surface:#1c1b1a; --ink:#f1eeea; --ink-2:#c3bdb5; --ink-3:#9b9389;
+      --blue:#e6bc60; --blue-soft:#30291d; --red:#ee8275; --grid:#34312d; --grid-axis:#776e61;
+      --rule:#3b3630; --good:#4FD08A; --accent2:#FF77C4; --ghost:#756d63; --amber:#e6bc60;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#111111; --surface:#1c1b1a; --ink:#f1eeea; --ink-2:#c3bdb5; --ink-3:#9b9389;
+    --blue:#e6bc60; --blue-soft:#30291d; --red:#ee8275; --grid:#34312d; --grid-axis:#776e61;
+    --rule:#3b3630; --good:#4FD08A; --accent2:#FF77C4; --ghost:#756d63; --amber:#e6bc60;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif; font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
+    display: flex; flex-direction: column; gap: 2.5rem; }
+  h1,h2,h3,.label,th,button { font-family: "Libre Franklin", Arial, sans-serif; }
+  .mono,input,td.n,.formula { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+  .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+  h1 { font-size: clamp(1.9rem,5vw,2.6rem); font-weight: 800; letter-spacing: -0.022em;
+    line-height: 1.1; margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--ink-2); max-width: 40rem; font-size: 1.05rem; }
+  h2 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  p { margin: 0; }
+  .note { color: var(--ink-2); font-size: 0.97rem; }
+  .label { font-size: 0.66rem; letter-spacing: 0.13em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); display: block; }
+  .tabs { display: flex; gap: 0.15rem; border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; z-index: 30; background: var(--paper);
+    margin: 0 -1.5rem -1.2rem; padding: 0.6rem 1.5rem 0; }
+  .tabs button { font-size: 0.9rem; font-weight: 600; padding: 0.5rem 0.95rem;
+    background: transparent; color: var(--ink-3); border: none; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; cursor: pointer; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+  #view-erklaerung, #view-training { display: flex; flex-direction: column; gap: 2.5rem; }
+
+  .lab { display: grid; grid-template-columns: minmax(0,17rem) minmax(0,1fr);
+    gap: 1.5rem; align-items: start; }
+  @media (max-width: 50rem) { .lab { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1.1rem 1.2rem 1.25rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 0.9rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .stage svg { width: 100%; height: auto; display: block; }
+  .toggles { display: flex; flex-direction: column; gap: 0.45rem; }
+  .toggles label { display: flex; align-items: center; gap: 0.55rem; font-size: 0.93rem; cursor: pointer; }
+  .toggles input { accent-color: var(--blue); cursor: pointer; }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; font-size: 0.76rem;
+    color: var(--ink-2); font-family: "IBM Plex Mono", monospace; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .sw { width: 16px; height: 0; border-top: 2px solid; display: inline-block; }
+
+  .formula { font-size: 0.88rem; line-height: 1.85; background: var(--blue-soft); color: var(--ink);
+    border-left: 2px solid var(--blue); padding: 0.7rem 0.9rem; border-radius: 0 2px 2px 0; overflow-x: auto; }
+  .formula em { font-style: normal; color: var(--ink-2); }
+  .traps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .traps li { font-size: 0.94rem; padding-left: 1.15rem; position: relative; }
+  .traps li::before { content: "✗"; position: absolute; left: 0; top: 0.05em; color: var(--red);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem,1fr)); gap: 0;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); overflow: hidden; }
+  .duo > article { padding: 1rem 1.1rem 1.15rem; border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 0.5rem; }
+  .duo > article:last-child { border-right: none; }
+  .duo h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--blue);
+    font-family: "IBM Plex Mono", monospace; }
+  .duo p { font-size: 0.92rem; }
+  .duo .cnote { font-size: 0.83rem; color: var(--ink-3); margin-top: auto; padding-top: 0.2rem; }
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th { text-align: left; font-size: 0.64rem; letter-spacing: 0.09em; text-transform: uppercase;
+    font-weight: 600; color: var(--ink-3); padding: 0 0.55rem 0.45rem 0;
+    border-bottom: 1px solid var(--ink-3); white-space: nowrap; }
+  td { padding: 0.5rem 0.55rem 0.5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.n { font-family: "IBM Plex Mono", monospace; white-space: nowrap; color: var(--blue); font-weight: 600; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  figure svg { width: 100%; max-width: 34rem; height: auto; align-self: center; }
+  figcaption { font-size: 0.85rem; color: var(--ink-3); text-align: center; }
+  .sfi { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--ink-2); }
+
+  .score { display: flex; align-items: center; gap: 1.6rem; padding: 0.75rem 1.1rem;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; flex-wrap: wrap; }
+  .score .s { display: flex; align-items: baseline; gap: 0.4rem; }
+  .score .sv { font-family: "IBM Plex Mono", monospace; font-size: 1.35rem; font-weight: 600; }
+  .score .sv.ok { color: var(--good); } .score .sv.bad { color: var(--red); }
+  .score .sk { font-family: "Libre Franklin", sans-serif; font-size: 0.66rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .linkish { margin-left: auto; background: none; border: none; cursor: pointer;
+    font-family: "Libre Franklin", sans-serif; font-size: 0.76rem; color: var(--ink-3);
+    text-decoration: underline; text-underline-offset: 3px; padding: 0.2rem; }
+  .taskcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    display: flex; flex-direction: column; }
+  .task-top { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+    padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--rule); }
+  .ttype { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--blue); }
+  .tno { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--ink-3); }
+  .tbody { padding: 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .tprompt { font-size: 1rem; }
+  .thint { font-size: 0.88rem; color: var(--ink-3); }
+  .choices { display: flex; flex-direction: column; gap: 0.4rem; }
+  .choices label { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.95rem; cursor: pointer; }
+  .choices input { margin-top: 0.35rem; accent-color: var(--blue); cursor: pointer; }
+  .tactions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+    padding: 0.9rem 1.2rem; border-top: 1px solid var(--rule); }
+  .btn { font-family: "Libre Franklin", sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 0.48rem 0.95rem; border-radius: 2px; cursor: pointer; border: 1px solid transparent; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  :root[data-theme="dark"] .btn.primary, :root:not([data-theme="light"]) .btn.primary { color: #0F131B; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: #fff; } }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--rule); }
+  .btn.ghost:hover { color: var(--blue); border-color: var(--blue); background: var(--blue-soft); }
+  .verdict { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.9rem 1.2rem;
+    border-top: 1px solid var(--rule); }
+  .verdict .vhead { font-family: "Libre Franklin", sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .verdict.right .vhead { color: var(--good); } .verdict.wrong .vhead { color: var(--red); }
+  .verdict .vsol { font-size: 0.93rem; color: var(--ink-2); }
+  .repeat-note { font-size: 0.76rem; color: var(--ink-3); margin-left: auto; }
+  .repeat-note.warn { color: var(--red); }
+  .donecard { text-align: center; padding: 2rem 1.2rem; display: flex; flex-direction: column;
+    gap: 0.8rem; align-items: center; }
+  .donecard h3 { margin: 0; font-family: "Libre Franklin", sans-serif; font-size: 1.2rem; }
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+  footer { font-size: 0.86rem; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 1rem; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Aufgabe 7 · Szenengraphen und Rotationen · 10–12 Punkte</div>
+    <h1>Szenenlabor</h1>
+    <p>Neu seit 2023: zweimal eine eigene Aufgabe zu Szenengraphen (Oktober 2023, April 2026), dazu Matrixstapel und Rotationsdarstellungen. Die Punkte holt man über sauberes Abzählen der Wege.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Ansicht">
+    <button role="tab" data-view="erklaerung" aria-selected="true">Erklärung</button>
+    <button role="tab" data-view="training" aria-selected="false">Training</button>
+  </nav>
+
+  <div id="view-erklaerung">
+    <section>
+      <div class="lab">
+        <div class="panel">
+          <span class="label">Zufälliger Szenengraph</span>
+          <p class="note">Jeder Weg von der Wurzel zu einem Geometrieknoten erzeugt eine Instanz. Translationen werden entlang des Weges addiert, das zuletzt gesetzte Material gilt.</p>
+          <div><button class="btn primary" id="sg_new" type="button">Neuer Graph</button></div>
+          <div class="toggles"><label><input type="checkbox" id="sg_show"> Instanzen anzeigen</label></div>
+        </div>
+        <div class="stage">
+          <div id="sg_fig" style="overflow-x:auto"></div>
+          <div class="scroller" id="sg_tab" hidden></div>
+          <p class="thint" id="sg_note"></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Knotentypen</h2>
+      <div class="duo">
+        <article><h3>group</h3><p>Fasst Kinder zusammen, verändert selbst nichts.</p><p class="cnote">Die Wurzel ist fast immer eine group.</p></article>
+        <article><h3>transformation</h3><p>Multipliziert ihre Matrix an die akkumulierte Transformation. Wirkt auf alles darunter.</p><p class="cnote">In der Klausur reine Translationen — einfach aufsummieren.</p></article>
+        <article><h3>material</h3><p>Setzt das Material für den Teilbaum. Ein weiter unten gesetztes Material überschreibt.</p><p class="cnote">Wird beim Aufstieg wieder zurückgesetzt.</p></article>
+        <article><h3>geometry</h3><p>Blatt. Jeder Besuch zeichnet eine Instanz mit dem aktuellen Zustand.</p><p class="cnote">Wird nur einmal angelegt und mehrfach referenziert.</p></article>
+      </div>
+      <ul class="traps">
+        <li>Instanzen über Knoten statt über Wege zählen. Ein Knoten mit zwei Eltern wird zweimal besucht — und alles darunter auch.</li>
+        <li>Die Tabelle in der Klausur hat mehr Zeilen als nötig (Oktober 2023: sechs Zeilen, vier Instanzen). Leere Zeilen sind erlaubt.</li>
+        <li>Geometrie mehrfach anlegen, obwohl „möglichst wenige Knoten“ verlangt ist. Gemeinsame Teile werden geteilt.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Modellieren</h2>
+      <div class="duo">
+        <article><h3>Auto (Okt 2023 5b)</h3><p>group → material steel → body; group → material aluminum → vier Transformationen → <em>ein</em> Knoten wheel.</p></article>
+        <article><h3>Vorderräder aus Holz (5c)</h3><p>Unter aluminum nur die zwei hinteren Transformationen, unter wood die zwei vorderen. Alle vier zeigen auf denselben wheel-Knoten.</p></article>
+        <article><h3>Restaurant (Apr 2026 6b)</h3><p>Neue Wurzel-group → vier Transformationen → alle auf denselben Teilbaum tablegroup. Ergebnis: 16 Stühle, 4 Tische.</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Matrixstapel</h2>
+      <div class="formula">
+        <div>push(M) { stack.push(mul(stack.top(), M)); } &nbsp;<em>neue lokale Matrix rechts anhängen</em></div>
+        <div>pop() { stack.pop(); } &nbsp;<em>Zustand des Elternknotens wiederherstellen</em></div>
+        <div>Traversierung: Tiefensuche; beim Betreten push, beim Verlassen pop; an der Geometrie top() benutzen</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Rotationen</h2>
+      <div class="duo">
+        <article><h3>Matrix</h3><p>3×3 orthonormal, det = 1. Neun Zahlen für drei Freiheitsgrade.</p><p class="cnote">Eintragsweise interpoliert: keine Rotation mehr.</p></article>
+        <article><h3>Euler-Winkel</h3><p>Drei Winkel um feste Achsen in fester Reihenfolge.</p><p class="cnote">Gimbal Lock, reihenfolgeabhängig.</p></article>
+        <article><h3>Achse + Winkel</h3><p>Einheitsvektor a und Winkel θ.</p><p class="cnote">Anschaulich, aber schlecht zu verketten.</p></article>
+        <article><h3>Quaternion</h3><p>q = (cos θ/2, sin θ/2 · a). Verkettung durch Multiplikation.</p><p class="cnote">Interpolation mit slerp — die Antwort auf „gut zum Interpolieren“.</p></article>
+      </div>
+    </section>
+  </div>
+
+  <div id="view-training" hidden>
+    <section>
+      <h2>Training</h2>
+      <p class="note">Instanzen zählen und eintragen, Graphen modellieren, Matrixstapel und Rotationen — wie im Oktober 2023 und April 2026.</p>
+      <div class="score">
+        <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
+        <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
+        <div class="s"><span class="sv" id="sc_rate">—</span><span class="sk">Quote</span></div>
+        <button class="linkish" id="sc_reset">Zähler zurücksetzen</button>
+      </div>
+      <div class="taskcard" id="taskcard"></div>
+    </section>
+  </div>
+
+  <footer>
+    Szenengraphen, Modellieraufgaben und Rotationsfragen folgen den Klausuren Oktober 2023 und April 2026 des Lehrstuhls Graphische Datenverarbeitung.
+  </footer>
+</div>
+
+<script src="../scripts/exam-extras.js?v=6"></script>
+<script>
+(function () {
+  /* ================= LABOR ================= */
+  function fmt(v) { var r = Math.round(v * 1000) / 1000; if (Object.is(r, -0)) { r = 0; } return String(r).replace(".", ","); }
+  var graph = null;
+  function drawLab() {
+    document.getElementById("sg_fig").innerHTML = CGX.sceneSVG(graph);
+    var show = document.getElementById("sg_show").checked, tab = document.getElementById("sg_tab");
+    tab.hidden = !show;
+    tab.innerHTML = '<table><thead><tr><th>#</th><th>Geometrie</th><th>Material</th><th>Translation</th></tr></thead><tbody>' +
+      graph.inst.map(function (x, i) {
+        return '<tr><td class="n">' + (i + 1) + '</td><td>' + x.geom + '</td><td>' + x.mat + '</td><td class="n">(' + fmt(x.t[0]) + ', ' + fmt(x.t[1]) + ', 0)</td></tr>';
+      }).join("") + '</tbody></table>';
+    document.getElementById("sg_note").textContent = show
+      ? graph.inst.length + " Instanzen — eine pro Weg von der Wurzel zu einer Geometrie."
+      : "Erst selbst zählen, dann die Instanzen einblenden.";
+  }
+  function newGraph() { graph = CGX.sgRandom(); drawLab(); }
+  document.getElementById("sg_new").addEventListener("click", newGraph);
+  document.getElementById("sg_show").addEventListener("change", drawLab);
+  newGraph();
+
+  /* ================= TABS + KONFETTI ================= */
+  var viewErk = document.getElementById("view-erklaerung");
+  var viewTra = document.getElementById("view-training");
+  var tabs = document.getElementById("tabs");
+  tabs.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-view]");
+    if (!b) { return; }
+    var v = b.getAttribute("data-view");
+    Array.prototype.forEach.call(tabs.querySelectorAll("button"), function (x) {
+      x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+    viewErk.hidden = (v !== "erklaerung");
+    viewTra.hidden = (v !== "training");
+  });
+  function cssVar(n, f) { var v = getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v || f; }
+  function confetti(ox, oy) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
+    var W = window.innerWidth || document.documentElement.clientWidth;
+    var H = window.innerHeight || document.documentElement.clientHeight;
+    if (!W || !H) { return; }
+    var stale = document.getElementById("confetti"); if (stale) { stale.remove(); }
+    var colors = [cssVar("--good", "#158A4A"), cssVar("--blue", "#1E3FAE"), cssVar("--accent2", "#C51E86"), cssVar("--amber", "#B8791C")];
+    var cv = document.createElement("canvas"); cv.id = "confetti"; document.body.appendChild(cv);
+    var dpr = window.devicePixelRatio || 1; cv.width = W * dpr; cv.height = H * dpr;
+    var ctx = cv.getContext("2d"); ctx.scale(dpr, dpr);
+    var bits = [], i;
+    for (i = 0; i < 70; i++) {
+      var ang = (-Math.PI / 2) + (Math.random() - 0.5) * 2, spd = 5 + Math.random() * 8;
+      bits.push({ x: ox + (Math.random() - 0.5) * 90, y: oy, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        w: 4 + Math.random() * 5, h: 6 + Math.random() * 6, rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.35, col: colors[Math.floor(Math.random() * colors.length)] });
+    }
+    var start = performance.now(), LIFE = 1500;
+    var killer = window.setTimeout(function () { cv.remove(); }, LIFE + 3000);
+    function frame(now) {
+      var t = now - start;
+      if (t > LIFE) { window.clearTimeout(killer); cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      var fade = t > LIFE * 0.6 ? 1 - (t - LIFE * 0.6) / (LIFE * 0.4) : 1;
+      bits.forEach(function (b) {
+        b.vy += 0.32; b.vx *= 0.995; b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+        ctx.save(); ctx.globalAlpha = fade; ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+        ctx.fillStyle = b.col; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); ctx.restore();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+
+  /* ================= TRAINING ================= */
+  var TYPE_LABEL = CGX.labels("szene");
+  function shuffled(a) {
+    var r = a.slice(), i, j, t;
+    for (i = r.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = r[i]; r[i] = r[j]; r[j] = t; }
+    return r;
+  }
+  function buildDeck() {
+    var d = CGX.tasks("szene");
+    if (new URLSearchParams(window.location.search).get("exam") === "1") {
+      function one(types) {
+        // erst einen Aufgabentyp gleichverteilt wählen, dann eine Aufgabe davon
+        var present=types.filter(function(ty){return d.some(function(t){return t.type===ty;});});
+        var ty=present[Math.floor(Math.random()*present.length)];
+        var candidates=d.filter(function(t){return t.type===ty;});
+        return candidates[Math.floor(Math.random()*candidates.length)];
+      }
+      return [one(["sginst", "sgcount"]), one(["sgbuild", "stack", "rot"])];
+    }
+    return shuffled(d);
+  }
+
+  var score = { ok: 0, bad: 0 };
+  try {
+    var raw = window.localStorage.getItem("cg-scene-score");
+    if (raw) { var p = JSON.parse(raw); if (p && typeof p.ok === "number") { score = p; } }
+  } catch (e) { /* egal */ }
+  function saveScore() { try { window.localStorage.setItem("cg-scene-score", JSON.stringify(score)); } catch (e) { /* egal */ } }
+  function paintScore() {
+    document.getElementById("sc_ok").textContent = score.ok;
+    document.getElementById("sc_bad").textContent = score.bad;
+    var t = score.ok + score.bad;
+    document.getElementById("sc_rate").textContent = t ? Math.round(score.ok / t * 100) + " %" : "—";
+  }
+  document.getElementById("sc_reset").addEventListener("click", function () {
+    score = { ok: 0, bad: 0 }; saveScore(); paintScore();
+  });
+
+  var card = document.getElementById("taskcard");
+  var deck = buildDeck(), deckIndex = -1, task = null, isRepeat = false, checker = null;
+
+  function renderTask() {
+    var t = task, xr = CGX.render(t);
+    checker = xr.check;
+    card.innerHTML = '<div class="task-top"><span class="ttype">' + TYPE_LABEL[t.type] +
+      '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
+      (isRepeat ? " · Wiederholung" : "") + '</span></div>' +
+      '<div class="tbody">' + xr.html + '</div>' +
+      '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+      (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
+    document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+  }
+
+  function confirmAnswer() {
+    var res = checker();
+    if (res.incomplete) {
+      var act = card.querySelector(".tactions");
+      var warn = act.querySelector(".repeat-note.warn");
+      if (!warn) { warn = document.createElement("span"); warn.className = "repeat-note warn"; act.appendChild(warn); }
+      warn.textContent = "Bitte alles ausfüllen.";
+      return;
+    }
+    if (!isRepeat) { if (res.ok) { score.ok++; } else { score.bad++; } saveScore(); paintScore(); }
+    Array.prototype.forEach.call(card.querySelectorAll("input"), function (x) { x.disabled = true; });
+    card.querySelector(".tactions").remove();
+    var v = document.createElement("div");
+    v.className = "verdict " + (res.ok ? "right" : "wrong");
+    v.innerHTML = '<span class="vhead">' + (res.ok ? "Richtig." : "Nicht richtig.") + '</span>' +
+      (!res.ok && res.solText ? '<span class="vsol">' + res.solText + '</span>' : '') +
+      '<span class="vsol">' + res.why + '</span>';
+    card.appendChild(v);
+    if (res.ok) { var vr = v.getBoundingClientRect(); confetti(vr.left + vr.width / 2, vr.top + 12); }
+    var act2 = document.createElement("div");
+    act2.className = "tactions";
+    act2.innerHTML = (res.ok ? "" : '<button class="btn ghost" id="btn_again">Wiederholen</button>') +
+      '<button class="btn primary" id="btn_next">Nächste Aufgabe</button>';
+    card.appendChild(act2);
+    document.getElementById("btn_next").addEventListener("click", function () { isRepeat = false; nextTask(); });
+    if (!res.ok) { document.getElementById("btn_again").addEventListener("click", function () { isRepeat = true; renderTask(); }); }
+  }
+
+  function nextTask() {
+    deckIndex++;
+    if (deckIndex >= deck.length) {
+      card.innerHTML = '<div class="donecard"><h3>Durchlauf geschafft</h3>' +
+        '<p class="note">Alle ' + deck.length + ' Aufgaben einmal gesehen.</p>' +
+        '<button class="btn primary" id="btn_restart">Neuen Durchlauf starten</button></div>';
+      document.getElementById("btn_restart").addEventListener("click", function () {
+        deck = buildDeck(); deckIndex = -1; isRepeat = false; nextTask();
+      });
+      return;
+    }
+    task = deck[deckIndex];
+    renderTask();
+  }
+
+  paintScore();
+  nextTask();
+}());
+</script>
+<script src="../scripts/portal-bridge.js?v=6"></script>

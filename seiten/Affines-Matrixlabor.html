@@ -684,7 +684,7 @@
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">Aufgabe 1 · Affine Abbildungen in 2D · 12 Punkte</div>
+    <div class="eyebrow">Aufgabe 1 · Affine Abbildungen in 2D · 11–13 Punkte</div>
     <h1>Affines Matrixlabor</h1>
     <p>Ändere einen Eintrag und sieh zu, was mit der Figur passiert. Die Farben sind dieselben wie in der Klausur: grün ist das Bild von e₁, cyan das Bild von e₂, magenta der Ursprung.</p>
   </header>
@@ -893,7 +893,7 @@
   <div id="view-training" hidden>
     <section>
       <h2>Training</h2>
-      <p class="note">Zufällige Aufgaben in den fünf Formaten, in denen Aufgabe 1 über die Jahrgänge gestellt wurde. Die Aufgaben gehen nicht aus.</p>
+      <p class="note">Zufällige Aufgaben in allen Formaten, in denen Aufgabe 1 von 2019 bis 2026 gestellt wurde. Die Aufgaben gehen nicht aus.</p>
 
       <div class="score">
         <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
@@ -911,6 +911,7 @@
   </footer>
 </div>
 
+<script src="../scripts/exam-extras.js?v=6"></script>
 <script>
 (function () {
   var SVG_NS = "http://www.w3.org/2000/svg";
@@ -1587,12 +1588,17 @@
       if (e.inv) { d.push({ type: "urbild", shape: pick(SHAPE_KEYS), m: toM(e.m) }); }
     });
     TEMPLATES.forEach(function (t) { d.push({ type: "template", tpl: t }); });
+    d = d.concat(CGX.tasks("affin"));
     if (new URLSearchParams(window.location.search).get("exam") === "1") {
+      function oneOf(types) {
+        var ty = pick(types);
+        return pick(d.filter(function (t) { return t.type === ty; }));
+      }
       return [
-        pick(d.filter(function(t){return t.type==="matrix";})),
-        pick(d.filter(function(t){return t.type==="bild"||t.type==="urbild";})),
-        pick(d.filter(function(t){return t.type==="klass";})),
-        pick(d.filter(function(t){return t.type==="template";}))
+        oneOf(["matrix","named"]),
+        oneOf(["bild","urbild"]),
+        oneOf(["klass","prod","props","affproj"]),
+        oneOf(["template","pivot","projmap","infset","nosol"])
       ];
     }
     var i, j, tmp;
@@ -1680,6 +1686,15 @@
       '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
       (isRepeat ? " · Wiederholung" : "") + '</span></div>';
     var body = "";
+    if (t.cgx) {
+      var xr = CGX.render(t);
+      card.innerHTML = head + '<div class="tbody">' + xr.html + '</div>' +
+        '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
+        (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
+      checker = xr.check;
+      document.getElementById("btn_check").addEventListener("click", confirmAnswer);
+      return;
+    }
 
     if (t.type === "matrix") {
       body = '<p class="tprompt">Links das Urbild, rechts das Bild. Trage die Matrix ein, die diese Abbildung leistet.</p>' +
@@ -1817,6 +1832,8 @@
     klass: "Klassifizieren · wie 1f",
     template: "Template füllen · wie 1f"
   };
+  Object.assign(TYPE_LABEL, CGX.labels("affin"));
+  CGX.mountExplain("affin");
 
   function confirmAnswer() {
     var res = checker();
@@ -1992,4 +2009,4 @@
   nextTask();
 }());
 </script>
-<script src="../scripts/portal-bridge.js?v=5"></script>
+<script src="../scripts/portal-bridge.js?v=6"></script>

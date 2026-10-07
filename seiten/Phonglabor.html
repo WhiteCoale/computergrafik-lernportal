@@ -320,7 +320,7 @@
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">Aufgabe 4 · Phong Lighting &amp; Shading · 10–16 Punkte</div>
+    <div class="eyebrow">Aufgabe 4 · Phong Lighting &amp; Shading · 8–16 Punkte</div>
     <h1>Phonglabor</h1>
     <p>Licht und Kamera verschieben, die vier Vektoren mitwandern sehen, und ablesen, was dabei aus der Beleuchtungsformel herauskommt.</p>
   </header>
@@ -467,7 +467,7 @@
   <div id="view-training" hidden>
     <section>
       <h2>Training</h2>
-      <p class="note">Aufgaben in den sieben Formaten, in denen Aufgabe 4 über die Jahrgänge gestellt wurde.</p>
+      <p class="note">Aufgaben in allen Formaten, in denen Aufgabe 4 von 2019 bis 2026 gestellt wurde, inklusive Blinn-Phong und Abschwächung.</p>
       <div class="score">
         <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
         <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
@@ -479,10 +479,11 @@
   </div>
 
   <footer>
-    Szenen, Materialwerte und Rechenkonventionen stammen aus den Klausuren Oktober 2019 bis Oktober 2021 des Lehrstuhls Graphische Datenverarbeitung.
+    Szenen, Materialwerte und Rechenkonventionen stammen aus den Klausuren Oktober 2019 bis April 2026 des Lehrstuhls Graphische Datenverarbeitung.
   </footer>
 </div>
 
+<script src="../scripts/exam-extras.js?v=6"></script>
 <script>
 (function () {
   var NS = "http://www.w3.org/2000/svg";
@@ -858,6 +859,8 @@
     norm: "Normale bestimmen · wie 4a",
     mc: "Shading und Argumentation · wie 4c"
   };
+  Object.assign(TYPE_LABEL, CGX.labels("phong"));
+  CGX.mountExplain("phong");
 
   var SCENES = [
     { P: [3, 0], n: [0, 1], parallel: false, light: [7, 3], cam: [0, 4], jahr: "2019 SS" },
@@ -969,12 +972,16 @@
     });
     SEGS.forEach(function (s) { d.push({ type: "norm", seg: s }); });
     MC.forEach(function (c) { d.push({ type: "mc", c: shuffleOpts(c) }); });
+    d = d.concat(CGX.tasks("phong"));
     if (new URLSearchParams(window.location.search).get("exam") === "1") {
       function one(types) {
-        var candidates=d.filter(function(t){return types.indexOf(t.type)>=0;});
+        // erst einen Aufgabentyp gleichverteilt wählen, dann eine Aufgabe davon
+        var present=types.filter(function(ty){return d.some(function(t){return t.type===ty;});});
+        var ty=present[Math.floor(Math.random()*present.length)];
+        var candidates=d.filter(function(t){return t.type===ty;});
         return candidates[Math.floor(Math.random()*candidates.length)];
       }
-      return [one(["vec"]),one(["dots","refl"]),one(["color"]),one(["norm","mc"])];
+      return [one(["vec","rt3d"]),one(["dots","refl","formula"]),one(["color","att"]),one(["norm","mc","move","lcount","shadid","params"])];
     }
     return shuffled(d);
   }
@@ -1027,7 +1034,11 @@
       '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
       (isRepeat ? " · Wiederholung" : "") + '</span></div>';
 
-    if (t.type === "vec" || t.type === "dots" || t.type === "refl" || t.type === "color") {
+    if (t.cgx) {
+      var xr = CGX.render(t);
+      body = xr.html;
+      checker = xr.check;
+    } else if (t.type === "vec" || t.type === "dots" || t.type === "refl" || t.type === "color") {
       var res = phong(t.sc, t.mat || TMATS[0]);
       if (t.type === "vec") {
         body = '<p class="tprompt">' + sceneText(t.sc) + '.<br>Bestimme l, v und r.</p>' +
@@ -1157,4 +1168,4 @@
   nextTask();
 }());
 </script>
-<script src="../scripts/portal-bridge.js?v=5"></script>
+<script src="../scripts/portal-bridge.js?v=6"></script>

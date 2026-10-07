@@ -147,9 +147,9 @@
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">Aufgabe 6 · Raytracing und VR · 5–6 Punkte</div>
+    <div class="eyebrow">Aufgabe 6 · Raytracing, Laufzeit und VR · 5–11 Punkte</div>
     <h1>Strahlenlabor</h1>
-    <p>Die wechselnde Zusatzaufgabe. In zwei von fünf Klausuren fehlte sie ganz, zuletzt kam zweimal Raytracing. Kurz, aber leicht mitzunehmen.</p>
+    <p>Die wechselnde Zusatzaufgabe. Raytracing und Komplexität kamen 2020/21 und als eigene Laufzeitaufgabe im April und Oktober 2024 (8 und 11 Punkte), VR einmal 2019.</p>
   </header>
 
   <nav class="tabs" id="tabs" role="tablist" aria-label="Ansicht">
@@ -274,7 +274,7 @@
   <div id="view-training" hidden>
     <section>
       <h2>Training</h2>
-      <p class="note">Aufgaben zu beiden Themen, die in diesem Slot vorkamen.</p>
+      <p class="note">Aufgaben zu allen Themen, die in diesem Slot vorkamen: Raytracing, Laufzeitvergleiche (2024) und VR.</p>
       <div class="score">
         <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
         <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
@@ -286,10 +286,11 @@
   </div>
 
   <footer>
-    Szenen, Komplexitätsangaben und VR-Fragen stammen aus den Klausuren Oktober 2019, April 2021 und Oktober 2021 des Lehrstuhls Graphische Datenverarbeitung.
+    Szenen, Komplexitätsangaben und VR-Fragen stammen aus den Klausuren Oktober 2019 bis Oktober 2024 des Lehrstuhls Graphische Datenverarbeitung.
   </footer>
 </div>
 
+<script src="../scripts/exam-extras.js?v=6"></script>
 <script>
 (function () {
   var NS = "http://www.w3.org/2000/svg";
@@ -451,6 +452,8 @@
 
   /* ================= TRAINING ================= */
   var TYPE_LABEL = { rt: "Raytracing · wie 2021 SS 6", cx: "Komplexität · wie 2020 WS 6", vr: "VR und HMD · wie 2019 SS 5" };
+  Object.assign(TYPE_LABEL, CGX.labels("strahlen"));
+  CGX.mountExplain("strahlen");
 
   var Q = [
     { t: "rt", q: "Wie viele Schattenstrahlen gehen bei zwei Lichtquellen von einem Treffpunkt aus?",
@@ -547,13 +550,16 @@
       var idx = c.o.map(function (_, i) { return i; }), i, j, t;
       for (i = idx.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
       return { type: c.t, q: c.q, w: c.w, o: idx.map(function (k) { return c.o[k]; }), a: idx.indexOf(c.a) };
-    });
+    }).concat(CGX.tasks("strahlen"));
     if (new URLSearchParams(window.location.search).get("exam") === "1") {
       function one(types) {
-        var candidates=d.filter(function(t){return types.indexOf(t.type)>=0;});
+        // erst einen Aufgabentyp gleichverteilt wählen, dann eine Aufgabe davon
+        var present=types.filter(function(ty){return d.some(function(t){return t.type===ty;});});
+        var ty=present[Math.floor(Math.random()*present.length)];
+        var candidates=d.filter(function(t){return t.type===ty;});
         return candidates[Math.floor(Math.random()*candidates.length)];
       }
-      return [one(["rt"]),one(["cx","vr"])];
+      return [one(["rt","rtcount"]),one(["cx","vr","cxtab"])];
     }
     return shuffled(d);
   }
@@ -575,40 +581,59 @@
   });
 
   var card = document.getElementById("taskcard");
-  var deck = buildDeck(), deckIndex = -1, task = null, isRepeat = false;
+  var deck = buildDeck(), deckIndex = -1, task = null, isRepeat = false, checker = null;
 
   function renderTask() {
-    var t = task;
+    var t = task, inner;
+    if (t.cgx) {
+      var xr = CGX.render(t);
+      inner = xr.html;
+      checker = xr.check;
+    } else {
+      checker = null;
+      inner = '<p class="tprompt">' + t.q + '</p><div class="choices">' +
+        t.o.map(function (o, i) {
+          return '<label><input type="radio" name="mc" value="' + i + '"><span>' + o + '</span></label>';
+        }).join("") + '</div>';
+    }
     card.innerHTML = '<div class="task-top"><span class="ttype">' + TYPE_LABEL[t.type] +
       '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
       (isRepeat ? " · Wiederholung" : "") + '</span></div>' +
-      '<div class="tbody"><p class="tprompt">' + t.q + '</p><div class="choices">' +
-      t.o.map(function (o, i) {
-        return '<label><input type="radio" name="mc" value="' + i + '"><span>' + o + '</span></label>';
-      }).join("") + '</div></div>' +
+      '<div class="tbody">' + inner + '</div>' +
       '<div class="tactions"><button class="btn primary" id="btn_check">Bestätigen</button>' +
       (isRepeat ? '<span class="repeat-note">Wiederholung zählt nicht mit</span>' : '') + '</div>';
     document.getElementById("btn_check").addEventListener("click", confirmAnswer);
   }
 
   function confirmAnswer() {
+    var res = null;
+    if (checker) {
+      res = checker();
+      if (res.incomplete) {
+        var act0 = card.querySelector(".tactions");
+        var warn0 = act0.querySelector(".repeat-note.warn");
+        if (!warn0) { warn0 = document.createElement("span"); warn0.className = "repeat-note warn"; act0.appendChild(warn0); }
+        warn0.textContent = "Bitte alles ausfüllen.";
+        return;
+      }
+    }
     var n = document.querySelector('input[name="mc"]:checked');
-    if (!n) {
+    if (!res && !n) {
       var act = card.querySelector(".tactions");
       var warn = act.querySelector(".repeat-note.warn");
       if (!warn) { warn = document.createElement("span"); warn.className = "repeat-note warn"; act.appendChild(warn); }
       warn.textContent = "Bitte eine Antwort wählen.";
       return;
     }
-    var ok = parseInt(n.value, 10) === task.a;
+    var ok = res ? res.ok : parseInt(n.value, 10) === task.a;
     if (!isRepeat) { if (ok) { score.ok++; } else { score.bad++; } saveScore(); paintScore(); }
     Array.prototype.forEach.call(card.querySelectorAll("input"), function (x) { x.disabled = true; });
     card.querySelector(".tactions").remove();
     var v = document.createElement("div");
     v.className = "verdict " + (ok ? "right" : "wrong");
     v.innerHTML = '<span class="vhead">' + (ok ? "Richtig." : "Nicht richtig.") + '</span>' +
-      (ok ? "" : '<span class="vsol">Richtig: ' + task.o[task.a] + '</span>') +
-      '<span class="vsol">' + task.w + '</span>';
+      (res ? ((!ok && res.solText ? '<span class="vsol">' + res.solText + '</span>' : '') + '<span class="vsol">' + res.why + '</span>')
+        : ((ok ? "" : '<span class="vsol">Richtig: ' + task.o[task.a] + '</span>') + '<span class="vsol">' + task.w + '</span>'));
     card.appendChild(v);
     if (ok) { var vr = v.getBoundingClientRect(); confetti(vr.left + vr.width / 2, vr.top + 12); }
     var act2 = document.createElement("div");
@@ -639,4 +664,4 @@
   nextTask();
 }());
 </script>
-<script src="../scripts/portal-bridge.js?v=5"></script>
+<script src="../scripts/portal-bridge.js?v=6"></script>

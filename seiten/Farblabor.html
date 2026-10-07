@@ -175,7 +175,7 @@
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">Aufgabe 5 · Farbmodelle · 6–12 Punkte</div>
+    <div class="eyebrow">Aufgabe 5 · Farbmodelle · 6–12 Punkte · 8 von 11 Klausuren</div>
     <h1>Farblabor</h1>
     <p>Eine Farbe einstellen und sie gleichzeitig in allen vier Modellen sehen — samt Spektrum. Die punkteeffizienteste Aufgabe der Klausur, weil sie reines Auswendigwissen abfragt.</p>
   </header>
@@ -269,7 +269,7 @@
   <div id="view-training" hidden>
     <section>
       <h2>Training</h2>
-      <p class="note">Aufgaben in den Formaten, in denen Aufgabe 5 über die Jahrgänge gestellt wurde.</p>
+      <p class="note">Aufgaben in den Formaten, in denen Farben von 2019 bis 2026 gefragt wurden, inklusive Spektren und Alpha-Blending.</p>
       <div class="score">
         <div class="s"><span class="sv ok" id="sc_ok">0</span><span class="sk">richtig</span></div>
         <div class="s"><span class="sv bad" id="sc_bad">0</span><span class="sk">falsch</span></div>
@@ -281,10 +281,11 @@
   </div>
 
   <footer>
-    Farbwerte, Umrechnungskonvention und Aussagen stammen aus den Klausuren Oktober 2019 bis Oktober 2021 des Lehrstuhls Graphische Datenverarbeitung.
+    Farbwerte, Umrechnungskonvention und Aussagen stammen aus den Klausuren Oktober 2019 bis April 2026 des Lehrstuhls Graphische Datenverarbeitung.
   </footer>
 </div>
 
+<script src="../scripts/exam-extras.js?v=6"></script>
 <script>
 (function () {
   var NS = "http://www.w3.org/2000/svg";
@@ -459,6 +460,8 @@
     stmt: "Aussagen zuordnen · wie 2021 SS 5",
     mc: "Modellwissen · wie 5b/c"
   };
+  Object.assign(TYPE_LABEL, CGX.labels("farbe"));
+  CGX.mountExplain("farbe");
 
   var STATEMENTS = [
     { s: "(1 | 1 | 0) ist blau", m: ["CMY"] },
@@ -528,12 +531,16 @@
     shuffled(NAMED).slice(0, 8).forEach(function (n) { d.push({ type: "name", col: n }); });
     STATEMENTS.forEach(function (s) { d.push({ type: "stmt", st: s }); });
     MC.forEach(function (c) { d.push({ type: "mc", c: shuffleOpts(c) }); });
+    d = d.concat(CGX.tasks("farbe"));
     if (new URLSearchParams(window.location.search).get("exam") === "1") {
       function one(types) {
-        var candidates=d.filter(function(t){return types.indexOf(t.type)>=0;});
+        // erst einen Aufgabentyp gleichverteilt wählen, dann eine Aufgabe davon
+        var present=types.filter(function(ty){return d.some(function(t){return t.type===ty;});});
+        var ty=present[Math.floor(Math.random()*present.length)];
+        var candidates=d.filter(function(t){return t.type===ty;});
         return candidates[Math.floor(Math.random()*candidates.length)];
       }
-      return [one(["cmy","cmyk"]),one(["hsv","fromhsv"]),one(["name","stmt"]),one(["mc"])];
+      return [one(["cmy","cmyk","alpha"]),one(["hsv","fromhsv"]),one(["name","stmt","spec","specpick"]),one(["mc","hsvparam"])];
     }
     return shuffled(d);
   }
@@ -582,7 +589,11 @@
       '</span><span class="tno">Aufgabe ' + (deckIndex + 1) + " / " + deck.length +
       (isRepeat ? " · Wiederholung" : "") + '</span></div>';
 
-    if (t.type === "cmy" || t.type === "cmyk" || t.type === "hsv") {
+    if (t.cgx) {
+      var xr = CGX.render(t);
+      body = xr.html;
+      checker = xr.check;
+    } else if (t.type === "cmy" || t.type === "cmyk" || t.type === "hsv") {
       var c = t.col[1];
       var isC = t.type === "cmy", isK = t.type === "cmyk";
       var sol = isC ? toCMY(c) : (isK ? toCMYK(c) : toHSV(c));
@@ -725,4 +736,4 @@
   nextTask();
 }());
 </script>
-<script src="../scripts/portal-bridge.js?v=5"></script>
+<script src="../scripts/portal-bridge.js?v=6"></script>
